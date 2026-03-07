@@ -23,7 +23,6 @@ import {
   isSameDay 
 } from "date-fns";
 import { ChevronLeft, ChevronRight, Plus, Calendar as CalendarIcon, CheckCircle2, BarChart2 } from "lucide-react";
-import { Toaster } from "@/components/ui/toaster";
 import { Task } from "@/lib/types";
 
 export default function DailyTaskTrack() {
@@ -78,8 +77,8 @@ export default function DailyTaskTrack() {
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-8 flex flex-col items-center">
-      <header className="w-full max-w-6xl flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-        <div className="flex items-center gap-3">
+      <header className="w-full max-w-6xl flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
+        <div className="flex items-center gap-4">
           <div className="bg-primary text-white p-2.5 rounded-xl shadow-lg shadow-primary/20">
             <CalendarIcon className="w-6 h-6" />
           </div>
@@ -95,7 +94,7 @@ export default function DailyTaskTrack() {
           <div className="flex gap-2">
             <LabelManager />
             <Link href="/analytics">
-              <Button variant="outline" size="icon" className="h-11 w-11 rounded-xl shadow-sm">
+              <Button variant="outline" size="icon" className="h-11 w-11 rounded-xl shadow-sm hover:bg-white transition-colors">
                 <BarChart2 className="w-5 h-5 text-primary" />
               </Button>
             </Link>
@@ -103,26 +102,26 @@ export default function DailyTaskTrack() {
         </div>
       </header>
 
-      <main className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      <main className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Calendar Section */}
-        <Card className="lg:col-span-8 p-6 shadow-xl shadow-primary/5 bg-white/50 backdrop-blur-sm border-white/40">
+        <Card className="lg:col-span-8 p-8 shadow-xl shadow-primary/5 bg-white border-white/40">
           <div className="flex items-center justify-between mb-8">
-            <h2 className="text-xl font-bold text-primary flex items-center gap-2">
+            <h2 className="text-2xl font-bold text-primary">
               {format(currentMonth, "MMMM yyyy")}
             </h2>
             <div className="flex gap-2">
-              <Button variant="outline" size="icon" onClick={prevMonth} className="h-9 w-9">
+              <Button variant="outline" size="icon" onClick={prevMonth} className="h-9 w-9 bg-white/50">
                 <ChevronLeft className="w-4 h-4" />
               </Button>
-              <Button variant="outline" size="icon" onClick={nextMonth} className="h-9 w-9">
+              <Button variant="outline" size="icon" onClick={nextMonth} className="h-9 w-9 bg-white/50">
                 <ChevronRight className="w-4 h-4" />
               </Button>
             </div>
           </div>
 
-          <div className="calendar-grid mb-2">
+          <div className="calendar-grid">
             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-              <div key={day} className="text-center text-xs font-bold text-muted-foreground py-2 uppercase tracking-wider">
+              <div key={day} className="text-center text-xs font-bold text-muted-foreground/60 py-2 uppercase tracking-widest">
                 {day}
               </div>
             ))}
@@ -140,11 +139,11 @@ export default function DailyTaskTrack() {
         </Card>
 
         {/* Sidebar / Daily List Section */}
-        <div className="lg:col-span-4 flex flex-col gap-4">
-          <Card className="p-6 shadow-xl shadow-primary/5 min-h-[500px] flex flex-col">
-            <div className="flex items-center justify-between mb-6">
+        <div className="lg:col-span-4 flex flex-col gap-6">
+          <Card className="p-8 shadow-xl shadow-primary/5 min-h-[550px] flex flex-col bg-white">
+            <div className="flex items-center justify-between mb-8">
               <div>
-                <h3 className="text-lg font-bold text-primary">{format(selectedDate, "EEEE")}</h3>
+                <h3 className="text-xl font-bold text-primary">{format(selectedDate, "EEEE")}</h3>
                 <p className="text-sm text-muted-foreground">{format(selectedDate, "do MMMM, yyyy")}</p>
               </div>
               <Button 
@@ -153,23 +152,25 @@ export default function DailyTaskTrack() {
                   setIsTaskDialogOpen(true);
                 }} 
                 size="icon" 
-                className="rounded-full h-10 w-10 shadow-lg shadow-primary/30"
+                className="rounded-full h-11 w-11 shadow-lg shadow-primary/20 transition-transform active:scale-95"
               >
                 <Plus className="w-5 h-5" />
               </Button>
             </div>
 
             <ScrollArea className="flex-1 -mx-2 px-2">
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {dailyTasks.length === 0 ? (
-                  <div className="py-20 text-center flex flex-col items-center gap-3">
-                    <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center text-muted-foreground/40">
-                      <Plus className="w-6 h-6" />
+                  <div className="py-24 text-center flex flex-col items-center gap-4">
+                    <div className="w-16 h-16 bg-muted/50 rounded-full flex items-center justify-center text-muted-foreground/30">
+                      <Plus className="w-8 h-8" />
                     </div>
-                    <p className="text-sm text-muted-foreground font-medium">No tasks for this day yet.</p>
-                    <Button variant="link" size="sm" onClick={() => setIsTaskDialogOpen(true)}>
-                      Add your first task
-                    </Button>
+                    <div>
+                      <p className="text-sm text-muted-foreground font-semibold">No tasks for this day yet.</p>
+                      <Button variant="link" size="sm" onClick={() => setIsTaskDialogOpen(true)} className="mt-1">
+                        Create your first task
+                      </Button>
+                    </div>
                   </div>
                 ) : (
                   dailyTasks.map((task) => (
@@ -186,16 +187,16 @@ export default function DailyTaskTrack() {
             </ScrollArea>
 
             {dailyTasks.length > 0 && (
-              <div className="mt-6 pt-6 border-t flex items-center justify-between">
+              <div className="mt-8 pt-8 border-t flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-accent" />
-                  <span className="text-sm font-semibold text-muted-foreground">
-                    {dailyTasks.filter(t => t.completed).length}/{dailyTasks.length} Completed
+                  <span className="text-sm font-bold text-muted-foreground">
+                    {dailyTasks.filter(t => t.completed).length}/{dailyTasks.length} Done
                   </span>
                 </div>
-                <div className="w-24 h-1.5 bg-muted rounded-full overflow-hidden">
+                <div className="w-32 h-2 bg-muted rounded-full overflow-hidden">
                   <div 
-                    className="h-full bg-accent transition-all duration-500 ease-out"
+                    className="h-full bg-accent transition-all duration-700 ease-in-out"
                     style={{ 
                       width: `${(dailyTasks.filter(t => t.completed).length / dailyTasks.length) * 100}%` 
                     }}
@@ -214,7 +215,6 @@ export default function DailyTaskTrack() {
         initialTask={editingTask}
         defaultDate={selectedDateStr}
       />
-      <Toaster />
     </div>
   );
 }

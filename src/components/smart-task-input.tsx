@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Sparkles, Loader2, ArrowRight } from "lucide-react";
 import { extractTaskDetails } from "@/ai/flows/smart-task-entry";
-import { toast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 
 interface SmartTaskInputProps {
@@ -15,16 +15,26 @@ interface SmartTaskInputProps {
 export function SmartTaskInput({ onTaskParsed }: SmartTaskInputProps) {
   const [value, setValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
 
   const handleParse = async (e?: React.FormEvent) => {
     e?.preventDefault();
-    if (!value.trim()) return;
+    const taskInput = value.trim();
+    
+    if (taskInput.length < 3) {
+      toast({
+        variant: "destructive",
+        title: "Input too short",
+        description: "Please enter a more descriptive task (e.g., 'Buy milk tomorrow').",
+      });
+      return;
+    }
 
     setIsLoading(true);
     try {
       const currentDate = format(new Date(), "yyyy-MM-dd");
       const result = await extractTaskDetails({ 
-        naturalLanguageTask: value,
+        naturalLanguageTask: taskInput,
         currentDate 
       });
       
@@ -35,19 +45,20 @@ export function SmartTaskInput({ onTaskParsed }: SmartTaskInputProps) {
         });
         setValue("");
         toast({
-          title: "Task Added",
-          description: `"${result.description}" ${result.dueDate ? `scheduled for ${result.dueDate}` : ""}`,
+          title: "Task Parsed",
+          description: `Added "${result.description}" for ${result.dueDate || 'today'}.`,
         });
       }
     } catch (error: any) {
       console.error("SmartTaskInput Error:", error);
       
       let errorMessage = "Something went wrong while parsing the task.";
-      
       if (error.message === 'API_KEY_MISSING') {
-        errorMessage = "Gemini API key is not configured. Please add GOOGLE_GENAI_API_KEY to your environment variables.";
-      } else if (error.message.includes('safety')) {
-        errorMessage = "The AI flagged this input as unsafe. Please try rephrasing.";
+        errorMessage = "Gemini API key missing. Check your environment variables.";
+      } else if (error.message === 'SAFETY_BLOCKED') {
+        errorMessage = "The content was flagged by safety filters.";
+      } else if (error.message === 'INPUT_TOO_SHORT') {
+        errorMessage = "Please provide more context for the AI to parse.";
       }
 
       toast({
@@ -69,16 +80,16 @@ export function SmartTaskInput({ onTaskParsed }: SmartTaskInputProps) {
         value={value}
         onChange={(e) => setValue(e.target.value)}
         placeholder="Try 'Doctor appointment tomorrow at 10am'..."
-        className="pl-10 pr-12 bg-white/80 border-primary/20 focus:bg-white transition-all h-11 rounded-xl shadow-sm"
+        className="pl-10 pr-12 bg-white border-primary/10 focus:border-primary/30 transition-all h-11 rounded-xl shadow-sm"
         disabled={isLoading}
       />
-      <div className="absolute right-1 top-1/2 -translate-y-1/2">
+      <div className="absolute right-1.5 top-1/2 -translate-y-1/2">
         <Button
           type="submit"
           size="icon"
           variant="ghost"
           disabled={!value.trim() || isLoading}
-          className="h-9 w-9 text-primary hover:bg-primary/10 rounded-lg"
+          className="h-8 w-8 text-primary hover:bg-primary/10 rounded-lg"
         >
           {isLoading ? (
             <Loader2 className="w-4 h-4 animate-spin" />

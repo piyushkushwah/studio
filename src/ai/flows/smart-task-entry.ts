@@ -1,10 +1,6 @@
 'use server';
 /**
  * @fileOverview A Genkit flow for parsing natural language task descriptions.
- *
- * - extractTaskDetails - A function that processes natural language input.
- * - SmartTaskEntryInput - The input type.
- * - SmartTaskEntryOutput - The return type.
  */
 
 import {ai} from '@/ai/genkit';
@@ -32,11 +28,12 @@ const smartTaskEntryPrompt = ai.definePrompt({
   input: {schema: SmartTaskEntryInputSchema},
   output: {schema: SmartTaskEntryOutputSchema},
   system: `You are an intelligent task parsing assistant. 
-Your goal is to extract a clear task description and a due date from natural language input.
-If a relative date is mentioned (like "tomorrow" or "next Friday"), calculate it based on the provided currentDate.
-If no date is mentioned, set dueDate to null.`,
-  prompt: `Today is: {{#if currentDate}}{{currentDate}}{{else}}Not provided{{/if}}
-Task input: {{{naturalLanguageTask}}}`,
+Extract a clear task description and a due date (YYYY-MM-DD).
+- Use the provided currentDate to resolve relative dates like "tomorrow" or "next Friday".
+- If no date is found, set dueDate to null.
+- Be concise. Return only the extracted data.`,
+  prompt: `Today's Date: {{#if currentDate}}{{currentDate}}{{else}}Not provided{{/if}}
+Task to parse: {{{naturalLanguageTask}}}`,
 });
 
 const smartTaskEntryFlow = ai.defineFlow(
@@ -46,32 +43,26 @@ const smartTaskEntryFlow = ai.defineFlow(
     outputSchema: SmartTaskEntryOutputSchema,
   },
   async input => {
-    // Check for API key presence at runtime
+    // Ensure API Key is available
     const apiKey = process.env.GOOGLE_GENAI_API_KEY || process.env.GEMINI_API_KEY;
     if (!apiKey) {
-      console.error('GENKIT_ERROR: Missing Gemini API Key');
       throw new Error('API_KEY_MISSING');
     }
 
+    if (input.naturalLanguageTask.trim().length < 3) {
+      throw new Error('INPUT_TOO_SHORT');
+    }
+
     try {
-      console.log('GENKIT: Starting parsing for:', input.naturalLanguageTask);
       const {output} = await smartTaskEntryPrompt(input);
-      
-      if (!output) {
-        throw new Error('MODEL_EMPTY_RESPONSE');
-      }
-      
-      console.log('GENKIT: Parsing success:', output);
+      if (!output) throw new Error('MODEL_PARSE_ERROR');
       return output;
     } catch (error: any) {
-      console.error('GENKIT_FLOW_ERROR:', error);
-      
-      // Handle safety blocks or other specific Gemini errors
+      console.error('Genkit Flow Error:', error);
       if (error.message?.includes('SAFETY')) {
-        throw new Error('The input was flagged by safety filters.');
+        throw new Error('SAFETY_BLOCKED');
       }
-      
-      throw new Error(error.message || 'Failed to parse task details.');
+      throw error;
     }
   }
 );
