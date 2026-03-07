@@ -21,6 +21,7 @@ const SmartTaskEntryOutputSchema = z.object({
   dueDate: z
     .string()
     .nullable()
+    .optional()
     .describe("The extracted due date in YYYY-MM-DD format, or null if no date is mentioned."),
 });
 export type SmartTaskEntryOutput = z.infer<typeof SmartTaskEntryOutputSchema>;
@@ -36,15 +37,24 @@ const taskPrompt = ai.definePrompt({
   name: 'smartTaskEntryPrompt',
   input: { schema: SmartTaskEntryInputSchema },
   output: { schema: SmartTaskEntryOutputSchema },
-  prompt: `You are a task management assistant. Your goal is to extract a clear task description and an optional due date from natural language input.
+  config: {
+    safetySettings: [
+      { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_NONE' },
+      { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_NONE' },
+      { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' },
+      { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' },
+    ],
+  },
+  prompt: `You are a professional task management assistant. Your goal is to extract a clear task description and an optional due date from natural language input.
 
 Today's date is: {{{currentDate}}}
 User Input: {{{naturalLanguageTask}}}
 
 Instructions:
-1. Resolve relative time expressions (like "tomorrow", "next Friday") using the provided current date.
-2. If no date is mentioned, set dueDate to null.
-3. Provide a concise, clear description for the task.`,
+1. Resolve relative time expressions (like "tomorrow", "next Friday", "in 2 days") using the provided current date.
+2. If no specific date is mentioned, set dueDate to null.
+3. Provide a concise, clear, and professional description for the task.
+4. If the input is just a simple task with no time, just return the task description and null for dueDate.`,
 });
 
 const smartTaskEntryFlow = ai.defineFlow(
@@ -54,10 +64,11 @@ const smartTaskEntryFlow = ai.defineFlow(
     outputSchema: SmartTaskEntryOutputSchema,
   },
   async (input) => {
-    // Check for API key availability explicitly
+    // Explicitly check for key in server context
     const apiKey = process.env.GOOGLE_GENAI_API_KEY || process.env.GEMINI_API_KEY;
+    
     if (!apiKey) {
-      console.error('GENKIT_ERROR: API key is missing from environment variables.');
+      console.error('AI_FLOW_ERROR: No API key found in process.env. (Checked GOOGLE_GENAI_API_KEY and GEMINI_API_KEY)');
       throw new Error('API_KEY_MISSING');
     }
 
@@ -65,23 +76,32 @@ const smartTaskEntryFlow = ai.defineFlow(
       const { output } = await taskPrompt(input);
 
       if (!output) {
+        console.error('AI_FLOW_ERROR: Model returned an empty output object.');
         throw new Error('AI_EMPTY_RESPONSE');
       }
 
-      return output;
+      console.log('AI_FLOW_SUCCESS:', output);
+      return {
+        description: output.description,
+        dueDate: output.dueDate || null
+      };
     } catch (error: any) {
-      console.error('Genkit Flow execution failed:', error);
+      console.error('AI_FLOW_EXECUTION_FAILED:', {
+        message: error.message,
+        stack: error.stack,
+        input: input.naturalLanguageTask
+      });
       
-      // Handle specific error cases
-      if (error.message?.includes('blocked') || error.status === 'SAFETY' || error.message?.includes('SAFETY')) {
-        throw new Error('SAFETY_BLOCKED');
-      }
-      
-      if (error.message?.includes('403') || error.message?.includes('API key') || error.message?.includes('invalid')) {
+      // Handle specific Genkit/Gemini error types
+      if (error.message?.includes('403') || error.message?.toLowerCase().includes('api key')) {
         throw new Error('API_KEY_INVALID');
       }
       
-      throw new Error(error.message || 'AI_PARSE_ERROR');
+      if (error.message?.includes('SAFETY') || error.message?.includes('blocked')) {
+        throw new Error('SAFETY_BLOCKED');
+      }
+      
+      throw new Error('AI_PARSE_ERROR');
     }
   }
 );
