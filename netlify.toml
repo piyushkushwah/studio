@@ -2,10 +2,12 @@
   command = "npm run build"
   publish = ".next"
 
-# This plugin is required for Next.js advanced features on Netlify
+# This plugin ensures Next.js advanced features (like Server Actions) work on Netlify
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
 [build.environment]
-  # Ensures the build uses the correct Node version
+  # Sets the Node version for the build environment
   NODE_VERSION = "20"
+  # Ensures Next.js build is optimized
+  NEXT_TELEMETRY_DISABLED = "1"
