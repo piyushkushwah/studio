@@ -35,24 +35,24 @@ export function SmartTaskInput({ onTaskParsed }: SmartTaskInputProps) {
         });
         setValue("");
         toast({
-          title: "Task Extracted",
-          description: `Added: "${result.description}"${result.dueDate ? ` for ${result.dueDate}` : ""}`,
+          title: "Task Added",
+          description: `"${result.description}" ${result.dueDate ? `scheduled for ${result.dueDate}` : ""}`,
         });
       }
     } catch (error: any) {
-      console.error("AI Parsing Client Error:", error);
+      console.error("SmartTaskInput Error:", error);
       
-      let errorMessage = "Could not parse task details. Please try again later.";
+      let errorMessage = "Something went wrong while parsing the task.";
       
-      if (error.message?.includes("API Key")) {
-        errorMessage = "Gemini API Key is missing. Please check your Netlify environment variables (GOOGLE_GENAI_API_KEY).";
-      } else if (error.message?.includes("Invalid API Key")) {
-        errorMessage = "The Gemini API Key provided is invalid.";
+      if (error.message === 'API_KEY_MISSING') {
+        errorMessage = "Gemini API key is not configured. Please add GOOGLE_GENAI_API_KEY to your environment variables.";
+      } else if (error.message.includes('safety')) {
+        errorMessage = "The AI flagged this input as unsafe. Please try rephrasing.";
       }
 
       toast({
         variant: "destructive",
-        title: "AI Analysis Error",
+        title: "AI Parsing Failed",
         description: errorMessage,
       });
     } finally {
@@ -68,7 +68,7 @@ export function SmartTaskInput({ onTaskParsed }: SmartTaskInputProps) {
       <Input
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        placeholder="Type a task (e.g., 'Team meeting next Tuesday')"
+        placeholder="Try 'Doctor appointment tomorrow at 10am'..."
         className="pl-10 pr-12 bg-white/80 border-primary/20 focus:bg-white transition-all h-11 rounded-xl shadow-sm"
         disabled={isLoading}
       />

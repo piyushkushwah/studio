@@ -27,26 +27,16 @@ const SmartTaskEntryOutputSchema = z.object({
 });
 export type SmartTaskEntryOutput = z.infer<typeof SmartTaskEntryOutputSchema>;
 
-export async function extractTaskDetails(input: SmartTaskEntryInput): Promise<SmartTaskEntryOutput> {
-  return smartTaskEntryFlow(input);
-}
-
 const smartTaskEntryPrompt = ai.definePrompt({
   name: 'smartTaskEntryPrompt',
   input: {schema: SmartTaskEntryInputSchema},
   output: {schema: SmartTaskEntryOutputSchema},
-  system: `You are an intelligent assistant designed to parse natural language task descriptions.
-Your goal is to extract the main task description and a specific due date.
-
-CRITICAL: You must return ONLY valid JSON. No markdown blocks, no commentary.
-
-Instructions:
-1. Extract the core task description.
-2. Convert mentioned dates to 'YYYY-MM-DD' format based on the provided currentDate.
-3. If no specific date is mentioned, set 'dueDate' to null.
-4. Output must be valid JSON matching the schema.`,
-  prompt: `Today's date is: {{#if currentDate}}{{currentDate}}{{else}}Not provided{{/if}}
-Natural Language Task: {{{naturalLanguageTask}}}`,
+  system: `You are an intelligent task parsing assistant. 
+Your goal is to extract a clear task description and a due date from natural language input.
+If a relative date is mentioned (like "tomorrow" or "next Friday"), calculate it based on the provided currentDate.
+If no date is mentioned, set dueDate to null.`,
+  prompt: `Today is: {{#if currentDate}}{{currentDate}}{{else}}Not provided{{/if}}
+Task input: {{{naturalLanguageTask}}}`,
 });
 
 const smartTaskEntryFlow = ai.defineFlow(
@@ -56,29 +46,36 @@ const smartTaskEntryFlow = ai.defineFlow(
     outputSchema: SmartTaskEntryOutputSchema,
   },
   async input => {
-    // Check for API key presence at runtime to provide better errors
+    // Check for API key presence at runtime
     const apiKey = process.env.GOOGLE_GENAI_API_KEY || process.env.GEMINI_API_KEY;
     if (!apiKey) {
-      throw new Error('Missing Gemini API Key. Please configure GOOGLE_GENAI_API_KEY in your environment variables.');
+      console.error('GENKIT_ERROR: Missing Gemini API Key');
+      throw new Error('API_KEY_MISSING');
     }
 
     try {
-      console.log('Starting AI parsing for:', input.naturalLanguageTask);
+      console.log('GENKIT: Starting parsing for:', input.naturalLanguageTask);
       const {output} = await smartTaskEntryPrompt(input);
       
       if (!output) {
-        throw new Error('The AI model failed to generate a response.');
+        throw new Error('MODEL_EMPTY_RESPONSE');
       }
       
-      console.log('AI parsing successful:', output);
+      console.log('GENKIT: Parsing success:', output);
       return output;
     } catch (error: any) {
-      console.error('Genkit Smart Task Entry Flow Error:', error);
-      // Re-throw with a cleaner message if it's a known service error
-      if (error.message?.includes('API_KEY_INVALID')) {
-        throw new Error('Invalid API Key provided. Please check your Gemini API key configuration.');
+      console.error('GENKIT_FLOW_ERROR:', error);
+      
+      // Handle safety blocks or other specific Gemini errors
+      if (error.message?.includes('SAFETY')) {
+        throw new Error('The input was flagged by safety filters.');
       }
-      throw error;
+      
+      throw new Error(error.message || 'Failed to parse task details.');
     }
   }
 );
+
+export async function extractTaskDetails(input: SmartTaskEntryInput): Promise<SmartTaskEntryOutput> {
+  return smartTaskEntryFlow(input);
+}
