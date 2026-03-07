@@ -36,11 +36,10 @@ const smartTaskEntryFlow = ai.defineFlow(
     outputSchema: SmartTaskEntryOutputSchema,
   },
   async (input) => {
-    // Explicitly check for key in server context to provide better error messages
     const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENAI_API_KEY;
     
     if (!apiKey) {
-      console.error('AI_FLOW_ERROR: No API key found. Please set GEMINI_API_KEY or GOOGLE_GENAI_API_KEY.');
+      console.error('AI_FLOW_ERROR: No API key found.');
       throw new Error('MISSING_API_KEY');
     }
 
@@ -77,10 +76,14 @@ const smartTaskEntryFlow = ai.defineFlow(
         dueDate: output.dueDate || null
       };
     } catch (error: any) {
+      const errorMessage = error.message || '';
       console.error('AI_FLOW_EXECUTION_FAILED:', error);
       
-      // Pass meaningful errors back to the client
-      if (error.message?.includes('403') || error.message?.includes('API_KEY')) {
+      // Catch specific API errors
+      if (errorMessage.includes('429')) {
+        throw new Error('QUOTA_EXCEEDED');
+      }
+      if (errorMessage.includes('403')) {
         throw new Error('INVALID_API_KEY');
       }
       
