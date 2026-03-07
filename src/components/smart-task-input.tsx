@@ -36,17 +36,24 @@ export function SmartTaskInput({ onTaskParsed }: SmartTaskInputProps) {
         setValue("");
         toast({
           title: "Task Extracted",
-          description: "Smart entry added successfully.",
+          description: `Added: "${result.description}"${result.dueDate ? ` for ${result.dueDate}` : ""}`,
         });
       }
     } catch (error: any) {
       console.error("AI Parsing Client Error:", error);
+      
+      let errorMessage = "Could not parse task details. Please try again later.";
+      
+      if (error.message?.includes("API Key")) {
+        errorMessage = "Gemini API Key is missing. Please check your Netlify environment variables (GOOGLE_GENAI_API_KEY).";
+      } else if (error.message?.includes("Invalid API Key")) {
+        errorMessage = "The Gemini API Key provided is invalid.";
+      }
+
       toast({
         variant: "destructive",
         title: "AI Analysis Error",
-        description: error.message?.includes("API key") 
-          ? "API Key is missing or invalid. Please check your Netlify environment variables."
-          : "Could not parse task details. Please try again later.",
+        description: errorMessage,
       });
     } finally {
       setIsLoading(false);
