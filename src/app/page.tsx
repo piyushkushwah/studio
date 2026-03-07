@@ -9,6 +9,7 @@ import { TaskDialog } from "@/components/task-dialog";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card } from "@/components/ui/card";
+import Link from "next/link";
 import { 
   format, 
   addMonths, 
@@ -20,7 +21,7 @@ import {
   eachDayOfInterval, 
   isSameDay 
 } from "date-fns";
-import { ChevronLeft, ChevronRight, Plus, Calendar as CalendarIcon, CheckCircle2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Calendar as CalendarIcon, CheckCircle2, BarChart2 } from "lucide-react";
 import { Toaster } from "@/components/ui/toaster";
 import { Task } from "@/lib/types";
 
@@ -46,11 +47,14 @@ export default function DailyTaskTrack() {
   const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
   const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
 
-  const handleTaskSubmit = (taskData: { description: string; dueDate: string }) => {
+  const handleTaskSubmit = (taskData: { description: string; dueDate: string; label?: string }) => {
     if (editingTask) {
       updateTask(editingTask.id, taskData);
     } else {
-      addTask(taskData);
+      addTask({
+        ...taskData,
+        completed: false,
+      });
     }
     setEditingTask(null);
   };
@@ -65,6 +69,7 @@ export default function DailyTaskTrack() {
       description: parsed.description,
       dueDate: parsed.dueDate || selectedDateStr,
       completed: false,
+      label: "other",
     });
   };
 
@@ -82,8 +87,15 @@ export default function DailyTaskTrack() {
             <p className="text-sm text-muted-foreground font-medium">Focused planning for a clearer day</p>
           </div>
         </div>
-        <div className="w-full md:w-96">
-          <SmartTaskInput onTaskParsed={handleSmartParsed} />
+        <div className="flex items-center gap-4 flex-1 max-w-2xl">
+          <div className="flex-1">
+            <SmartTaskInput onTaskParsed={handleSmartParsed} />
+          </div>
+          <Link href="/analytics">
+            <Button variant="outline" size="icon" className="h-11 w-11 rounded-xl shadow-sm">
+              <BarChart2 className="w-5 h-5 text-primary" />
+            </Button>
+          </Link>
         </div>
       </header>
 

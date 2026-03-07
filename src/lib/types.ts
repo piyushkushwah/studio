@@ -4,6 +4,7 @@ export interface Task {
   dueDate: string; // YYYY-MM-DD
   completed: boolean;
   createdAt: number;
+  label?: string;
 }
 
 export interface TaskStore {
