@@ -3,7 +3,6 @@
 import { useState, useMemo } from "react";
 import { useTasks } from "@/hooks/use-tasks";
 import { CalendarCell } from "@/components/calendar-cell";
-import { SmartTaskInput } from "@/components/smart-task-input";
 import { TaskItem } from "@/components/task-item";
 import { TaskDialog } from "@/components/task-dialog";
 import { LabelManager } from "@/components/label-manager";
@@ -64,15 +63,6 @@ export default function DailyTaskTrack() {
     setIsTaskDialogOpen(true);
   };
 
-  const handleSmartParsed = (parsed: { description: string; dueDate?: string }) => {
-    addTask({
-      description: parsed.description,
-      dueDate: parsed.dueDate || selectedDateStr,
-      completed: false,
-      label: "other",
-    });
-  };
-
   if (!isInitialized) return null;
 
   return (
@@ -87,18 +77,13 @@ export default function DailyTaskTrack() {
             <p className="text-sm text-muted-foreground font-medium">Focused planning for a clearer day</p>
           </div>
         </div>
-        <div className="flex items-center gap-3 flex-1 max-w-2xl">
-          <div className="flex-1">
-            <SmartTaskInput onTaskParsed={handleSmartParsed} />
-          </div>
-          <div className="flex gap-2">
-            <LabelManager />
-            <Link href="/analytics">
-              <Button variant="outline" size="icon" className="h-11 w-11 rounded-xl shadow-sm hover:bg-white transition-colors">
-                <BarChart2 className="w-5 h-5 text-primary" />
-              </Button>
-            </Link>
-          </div>
+        <div className="flex items-center gap-3">
+          <LabelManager />
+          <Link href="/analytics">
+            <Button variant="outline" size="icon" className="h-11 w-11 rounded-xl shadow-sm hover:bg-white transition-colors">
+              <BarChart2 className="w-5 h-5 text-primary" />
+            </Button>
+          </Link>
         </div>
       </header>
 
