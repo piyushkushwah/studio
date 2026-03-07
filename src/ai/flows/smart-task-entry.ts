@@ -1,33 +1,30 @@
 'use server';
 /**
- * @fileOverview A Genkit flow for parsing natural language task descriptions and extracting task details.
+ * @fileOverview A Genkit flow for parsing natural language task descriptions.
  *
- * - extractTaskDetails - A function that processes natural language input to extract task description and due date.
- * - SmartTaskEntryInput - The input type for the extractTaskDetails function.
- * - SmartTaskEntryOutput - The return type for the extractTaskDetails function.
+ * - extractTaskDetails - A function that processes natural language input.
+ * - SmartTaskEntryInput - The input type.
+ * - SmartTaskEntryOutput - The return type.
  */
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
-const SmartTaskEntryInputSchema = z
-  .object({
-    naturalLanguageTask: z.string().describe('The task described in natural language.'),
-  })
-  .describe('Input for the Smart Task Entry flow, containing a natural language task description.');
+const SmartTaskEntryInputSchema = z.object({
+  naturalLanguageTask: z.string().describe('The task described in natural language.'),
+  currentDate: z.string().optional().describe('The current date in YYYY-MM-DD format.'),
+});
 export type SmartTaskEntryInput = z.infer<typeof SmartTaskEntryInputSchema>;
 
-const SmartTaskEntryOutputSchema = z
-  .object({
-    description: z.string().describe('The extracted task description.'),
-    dueDate: z
-      .string()
-      .nullable()
-      .describe(
-        'The extracted due date for the task in YYYY-MM-DD format, or null if no due date is specified.'
-      ),
-  })
-  .describe('Output from the Smart Task Entry flow, containing the extracted task details.');
+const SmartTaskEntryOutputSchema = z.object({
+  description: z.string().describe('The extracted task description.'),
+  dueDate: z
+    .string()
+    .nullable()
+    .describe(
+      "The extracted due date for the task in YYYY-MM-DD format, or null if not specified."
+    ),
+});
 export type SmartTaskEntryOutput = z.infer<typeof SmartTaskEntryOutputSchema>;
 
 export async function extractTaskDetails(input: SmartTaskEntryInput): Promise<SmartTaskEntryOutput> {
@@ -39,16 +36,15 @@ const smartTaskEntryPrompt = ai.definePrompt({
   input: {schema: SmartTaskEntryInputSchema},
   output: {schema: SmartTaskEntryOutputSchema},
   system: `You are an intelligent assistant designed to parse natural language task descriptions.
-Your goal is to extract the main task description and, if present, a specific due date.
-
-Today's date is: {{currentDate}}
+Your goal is to extract the main task description and a specific due date.
 
 Instructions:
-1. Extract the core task description from the input.
-2. If a specific date or time is mentioned that indicates a due date, convert it to a 'YYYY-MM-DD' format based on the current date.
-3. If no explicit due date is mentioned, or if it's too vague to determine a specific date (e.g., 'soon', 'later today'), set the 'dueDate' field to null.
-4. Ensure the output is valid JSON according to the provided schema.`,
-  prompt: `Natural Language Task: {{{naturalLanguageTask}}}`,
+1. Extract the core task description.
+2. Convert mentioned dates to 'YYYY-MM-DD' format based on the provided currentDate.
+3. If no specific date is mentioned, set 'dueDate' to null.
+4. Output must be valid JSON matching the schema.`,
+  prompt: `Today's date is: {{#if currentDate}}{{currentDate}}{{else}}Not provided{{/if}}
+Natural Language Task: {{{naturalLanguageTask}}}`,
 });
 
 const smartTaskEntryFlow = ai.defineFlow(
@@ -58,15 +54,14 @@ const smartTaskEntryFlow = ai.defineFlow(
     outputSchema: SmartTaskEntryOutputSchema,
   },
   async input => {
-    const currentDate = new Date().toISOString().split('T')[0];
     try {
-      const {output} = await smartTaskEntryPrompt({...input, currentDate});
+      const {output} = await smartTaskEntryPrompt(input);
       if (!output) {
-        throw new Error('No output returned from AI model');
+        throw new Error('AI model returned no output');
       }
       return output;
     } catch (error) {
-      console.error('Genkit flow error:', error);
+      console.error('Genkit Smart Task Entry Flow Error:', error);
       throw error;
     }
   }
