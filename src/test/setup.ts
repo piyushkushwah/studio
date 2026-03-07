@@ -19,13 +19,21 @@ const localStorageMock = (() => {
   };
 })();
 
+// Attach to global window for jsdom
 Object.defineProperty(window, 'localStorage', {
   value: localStorageMock,
 });
 
-// Mock crypto.randomUUID
+// Mock crypto.randomUUID for Node environment
+if (!global.crypto) {
+  (global as any).crypto = {};
+}
+if (!global.crypto.randomUUID) {
+  (global as any).crypto.randomUUID = () => 'test-uuid-' + Math.random().toString(36).substring(2, 11);
+}
+
+// Ensure window also has it for browser-like testing
 Object.defineProperty(window, 'crypto', {
-  value: {
-    randomUUID: () => 'test-uuid-' + Math.random().toString(36).substr(2, 9),
-  },
+  value: global.crypto,
+  writable: true
 });
