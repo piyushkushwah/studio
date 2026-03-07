@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { useTasks } from "@/hooks/use-tasks";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PieChart, Pie, Cell, Legend, Tooltip } from "recharts";
+import { PieChart, Pie, Cell } from "recharts";
 import { 
   ChartContainer, 
   ChartTooltip, 
@@ -15,33 +15,39 @@ import {
 import { ArrowLeft, PieChart as PieChartIcon, Info } from "lucide-react";
 import Link from "next/link";
 
-const CHART_CONFIG = {
-  work: { label: "Work", color: "hsl(var(--chart-1))" },
-  personal: { label: "Personal", color: "hsl(var(--chart-2))" },
-  shopping: { label: "Shopping", color: "hsl(var(--chart-3))" },
-  urgent: { label: "Urgent", color: "hsl(var(--chart-4))" },
-  other: { label: "Other", color: "hsl(var(--chart-5))" },
-};
-
 export default function AnalyticsPage() {
-  const { tasks, isInitialized } = useTasks();
+  const { tasks, labels, isInitialized } = useTasks();
+
+  const chartConfig = useMemo(() => {
+    const config: any = {};
+    labels.forEach((label, index) => {
+      config[label.name] = {
+        label: label.name.charAt(0).toUpperCase() + label.name.slice(1),
+        color: `hsl(var(--chart-${(index % 5) + 1}))`,
+      };
+    });
+    return config;
+  }, [labels]);
 
   const chartData = useMemo(() => {
     if (!tasks.length) return [];
     
     const counts: Record<string, number> = {};
     tasks.forEach((task) => {
-      const label = task.label || "other";
-      counts[label] = (counts[label] || 0) + 1;
+      const labelName = task.label || "other";
+      counts[labelName] = (counts[labelName] || 0) + 1;
     });
 
-    return Object.entries(counts).map(([name, value]) => ({
-      name: CHART_CONFIG[name as keyof typeof CHART_CONFIG]?.label || name,
-      label: name,
-      value,
-      fill: CHART_CONFIG[name as keyof typeof CHART_CONFIG]?.color || "hsl(var(--muted))",
-    }));
-  }, [tasks]);
+    return Object.entries(counts).map(([name, value], index) => {
+      const labelObj = labels.find(l => l.name === name);
+      return {
+        name: chartConfig[name]?.label || name,
+        label: name,
+        value,
+        fill: `hsl(var(--chart-${(index % 5) + 1}))`,
+      };
+    });
+  }, [tasks, labels, chartConfig]);
 
   const stats = useMemo(() => {
     const total = tasks.length;
@@ -106,11 +112,11 @@ export default function AnalyticsPage() {
         <Card className="shadow-xl shadow-primary/5 border-white/40 bg-white/50 backdrop-blur-sm">
           <CardHeader>
             <CardTitle>Tasks by Label</CardTitle>
-            <CardDescription>Distribution of your tasks across categories</CardDescription>
+            <CardDescription>Distribution of your tasks across your custom categories</CardDescription>
           </CardHeader>
           <CardContent className="h-[450px] flex items-center justify-center">
             {tasks.length > 0 ? (
-              <ChartContainer config={CHART_CONFIG} className="h-full w-full">
+              <ChartContainer config={chartConfig} className="h-full w-full">
                 <PieChart>
                   <Pie
                     data={chartData}

@@ -6,6 +6,7 @@ import { CalendarCell } from "@/components/calendar-cell";
 import { SmartTaskInput } from "@/components/smart-task-input";
 import { TaskItem } from "@/components/task-item";
 import { TaskDialog } from "@/components/task-dialog";
+import { LabelManager } from "@/components/label-manager";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card } from "@/components/ui/card";
@@ -87,15 +88,18 @@ export default function DailyTaskTrack() {
             <p className="text-sm text-muted-foreground font-medium">Focused planning for a clearer day</p>
           </div>
         </div>
-        <div className="flex items-center gap-4 flex-1 max-w-2xl">
+        <div className="flex items-center gap-3 flex-1 max-w-2xl">
           <div className="flex-1">
             <SmartTaskInput onTaskParsed={handleSmartParsed} />
           </div>
-          <Link href="/analytics">
-            <Button variant="outline" size="icon" className="h-11 w-11 rounded-xl shadow-sm">
-              <BarChart2 className="w-5 h-5 text-primary" />
-            </Button>
-          </Link>
+          <div className="flex gap-2">
+            <LabelManager />
+            <Link href="/analytics">
+              <Button variant="outline" size="icon" className="h-11 w-11 rounded-xl shadow-sm">
+                <BarChart2 className="w-5 h-5 text-primary" />
+              </Button>
+            </Link>
+          </div>
         </div>
       </header>
 

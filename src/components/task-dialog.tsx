@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Label as UILabel } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -20,6 +20,8 @@ import {
 } from "@/components/ui/select";
 import { Task } from "@/lib/types";
 import { format } from "date-fns";
+import { useTasks } from "@/hooks/use-tasks";
+import { cn } from "@/lib/utils";
 
 interface TaskDialogProps {
   open: boolean;
@@ -29,14 +31,6 @@ interface TaskDialogProps {
   defaultDate?: string;
 }
 
-const LABELS = [
-  { value: "work", label: "Work" },
-  { value: "personal", label: "Personal" },
-  { value: "shopping", label: "Shopping" },
-  { value: "urgent", label: "Urgent" },
-  { value: "other", label: "Other" },
-];
-
 export function TaskDialog({
   open,
   onOpenChange,
@@ -44,6 +38,7 @@ export function TaskDialog({
   initialTask,
   defaultDate,
 }: TaskDialogProps) {
+  const { labels } = useTasks();
   const [description, setDescription] = useState("");
   const [dueDate, setDueDate] = useState(defaultDate || format(new Date(), "yyyy-MM-dd"));
   const [label, setLabel] = useState<string>("other");
@@ -75,7 +70,7 @@ export function TaskDialog({
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="description">Task Description</Label>
+            <UILabel htmlFor="description">Task Description</UILabel>
             <Input
               id="description"
               value={description}
@@ -86,7 +81,7 @@ export function TaskDialog({
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="date">Date</Label>
+              <UILabel htmlFor="date">Date</UILabel>
               <Input
                 id="date"
                 type="date"
@@ -95,15 +90,18 @@ export function TaskDialog({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="label">Label</Label>
+              <UILabel htmlFor="label">Label</UILabel>
               <Select value={label} onValueChange={setLabel}>
                 <SelectTrigger id="label">
                   <SelectValue placeholder="Select label" />
                 </SelectTrigger>
                 <SelectContent>
-                  {LABELS.map((l) => (
-                    <SelectItem key={l.value} value={l.value}>
-                      {l.label}
+                  {labels.map((l) => (
+                    <SelectItem key={l.id} value={l.name}>
+                      <div className="flex items-center gap-2">
+                        <div className={cn("w-2 h-2 rounded-full", l.color.split(' ')[0])} />
+                        {l.name}
+                      </div>
                     </SelectItem>
                   ))}
                 </SelectContent>
