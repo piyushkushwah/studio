@@ -22,7 +22,7 @@ const SmartTaskEntryOutputSchema = z
     description: z.string().describe('The extracted task description.'),
     dueDate: z
       .string()
-      .optional()
+      .nullable()
       .describe(
         'The extracted due date for the task in YYYY-MM-DD format, or null if no due date is specified.'
       ),
@@ -38,28 +38,17 @@ const smartTaskEntryPrompt = ai.definePrompt({
   name: 'smartTaskEntryPrompt',
   input: {schema: SmartTaskEntryInputSchema},
   output: {schema: SmartTaskEntryOutputSchema},
-  prompt: `You are an intelligent assistant designed to parse natural language task descriptions.
+  system: `You are an intelligent assistant designed to parse natural language task descriptions.
 Your goal is to extract the main task description and, if present, a specific due date.
 
 Today's date is: {{currentDate}}
 
 Instructions:
 1. Extract the core task description from the input.
-2. If a specific date or time is mentioned that indicates a due date, convert it to a 'YYYY-MM-DD' format.
-3. If no explicit due date is mentioned, or if it's too vague to determine a specific date (e.g., 'soon', 'later today'), leave the 'dueDate' field null.
-4. Ensure the output is valid JSON according to the provided schema.
-
-Natural Language Task: {{{naturalLanguageTask}}}
-
-Example:
-Input: 'Call John tomorrow at 10 AM about the project'
-Output: { "description": "Call John about the project", "dueDate": "2023-11-25" } (assuming tomorrow is Nov 25, 2023)
-
-Input: 'Finish report by Friday'
-Output: { "description": "Finish report", "dueDate": "2023-11-24" } (assuming Friday is Nov 24, 2023)
-
-Input: 'Prepare presentation'
-Output: { "description": "Prepare presentation", "dueDate": null }`,
+2. If a specific date or time is mentioned that indicates a due date, convert it to a 'YYYY-MM-DD' format based on the current date.
+3. If no explicit due date is mentioned, or if it's too vague to determine a specific date (e.g., 'soon', 'later today'), set the 'dueDate' field to null.
+4. Ensure the output is valid JSON according to the provided schema.`,
+  prompt: `Natural Language Task: {{{naturalLanguageTask}}}`,
 });
 
 const smartTaskEntryFlow = ai.defineFlow(
@@ -69,8 +58,16 @@ const smartTaskEntryFlow = ai.defineFlow(
     outputSchema: SmartTaskEntryOutputSchema,
   },
   async input => {
-    const currentDate = new Date().toISOString().split('T')[0]; // Get current date in YYYY-MM-DD format
-    const {output} = await smartTaskEntryPrompt({...input, currentDate});
-    return output!;
+    const currentDate = new Date().toISOString().split('T')[0];
+    try {
+      const {output} = await smartTaskEntryPrompt({...input, currentDate});
+      if (!output) {
+        throw new Error('No output returned from AI model');
+      }
+      return output;
+    } catch (error) {
+      console.error('Genkit flow error:', error);
+      throw error;
+    }
   }
 );
