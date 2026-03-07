@@ -21,14 +21,7 @@ export function SmartTaskInput({ onTaskParsed }: SmartTaskInputProps) {
     e?.preventDefault();
     const taskInput = value.trim();
     
-    if (taskInput.length < 3) {
-      toast({
-        variant: "destructive",
-        title: "Input too short",
-        description: "Please enter at least 3 characters.",
-      });
-      return;
-    }
+    if (taskInput.length < 2) return;
 
     setIsLoading(true);
     try {
@@ -45,28 +38,24 @@ export function SmartTaskInput({ onTaskParsed }: SmartTaskInputProps) {
         });
         setValue("");
         toast({
-          title: "Task Parsed",
-          description: `Added "${result.description}" for ${result.dueDate || 'today'}.`,
+          title: "Task Added",
+          description: `"${result.description}" has been added to your list.`,
         });
       }
     } catch (error: any) {
       console.error("SmartTaskInput Error:", error);
       
-      let errorMessage = "AI was unable to parse this task. Please try again or add manually.";
+      let errorMessage = "Something went wrong. Please check your internet connection or try again.";
       
-      if (error.message === 'API_KEY_MISSING') {
-        errorMessage = "Gemini API key is missing. Please check your environment variables.";
-      } else if (error.message === 'API_KEY_INVALID') {
-        errorMessage = "Invalid Gemini API key. Please check your Google AI Studio settings.";
-      } else if (error.message === 'SAFETY_BLOCKED') {
-        errorMessage = "The content was flagged by safety filters. Please rephrase your task.";
-      } else if (error.message === 'AI_EMPTY_RESPONSE') {
-        errorMessage = "The AI returned an empty response. Please try a different phrasing.";
+      if (error.message?.includes('MISSING_API_KEY')) {
+        errorMessage = "API Key is missing. Please add GEMINI_API_KEY to your environment variables.";
+      } else if (error.message?.includes('INVALID_API_KEY')) {
+        errorMessage = "Your API Key is invalid. Please check your Google AI Studio settings.";
       }
 
       toast({
         variant: "destructive",
-        title: "AI Parsing Failed",
+        title: "AI Connection Issue",
         description: errorMessage,
       });
     } finally {
@@ -82,7 +71,7 @@ export function SmartTaskInput({ onTaskParsed }: SmartTaskInputProps) {
       <Input
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        placeholder="Try 'Doctor appointment tomorrow at 10am'..."
+        placeholder="Try 'Doctor appointment tomorrow'..."
         className="pl-10 pr-12 bg-white border-primary/10 focus:border-primary/30 transition-all h-11 rounded-xl shadow-sm"
         disabled={isLoading}
       />

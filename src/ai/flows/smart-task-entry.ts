@@ -1,10 +1,6 @@
 'use server';
 /**
  * @fileOverview A Genkit flow for parsing natural language task descriptions.
- *
- * - extractTaskDetails - A function that handles parsing a natural language string into a task object.
- * - SmartTaskEntryInput - The input type for the extraction.
- * - SmartTaskEntryOutput - The return type for the extraction.
  */
 
 import {ai} from '@/ai/genkit';
@@ -33,30 +29,6 @@ export async function extractTaskDetails(input: SmartTaskEntryInput): Promise<Sm
   return smartTaskEntryFlow(input);
 }
 
-const taskPrompt = ai.definePrompt({
-  name: 'smartTaskEntryPrompt',
-  input: { schema: SmartTaskEntryInputSchema },
-  output: { schema: SmartTaskEntryOutputSchema },
-  config: {
-    safetySettings: [
-      { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_NONE' },
-      { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_NONE' },
-      { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' },
-      { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' },
-    ],
-  },
-  prompt: `You are a professional task management assistant. Your goal is to extract a clear task description and an optional due date from natural language input.
-
-Today's date is: {{{currentDate}}}
-User Input: {{{naturalLanguageTask}}}
-
-Instructions:
-1. Resolve relative time expressions (like "tomorrow", "next Friday", "in 2 days") using the provided current date.
-2. If no specific date is mentioned, set dueDate to null.
-3. Provide a concise, clear, and professional description for the task.
-4. If the input is just a simple task with no time, just return the task description and null for dueDate.`,
-});
-
 const smartTaskEntryFlow = ai.defineFlow(
   {
     name: 'smartTaskEntryFlow',
@@ -64,44 +36,55 @@ const smartTaskEntryFlow = ai.defineFlow(
     outputSchema: SmartTaskEntryOutputSchema,
   },
   async (input) => {
-    // Explicitly check for key in server context
-    const apiKey = process.env.GOOGLE_GENAI_API_KEY || process.env.GEMINI_API_KEY;
+    // Explicitly check for key in server context to provide better error messages
+    const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENAI_API_KEY;
     
     if (!apiKey) {
-      console.error('AI_FLOW_ERROR: No API key found in process.env. (Checked GOOGLE_GENAI_API_KEY and GEMINI_API_KEY)');
-      throw new Error('API_KEY_MISSING');
+      console.error('AI_FLOW_ERROR: No API key found. Please set GEMINI_API_KEY or GOOGLE_GENAI_API_KEY.');
+      throw new Error('MISSING_API_KEY');
     }
 
     try {
-      const { output } = await taskPrompt(input);
+      const response = await ai.generate({
+        model: 'googleai/gemini-1.5-flash',
+        prompt: `You are a task management assistant. Extract a clear task description and an optional due date from the user's input.
+        Today's date is: ${input.currentDate || new Date().toISOString().split('T')[0]}
+        User Input: ${input.naturalLanguageTask}
+        
+        Instructions:
+        1. Resolve relative dates like "tomorrow" or "next Friday" based on today's date.
+        2. If no date is mentioned, set dueDate to null.
+        3. Keep the description professional and concise.`,
+        output: { schema: SmartTaskEntryOutputSchema },
+        config: {
+          safetySettings: [
+            { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_NONE' },
+            { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_NONE' },
+            { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' },
+            { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' },
+          ],
+        },
+      });
+
+      const output = response.output;
 
       if (!output) {
-        console.error('AI_FLOW_ERROR: Model returned an empty output object.');
-        throw new Error('AI_EMPTY_RESPONSE');
+        throw new Error('EMPTY_AI_RESPONSE');
       }
 
-      console.log('AI_FLOW_SUCCESS:', output);
       return {
         description: output.description,
         dueDate: output.dueDate || null
       };
     } catch (error: any) {
-      console.error('AI_FLOW_EXECUTION_FAILED:', {
-        message: error.message,
-        stack: error.stack,
-        input: input.naturalLanguageTask
-      });
+      console.error('AI_FLOW_EXECUTION_FAILED:', error);
       
-      // Handle specific Genkit/Gemini error types
-      if (error.message?.includes('403') || error.message?.toLowerCase().includes('api key')) {
-        throw new Error('API_KEY_INVALID');
+      // Pass meaningful errors back to the client
+      if (error.message?.includes('403') || error.message?.includes('API_KEY')) {
+        throw new Error('INVALID_API_KEY');
       }
       
-      if (error.message?.includes('SAFETY') || error.message?.includes('blocked')) {
-        throw new Error('SAFETY_BLOCKED');
-      }
-      
-      throw new Error('AI_PARSE_ERROR');
+      throw new Error('AI_GENERATION_FAILED');
     }
   }
 );
