@@ -18,13 +18,13 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
 const COLOR_PRESETS = [
-  { name: "Blue", value: "bg-blue-100 text-blue-700" },
-  { name: "Purple", value: "bg-purple-100 text-purple-700" },
-  { name: "Orange", value: "bg-orange-100 text-orange-700" },
-  { name: "Red", value: "bg-red-100 text-red-700" },
-  { name: "Green", value: "bg-emerald-100 text-emerald-700" },
-  { name: "Pink", value: "bg-pink-100 text-pink-700" },
-  { name: "Gray", value: "bg-gray-100 text-gray-700" },
+  { name: "Blue", value: "bg-blue-600 text-white hover:bg-blue-700" },
+  { name: "Purple", value: "bg-purple-600 text-white hover:bg-purple-700" },
+  { name: "Orange", value: "bg-orange-500 text-white hover:bg-orange-600" },
+  { name: "Red", value: "bg-red-600 text-white hover:bg-red-700" },
+  { name: "Green", value: "bg-emerald-600 text-white hover:bg-emerald-700" },
+  { name: "Pink", value: "bg-pink-600 text-white hover:bg-pink-700" },
+  { name: "Gray", value: "bg-slate-700 text-white hover:bg-slate-800" },
 ];
 
 export function LabelManager() {
@@ -74,7 +74,7 @@ export function LabelManager() {
             <div className="space-y-2">
               <Label className="flex items-center gap-2">
                 <Palette className="w-4 h-4" />
-                Select Color
+                Select High Contrast Color
               </Label>
               <div className="flex flex-wrap gap-2">
                 {COLOR_PRESETS.map((color) => (
@@ -83,9 +83,9 @@ export function LabelManager() {
                     type="button"
                     onClick={() => setSelectedColor(color.value)}
                     className={cn(
-                      "w-8 h-8 rounded-full border-2 transition-all",
+                      "w-8 h-8 rounded-full border-2 transition-all shadow-sm",
                       color.value.split(' ')[0],
-                      selectedColor === color.value ? "ring-2 ring-primary ring-offset-2 scale-110" : "border-transparent opacity-70 hover:opacity-100"
+                      selectedColor === color.value ? "ring-2 ring-primary ring-offset-2 scale-110" : "border-white/50 opacity-80 hover:opacity-100"
                     )}
                   />
                 ))}
@@ -103,7 +103,7 @@ export function LabelManager() {
             <div className="flex flex-wrap gap-2 max-h-[200px] overflow-y-auto pr-2">
               {labels.map((label) => (
                 <div key={label.id} className="group relative">
-                  <Badge className={cn("px-3 py-1 text-xs font-bold uppercase tracking-wider", label.color)}>
+                  <Badge className={cn("px-3 py-1 text-xs font-bold uppercase tracking-wider shadow-sm", label.color)}>
                     {label.name}
                   </Badge>
                   <button

@@ -88,8 +88,8 @@ export default function DailyTaskTrack() {
       </header>
 
       <main className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* Calendar Section */}
-        <Card className="lg:col-span-8 p-8 shadow-xl shadow-primary/5 bg-white border-white/40">
+        {/* Calendar Section - Sized down to 7/12 */}
+        <Card className="lg:col-span-7 p-8 shadow-xl shadow-primary/5 bg-white border-white/40">
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-2xl font-bold text-primary">
               {format(currentMonth, "MMMM yyyy")}
@@ -123,13 +123,13 @@ export default function DailyTaskTrack() {
           </div>
         </Card>
 
-        {/* Sidebar / Daily List Section */}
-        <div className="lg:col-span-4 flex flex-col gap-6">
-          <Card className="p-8 shadow-xl shadow-primary/5 min-h-[550px] flex flex-col bg-white">
+        {/* Sidebar / Daily List Section - Increased to 5/12 */}
+        <div className="lg:col-span-5 flex flex-col gap-6">
+          <Card className="p-8 shadow-xl shadow-primary/5 min-h-[550px] flex flex-col bg-white border-white/40">
             <div className="flex items-center justify-between mb-8">
               <div>
-                <h3 className="text-xl font-bold text-primary">{format(selectedDate, "EEEE")}</h3>
-                <p className="text-sm text-muted-foreground">{format(selectedDate, "do MMMM, yyyy")}</p>
+                <h3 className="text-2xl font-bold text-primary">{format(selectedDate, "EEEE")}</h3>
+                <p className="text-sm text-muted-foreground font-medium">{format(selectedDate, "do MMMM, yyyy")}</p>
               </div>
               <Button 
                 onClick={() => {
@@ -137,9 +137,9 @@ export default function DailyTaskTrack() {
                   setIsTaskDialogOpen(true);
                 }} 
                 size="icon" 
-                className="rounded-full h-11 w-11 shadow-lg shadow-primary/20 transition-transform active:scale-95"
+                className="rounded-full h-12 w-12 shadow-lg shadow-primary/20 transition-transform active:scale-95"
               >
-                <Plus className="w-5 h-5" />
+                <Plus className="w-6 h-6" />
               </Button>
             </div>
 
@@ -174,12 +174,12 @@ export default function DailyTaskTrack() {
             {dailyTasks.length > 0 && (
               <div className="mt-8 pt-8 border-t flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-accent" />
-                  <span className="text-sm font-bold text-muted-foreground">
-                    {dailyTasks.filter(t => t.completed).length}/{dailyTasks.length} Done
+                  <CheckCircle2 className="w-5 h-5 text-accent" />
+                  <span className="text-base font-bold text-primary">
+                    {dailyTasks.filter(t => t.completed).length}/{dailyTasks.length} Completed
                   </span>
                 </div>
-                <div className="w-32 h-2 bg-muted rounded-full overflow-hidden">
+                <div className="w-40 h-2.5 bg-muted rounded-full overflow-hidden shadow-inner">
                   <div 
                     className="h-full bg-accent transition-all duration-700 ease-in-out"
                     style={{ 

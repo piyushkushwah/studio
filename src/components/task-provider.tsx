@@ -4,11 +4,11 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { Task, Label } from '@/lib/types';
 
 const DEFAULT_LABELS: Label[] = [
-  { id: '1', name: 'work', color: 'bg-blue-100 text-blue-700' },
-  { id: '2', name: 'personal', color: 'bg-purple-100 text-purple-700' },
-  { id: '3', name: 'shopping', color: 'bg-orange-100 text-orange-700' },
-  { id: '4', name: 'urgent', color: 'bg-red-100 text-red-700' },
-  { id: '5', name: 'other', color: 'bg-gray-100 text-gray-700' },
+  { id: '1', name: 'work', color: 'bg-blue-600 text-white hover:bg-blue-700' },
+  { id: '2', name: 'personal', color: 'bg-purple-600 text-white hover:bg-purple-700' },
+  { id: '3', name: 'shopping', color: 'bg-orange-500 text-white hover:bg-orange-600' },
+  { id: '4', name: 'urgent', color: 'bg-red-600 text-white hover:bg-red-700' },
+  { id: '5', name: 'other', color: 'bg-slate-600 text-white hover:bg-slate-700' },
 ];
 
 interface TaskContextType {
@@ -45,7 +45,16 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     
     if (savedLabels) {
       try {
-        setLabels(JSON.parse(savedLabels));
+        const parsed = JSON.parse(savedLabels);
+        // Migrating old low-contrast labels if they exist
+        const migrated = parsed.map((l: Label) => {
+          if (l.color.includes('-100')) {
+             const base = l.color.split('-')[1];
+             return { ...l, color: `bg-${base}-600 text-white hover:bg-${base}-700` };
+          }
+          return l;
+        });
+        setLabels(migrated);
       } catch (e) {
         console.error("Failed to parse labels", e);
       }

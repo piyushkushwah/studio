@@ -20,31 +20,33 @@ export function TaskItem({ task, onToggle, onDelete, onEdit }: TaskItemProps) {
   
   // Find the label object to get the current color
   const labelObj = labels.find(l => l.name.toLowerCase() === task.label?.toLowerCase());
-  const labelColor = labelObj?.color || "bg-gray-100 text-gray-700 hover:bg-gray-100";
+  const labelColor = labelObj?.color || "bg-slate-500 text-white hover:bg-slate-600";
 
   return (
     <div className={cn(
-      "group flex items-center gap-3 p-3 rounded-lg border bg-white transition-all hover:shadow-sm",
-      task.completed && "bg-white/40 border-accent/20"
+      "group flex items-center gap-4 p-4 rounded-xl border bg-white transition-all hover:shadow-md hover:border-primary/20",
+      task.completed && "bg-white/40 border-accent/20 opacity-80"
     )}>
       <Checkbox
         checked={task.completed}
         onCheckedChange={() => onToggle(task.id)}
-        className="h-5 w-5 border-2 data-[state=checked]:bg-accent data-[state=checked]:border-accent"
+        className="h-6 w-6 border-2 data-[state=checked]:bg-accent data-[state=checked]:border-accent transition-colors"
       />
       
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 mb-1">
+        <div className="flex flex-col gap-1">
           <p className={cn(
-            "text-sm font-medium transition-all truncate",
-            task.completed ? "text-muted-foreground line-through" : "text-foreground"
+            "text-base font-semibold transition-all break-words",
+            task.completed ? "text-muted-foreground line-through" : "text-primary"
           )}>
             {task.description}
           </p>
           {task.label && (
-            <Badge variant="secondary" className={cn("text-[10px] h-4 px-1.5 uppercase font-bold", labelColor)}>
-              {task.label}
-            </Badge>
+            <div className="flex">
+              <Badge variant="secondary" className={cn("text-[10px] h-5 px-2 uppercase font-bold tracking-wider shadow-sm", labelColor)}>
+                {task.label}
+              </Badge>
+            </div>
           )}
         </div>
       </div>
@@ -53,16 +55,18 @@ export function TaskItem({ task, onToggle, onDelete, onEdit }: TaskItemProps) {
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8 text-muted-foreground hover:text-primary"
+          className="h-10 w-10 text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-full"
           onClick={() => onEdit(task)}
+          title="Edit Task"
         >
           <Pencil className="w-4 h-4" />
         </Button>
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8 text-muted-foreground hover:text-destructive"
+          className="h-10 w-10 text-muted-foreground hover:text-destructive hover:bg-destructive/5 rounded-full"
           onClick={() => onDelete(task.id)}
+          title="Delete Task"
         >
           <Trash2 className="w-4 h-4" />
         </Button>
