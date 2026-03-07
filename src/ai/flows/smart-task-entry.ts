@@ -32,6 +32,21 @@ export async function extractTaskDetails(input: SmartTaskEntryInput): Promise<Sm
   return smartTaskEntryFlow(input);
 }
 
+const taskPrompt = ai.definePrompt({
+  name: 'smartTaskEntryPrompt',
+  input: { schema: SmartTaskEntryInputSchema },
+  output: { schema: SmartTaskEntryOutputSchema },
+  prompt: `You are a task management assistant. Your goal is to extract a clear task description and an optional due date from natural language input.
+
+Today's date is: {{{currentDate}}}
+User Input: {{{naturalLanguageTask}}}
+
+Instructions:
+1. Resolve relative time expressions (like "tomorrow", "next Friday") using the provided current date.
+2. If no date is mentioned, set dueDate to null.
+3. Provide a concise, clear description for the task.`,
+});
+
 const smartTaskEntryFlow = ai.defineFlow(
   {
     name: 'smartTaskEntryFlow',
@@ -39,33 +54,15 @@ const smartTaskEntryFlow = ai.defineFlow(
     outputSchema: SmartTaskEntryOutputSchema,
   },
   async (input) => {
-    // Double check API key availability in the server context
+    // Check for API key availability explicitly
     const apiKey = process.env.GOOGLE_GENAI_API_KEY || process.env.GEMINI_API_KEY;
     if (!apiKey) {
+      console.error('GENKIT_ERROR: API key is missing from environment variables.');
       throw new Error('API_KEY_MISSING');
     }
 
     try {
-      const { output } = await ai.generate({
-        system: `You are a task management assistant. Your goal is to extract a clear task description and an optional due date from natural language input.
-- Today's date is ${input.currentDate || 'not provided'}.
-- Use this date to resolve relative time expressions like "tomorrow", "next Monday", etc.
-- If no specific date or relative time is mentioned, set dueDate to null.
-- Return ONLY the JSON object.`,
-        prompt: input.naturalLanguageTask,
-        output: {
-          schema: SmartTaskEntryOutputSchema,
-        },
-        config: {
-          temperature: 0.1, // Low temperature for more consistent extraction
-          safetySettings: [
-            { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_ONLY_HIGH' },
-            { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_ONLY_HIGH' },
-            { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_ONLY_HIGH' },
-            { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_ONLY_HIGH' },
-          ],
-        },
-      });
+      const { output } = await taskPrompt(input);
 
       if (!output) {
         throw new Error('AI_EMPTY_RESPONSE');
@@ -73,13 +70,14 @@ const smartTaskEntryFlow = ai.defineFlow(
 
       return output;
     } catch (error: any) {
-      console.error('Genkit Flow Error:', error);
+      console.error('Genkit Flow execution failed:', error);
       
-      // Map common errors to user-friendly codes
-      if (error.message?.includes('SAFETY')) {
+      // Handle specific error cases
+      if (error.message?.includes('blocked') || error.status === 'SAFETY' || error.message?.includes('SAFETY')) {
         throw new Error('SAFETY_BLOCKED');
       }
-      if (error.message?.includes('403') || error.message?.includes('API key')) {
+      
+      if (error.message?.includes('403') || error.message?.includes('API key') || error.message?.includes('invalid')) {
         throw new Error('API_KEY_INVALID');
       }
       
