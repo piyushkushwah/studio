@@ -25,7 +25,7 @@ export function SmartTaskInput({ onTaskParsed }: SmartTaskInputProps) {
       toast({
         variant: "destructive",
         title: "Input too short",
-        description: "Please enter a more descriptive task (e.g., 'Buy milk tomorrow').",
+        description: "Please enter at least 3 characters.",
       });
       return;
     }
@@ -52,13 +52,16 @@ export function SmartTaskInput({ onTaskParsed }: SmartTaskInputProps) {
     } catch (error: any) {
       console.error("SmartTaskInput Error:", error);
       
-      let errorMessage = "Something went wrong while parsing the task.";
+      let errorMessage = "AI was unable to parse this task. Please try again or add manually.";
+      
       if (error.message === 'API_KEY_MISSING') {
-        errorMessage = "Gemini API key missing. Check your environment variables.";
+        errorMessage = "Gemini API key is missing. Please check your environment variables.";
+      } else if (error.message === 'API_KEY_INVALID') {
+        errorMessage = "Invalid Gemini API key. Please check your Google AI Studio settings.";
       } else if (error.message === 'SAFETY_BLOCKED') {
-        errorMessage = "The content was flagged by safety filters.";
-      } else if (error.message === 'INPUT_TOO_SHORT') {
-        errorMessage = "Please provide more context for the AI to parse.";
+        errorMessage = "The content was flagged by safety filters. Please rephrase your task.";
+      } else if (error.message === 'AI_EMPTY_RESPONSE') {
+        errorMessage = "The AI returned an empty response. Please try a different phrasing.";
       }
 
       toast({
