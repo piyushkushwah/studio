@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Loader2, ArrowRight, AlertCircle } from "lucide-react";
+import { Sparkles, Loader2, ArrowRight } from "lucide-react";
 import { extractTaskDetails } from "@/ai/flows/smart-task-entry";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
@@ -21,11 +21,13 @@ export function SmartTaskInput({ onTaskParsed }: SmartTaskInputProps) {
     e?.preventDefault();
     const taskInput = value.trim();
     
-    if (taskInput.length < 2) return;
+    if (taskInput.length < 3) return;
 
     setIsLoading(true);
     try {
+      // Pass the local client date to ensure relative dates are resolved correctly for the user's timezone
       const currentDate = format(new Date(), "yyyy-MM-dd");
+      
       const result = await extractTaskDetails({ 
         naturalLanguageTask: taskInput,
         currentDate 
@@ -38,25 +40,22 @@ export function SmartTaskInput({ onTaskParsed }: SmartTaskInputProps) {
         });
         setValue("");
         toast({
-          title: "Task Added",
-          description: `"${result.description}" has been added.`,
+          title: "Task Extracted",
+          description: `"${result.description}" ${result.dueDate ? `set for ${result.dueDate}` : 'added to today'}.`,
         });
       }
     } catch (error: any) {
       console.error("SmartTaskInput Error:", error);
       
-      let title = "AI Parsing Issue";
-      let description = "Something went wrong. Please try again or add the task manually.";
+      let title = "AI Parsing Failed";
+      let description = "We couldn't process that task. Try being more specific or add it manually.";
       
       if (error.message === 'QUOTA_EXCEEDED') {
-        title = "API Limit Reached";
-        description = "Your Gemini AI free tier quota has been exhausted. Please check your Google AI Studio dashboard or try again later.";
-      } else if (error.message === 'INVALID_API_KEY') {
-        title = "Invalid API Key";
-        description = "Your Gemini API key is invalid or not properly set in the environment variables.";
-      } else if (error.message === 'MISSING_API_KEY') {
-        title = "Missing API Key";
-        description = "No Gemini API key was found. Please add GEMINI_API_KEY to your environment.";
+        title = "Daily Limit Reached";
+        description = "Your Gemini AI free tier quota is exhausted. Please try again later or use manual entry.";
+      } else if (error.message === 'INVALID_API_KEY' || error.message === 'MISSING_API_KEY') {
+        title = "Configuration Error";
+        description = "The AI service is not properly configured. Check your API key.";
       }
 
       toast({
@@ -77,7 +76,7 @@ export function SmartTaskInput({ onTaskParsed }: SmartTaskInputProps) {
       <Input
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        placeholder="Smart add: 'Gym tomorrow at 6pm'..."
+        placeholder="Smart add: 'Doctor appointment next Friday'..."
         className="pl-10 pr-12 bg-white border-primary/10 focus:border-primary/30 transition-all h-11 rounded-xl shadow-sm"
         disabled={isLoading}
       />
@@ -86,8 +85,8 @@ export function SmartTaskInput({ onTaskParsed }: SmartTaskInputProps) {
           type="submit"
           size="icon"
           variant="ghost"
-          disabled={!value.trim() || isLoading}
-          className="h-8 w-8 text-primary hover:bg-primary/10 rounded-lg"
+          disabled={!value.trim() || isLoading || value.trim().length < 3}
+          className="h-8 w-8 text-primary hover:bg-primary/10 rounded-lg disabled:opacity-30"
         >
           {isLoading ? (
             <Loader2 className="w-4 h-4 animate-spin" />
