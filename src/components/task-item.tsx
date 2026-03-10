@@ -24,26 +24,26 @@ export function TaskItem({ task, onToggle, onDelete, onEdit }: TaskItemProps) {
 
   return (
     <div className={cn(
-      "group flex items-center gap-4 p-4 rounded-xl border bg-white transition-all hover:shadow-md hover:border-primary/20",
+      "group flex items-start sm:items-center gap-3 md:gap-4 p-3 md:p-4 rounded-xl border bg-white transition-all hover:shadow-md hover:border-primary/20",
       task.completed && "bg-white/40 border-accent/20 opacity-80"
     )}>
       <Checkbox
         checked={task.completed}
         onCheckedChange={() => onToggle(task.id)}
-        className="h-6 w-6 border-2 data-[state=checked]:bg-accent data-[state=checked]:border-accent transition-colors"
+        className="h-5 w-5 md:h-6 md:w-6 border-2 data-[state=checked]:bg-accent data-[state=checked]:border-accent transition-colors shrink-0 mt-0.5 sm:mt-0"
       />
       
       <div className="flex-1 min-w-0">
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-1.5">
           <p className={cn(
-            "text-base font-semibold transition-all break-words",
+            "text-sm md:text-base font-semibold transition-all break-words leading-tight",
             task.completed ? "text-muted-foreground line-through" : "text-primary"
           )}>
             {task.description}
           </p>
           {task.label && (
             <div className="flex">
-              <Badge variant="secondary" className={cn("text-[10px] h-5 px-2 uppercase font-bold tracking-wider shadow-sm", labelColor)}>
+              <Badge variant="secondary" className={cn("text-[8px] md:text-[10px] h-4 md:h-5 px-1.5 md:px-2 uppercase font-bold tracking-wider shadow-sm", labelColor)}>
                 {task.label}
               </Badge>
             </div>
@@ -51,11 +51,11 @@ export function TaskItem({ task, onToggle, onDelete, onEdit }: TaskItemProps) {
         </div>
       </div>
 
-      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+      <div className="flex items-center gap-0.5 md:gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
         <Button
           variant="ghost"
           size="icon"
-          className="h-10 w-10 text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-full"
+          className="h-8 w-8 md:h-10 md:w-10 text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-full"
           onClick={() => onEdit(task)}
           title="Edit Task"
         >
@@ -64,7 +64,7 @@ export function TaskItem({ task, onToggle, onDelete, onEdit }: TaskItemProps) {
         <Button
           variant="ghost"
           size="icon"
-          className="h-10 w-10 text-muted-foreground hover:text-destructive hover:bg-destructive/5 rounded-full"
+          className="h-8 w-8 md:h-10 md:w-10 text-muted-foreground hover:text-destructive hover:bg-destructive/5 rounded-full"
           onClick={() => onDelete(task.id)}
           title="Delete Task"
         >

@@ -71,7 +71,13 @@
 
 .calendar-cell {
   aspect-ratio: 1 / 1;
-  min-height: 80px;
+  min-height: 40px;
+}
+
+@media (min-width: 768px) {
+  .calendar-cell {
+    min-height: 80px;
+  }
 }
 
 .animate-completion {

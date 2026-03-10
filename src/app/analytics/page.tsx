@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { useTasks } from "@/hooks/use-tasks";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PieChart, Pie, Cell } from "recharts";
+import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { 
   ChartContainer, 
   ChartTooltip, 
@@ -76,25 +76,25 @@ export default function AnalyticsPage() {
               <ArrowLeft className="w-6 h-6" />
             </Button>
           </Link>
-          <div className="bg-primary text-white p-2 rounded-lg">
+          <div className="bg-primary text-white p-2 rounded-lg shrink-0">
             <PieChartIcon className="w-5 h-5" />
           </div>
-          <h1 className="text-xl font-bold text-primary">Task Analytics</h1>
+          <h1 className="text-lg md:text-xl font-bold text-primary truncate">Task Analytics</h1>
         </div>
       </header>
 
       <main className="w-full max-w-4xl space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <Card className="shadow-sm border-white/40 bg-white/50 backdrop-blur-sm">
             <CardHeader className="pb-2">
               <CardDescription className="font-medium">Total Tasks</CardDescription>
-              <CardTitle className="text-3xl font-bold text-primary">{stats.total}</CardTitle>
+              <CardTitle className="text-2xl md:text-3xl font-bold text-primary">{stats.total}</CardTitle>
             </CardHeader>
           </Card>
           <Card className="shadow-sm border-white/40 bg-white/50 backdrop-blur-sm">
             <CardHeader className="pb-2">
               <CardDescription className="font-medium">Completed</CardDescription>
-              <CardTitle className="text-3xl font-bold text-accent">
+              <CardTitle className="text-2xl md:text-3xl font-bold text-accent">
                 {stats.completed}
               </CardTitle>
             </CardHeader>
@@ -102,7 +102,7 @@ export default function AnalyticsPage() {
           <Card className="shadow-sm border-white/40 bg-white/50 backdrop-blur-sm">
             <CardHeader className="pb-2">
               <CardDescription className="font-medium">Completion Rate</CardDescription>
-              <CardTitle className="text-3xl font-bold">
+              <CardTitle className="text-2xl md:text-3xl font-bold">
                 {stats.rate}%
               </CardTitle>
             </CardHeader>
@@ -112,30 +112,32 @@ export default function AnalyticsPage() {
         <Card className="shadow-xl shadow-primary/5 border-white/40 bg-white/50 backdrop-blur-sm">
           <CardHeader>
             <CardTitle>Tasks by Label</CardTitle>
-            <CardDescription>Distribution of your tasks across your custom categories</CardDescription>
+            <CardDescription>Distribution across your custom categories</CardDescription>
           </CardHeader>
-          <CardContent className="h-[450px] flex items-center justify-center">
+          <CardContent className="h-[400px] md:h-[450px] flex items-center justify-center p-2 md:p-6">
             {tasks.length > 0 ? (
               <ChartContainer config={chartConfig} className="h-full w-full">
-                <PieChart>
-                  <Pie
-                    data={chartData}
-                    dataKey="value"
-                    nameKey="name"
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={140}
-                    innerRadius={80}
-                    paddingAngle={5}
-                    strokeWidth={0}
-                  >
-                    {chartData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.fill} />
-                    ))}
-                  </Pie>
-                  <ChartTooltip content={<ChartTooltipContent hideLabel />} />
-                  <ChartLegend content={<ChartLegendContent />} className="-translate-y-2 flex-wrap" />
-                </PieChart>
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={chartData}
+                      dataKey="value"
+                      nameKey="name"
+                      cx="50%"
+                      cy="50%"
+                      outerRadius="80%"
+                      innerRadius="50%"
+                      paddingAngle={5}
+                      strokeWidth={0}
+                    >
+                      {chartData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.fill} />
+                      ))}
+                    </Pie>
+                    <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+                    <ChartLegend content={<ChartLegendContent />} className="-translate-y-2 flex-wrap" />
+                  </PieChart>
+                </ResponsiveContainer>
               </ChartContainer>
             ) : (
               <div className="flex flex-col items-center gap-4 text-center py-12">
