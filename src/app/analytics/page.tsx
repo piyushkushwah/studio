@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useMemo } from "react";
@@ -13,7 +12,7 @@ import {
   ChartLegend, 
   ChartLegendContent 
 } from "@/components/ui/chart";
-import { ArrowLeft, PieChart as PieChartIcon, Info, TrendingUp } from "lucide-react";
+import { ArrowLeft, PieChart as PieChartIcon, Info, Download, FileSpreadsheet } from "lucide-react";
 import Link from "next/link";
 import { subDays, format, eachDayOfInterval } from "date-fns";
 
@@ -28,7 +27,6 @@ export default function AnalyticsPage() {
         color: `hsl(var(--chart-${(index % 5) + 1}))`,
       };
     });
-    // Add default entry for the trend chart
     config["completed"] = { label: "Completed", color: "hsl(var(--accent))" };
     return config;
   }, [labels]);
@@ -76,6 +74,36 @@ export default function AnalyticsPage() {
     return { total, completed, rate };
   }, [tasks]);
 
+  const exportToCSV = () => {
+    if (tasks.length === 0) return;
+
+    const headers = ["ID", "Description", "Due Date", "Label", "Priority", "Completed", "Created At"];
+    const rows = tasks.map(t => [
+      t.id,
+      `"${t.description.replace(/"/g, '""')}"`,
+      t.dueDate,
+      t.label || "other",
+      t.priority || "medium",
+      t.completed ? "Yes" : "No",
+      format(t.createdAt, "yyyy-MM-dd HH:mm:ss")
+    ]);
+
+    const csvContent = [
+      headers.join(","),
+      ...rows.map(r => r.join(","))
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `daily_task_export_${format(new Date(), "yyyy-MM-dd")}.csv`);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   if (!isInitialized) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -101,6 +129,15 @@ export default function AnalyticsPage() {
           </div>
           <h1 className="text-lg md:text-xl font-bold text-primary truncate">Task Analytics</h1>
         </div>
+        <Button 
+          variant="outline" 
+          onClick={exportToCSV} 
+          disabled={tasks.length === 0}
+          className="rounded-xl shadow-sm gap-2"
+        >
+          <FileSpreadsheet className="w-4 h-4" />
+          Export Data
+        </Button>
       </header>
 
       <main className="w-full max-w-5xl space-y-6">

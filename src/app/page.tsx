@@ -33,11 +33,14 @@ import {
   Search,
   FilterX,
   Target,
-  Trash2
+  Trash2,
+  Clock,
+  Quote
 } from "lucide-react";
 import { Task, Priority } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import { getDailyQuote } from "@/lib/quotes";
 
 export default function DailyTaskTrack() {
   const { tasks, addTask, updateTask, deleteTask, toggleTask, labels, isInitialized } = useTasks();
@@ -48,12 +51,15 @@ export default function DailyTaskTrack() {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeLabelFilter, setActiveLabelFilter] = useState<string | null>(null);
   const [greeting, setGreeting] = useState("Hello");
+  const [quote, setQuote] = useState("");
 
   useEffect(() => {
     const hour = getHours(new Date());
     if (hour < 12) setGreeting("Good Morning");
     else if (hour < 17) setGreeting("Good Afternoon");
     else setGreeting("Good Evening");
+    
+    setQuote(getDailyQuote());
   }, []);
 
   const days = useMemo(() => {
@@ -126,16 +132,24 @@ export default function DailyTaskTrack() {
           </div>
           <div>
             <h1 className="text-2xl md:text-3xl font-black tracking-tight text-primary leading-tight">{greeting}</h1>
-            <p className="text-sm text-muted-foreground font-medium">Your productivity command center.</p>
+            <div className="flex items-center gap-2 mt-1">
+              <Quote className="w-3 h-3 text-accent" />
+              <p className="text-xs italic text-muted-foreground font-medium">{quote}</p>
+            </div>
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <PomodoroTimer />
-          <div className="flex items-center gap-2 h-14 bg-white border px-3 rounded-2xl shadow-md">
+          <div className="flex items-center gap-2 h-12 bg-white border px-3 rounded-2xl shadow-sm">
             <LabelManager />
+            <Link href="/time-tracking">
+              <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-primary/5 group" title="Time Tracking">
+                <Clock className="w-4 h-4 text-primary group-hover:scale-110 transition-transform" />
+              </Button>
+            </Link>
             <Link href="/analytics">
-              <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl hover:bg-primary/5 group">
-                <BarChart2 className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
+              <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-primary/5 group" title="Analytics">
+                <BarChart2 className="w-4 h-4 text-primary group-hover:scale-110 transition-transform" />
               </Button>
             </Link>
           </div>
