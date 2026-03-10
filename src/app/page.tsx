@@ -11,8 +11,6 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import Link from "next/link";
 import { 
   format, 
   addMonths, 
@@ -39,6 +37,7 @@ import {
 } from "lucide-react";
 import { Task, Priority } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
 
 export default function DailyTaskTrack() {
   const { tasks, addTask, updateTask, deleteTask, toggleTask, labels, isInitialized } = useTasks();
@@ -130,7 +129,8 @@ export default function DailyTaskTrack() {
             <p className="text-xs md:text-sm text-muted-foreground font-medium">Ready for another productive day?</p>
           </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 md:gap-3">
+          <PomodoroTimer />
           <LabelManager />
           <Link href="/analytics" className="shrink-0">
             <Button variant="outline" size="icon" className="h-11 w-11 rounded-xl shadow-sm hover:bg-white transition-colors">
@@ -180,8 +180,6 @@ export default function DailyTaskTrack() {
 
         {/* Sidebar Section */}
         <div className="lg:col-span-5 flex flex-col gap-6 w-full">
-          <PomodoroTimer />
-
           <Card className="p-6 md:p-8 shadow-xl shadow-primary/5 min-h-[400px] md:min-h-[450px] flex flex-col bg-white border-white/40">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">

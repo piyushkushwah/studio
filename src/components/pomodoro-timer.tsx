@@ -1,21 +1,18 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import { 
   Play, 
   Pause, 
   RotateCcw, 
   Coffee, 
   Brain, 
-  Timer as TimerIcon
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 
-type TimerMode = "work" | "short" | "long";
+type TimerMode = "work" | "short";
 
 const MODE_CONFIG = {
   work: {
@@ -26,18 +23,11 @@ const MODE_CONFIG = {
     accent: "bg-primary",
   },
   short: {
-    label: "Short Break",
+    label: "Break",
     seconds: 5 * 60,
     color: "text-accent",
     bgColor: "bg-accent/10",
     accent: "bg-accent",
-  },
-  long: {
-    label: "Long Break",
-    seconds: 15 * 60,
-    color: "text-blue-600",
-    bgColor: "bg-blue-600/10",
-    accent: "bg-blue-600",
   },
 };
 
@@ -65,11 +55,11 @@ export function PomodoroTimer() {
       const nextMode = mode === "work" ? "short" : "work";
       
       toast({
-        title: mode === "work" ? "Time's up!" : "Break over!",
-        description: mode === "work" ? "Time for a well-deserved break." : "Ready to focus again?",
+        title: mode === "work" ? "Focus session complete!" : "Break finished!",
+        description: mode === "work" ? "Take 5 minutes to recharge." : "Ready for another round?",
       });
 
-      // Simple notification sound or browser notification could go here
+      switchMode(nextMode);
     }
 
     return () => clearInterval(interval);
@@ -91,92 +81,60 @@ export function PomodoroTimer() {
   const progress = ((MODE_CONFIG[mode].seconds - timeLeft) / MODE_CONFIG[mode].seconds) * 100;
 
   return (
-    <Card className="shadow-lg border-white/40 bg-white/60 backdrop-blur-md overflow-hidden animate-fade-in">
-      <CardContent className="p-6">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-2">
-            <TimerIcon className={cn("w-5 h-5", MODE_CONFIG[mode].color)} />
-            <span className="font-bold text-sm uppercase tracking-wider text-muted-foreground">
-              Pomodoro
-            </span>
-          </div>
-          <div className="flex bg-muted/50 p-1 rounded-lg gap-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => switchMode("work")}
-              className={cn(
-                "h-8 px-3 rounded-md text-xs font-bold transition-all",
-                mode === "work" ? "bg-white shadow-sm text-primary" : "text-muted-foreground"
-              )}
-            >
-              <Brain className="w-3.5 h-3.5 mr-1" />
-              Focus
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => switchMode("short")}
-              className={cn(
-                "h-8 px-3 rounded-md text-xs font-bold transition-all",
-                mode === "short" ? "bg-white shadow-sm text-accent" : "text-muted-foreground"
-              )}
-            >
-              <Coffee className="w-3.5 h-3.5 mr-1" />
-              Break
-            </Button>
-          </div>
-        </div>
+    <div className="relative flex items-center gap-1 bg-white border shadow-sm rounded-xl px-2 h-11 transition-all hover:border-primary/20 group">
+      {/* Mode Toggle Button */}
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => switchMode(mode === "work" ? "short" : "work")}
+        className={cn(
+          "h-8 w-8 rounded-lg shrink-0",
+          mode === "work" ? "text-primary hover:bg-primary/5" : "text-accent hover:bg-accent/5"
+        )}
+        title={`Switch to ${mode === "work" ? "Break" : "Focus"}`}
+      >
+        {mode === "work" ? <Brain className="w-4 h-4" /> : <Coffee className="w-4 h-4" />}
+      </Button>
 
-        <div className="flex flex-col items-center gap-6">
-          <div className="relative flex items-center justify-center">
-            <div className="text-5xl font-black tabular-nums tracking-tighter text-primary drop-shadow-sm">
-              {formatTime(timeLeft)}
-            </div>
-          </div>
+      {/* Timer Display */}
+      <div className="flex flex-col px-1 min-w-[48px]">
+        <span className="text-xs font-black tabular-nums tracking-tight leading-none">
+          {formatTime(timeLeft)}
+        </span>
+        <span className={cn("text-[8px] font-bold uppercase tracking-widest leading-none mt-1", MODE_CONFIG[mode].color)}>
+          {MODE_CONFIG[mode].label}
+        </span>
+      </div>
 
-          <div className="w-full space-y-2">
-            <Progress 
-              value={progress} 
-              className="h-2.5 bg-muted"
-            />
-            <div className="flex justify-between text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-              <span>{MODE_CONFIG[mode].label}</span>
-              <span>{Math.round(progress)}%</span>
-            </div>
-          </div>
+      <div className="flex items-center gap-0.5 border-l pl-1">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={toggleTimer}
+          className={cn(
+            "h-8 w-8 rounded-lg",
+            isActive ? "text-primary animate-pulse" : "text-muted-foreground hover:text-primary"
+          )}
+        >
+          {isActive ? <Pause className="w-4 h-4 fill-current" /> : <Play className="w-4 h-4 fill-current" />}
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={resetTimer}
+          className="h-8 w-8 rounded-lg text-muted-foreground hover:text-destructive transition-colors"
+        >
+          <RotateCcw className="w-3.5 h-3.5" />
+        </Button>
+      </div>
 
-          <div className="flex items-center gap-3 w-full">
-            <Button
-              onClick={toggleTimer}
-              className={cn(
-                "flex-1 h-12 rounded-xl text-lg font-bold shadow-md transition-all active:scale-95",
-                isActive ? "bg-white text-primary border-2 border-primary hover:bg-primary/5" : MODE_CONFIG[mode].accent + " text-white"
-              )}
-            >
-              {isActive ? (
-                <>
-                  <Pause className="w-5 h-5 mr-2 fill-current" />
-                  Pause
-                </>
-              ) : (
-                <>
-                  <Play className="w-5 h-5 mr-2 fill-current" />
-                  Start
-                </>
-              )}
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={resetTimer}
-              className="h-12 w-12 rounded-xl shadow-sm hover:bg-white"
-            >
-              <RotateCcw className="w-5 h-5 text-muted-foreground" />
-            </Button>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+      {/* Tiny progress bar at the very bottom */}
+      <div className="absolute bottom-0 left-2 right-2 h-[2px] bg-muted rounded-full overflow-hidden">
+        <div 
+          className={cn("h-full transition-all duration-1000", MODE_CONFIG[mode].accent)} 
+          style={{ width: `${progress}%` }}
+        />
+      </div>
+    </div>
   );
 }
