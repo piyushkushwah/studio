@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useMemo } from "react";
@@ -10,6 +11,8 @@ import { PomodoroTimer } from "@/components/pomodoro-timer";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { 
   format, 
@@ -22,15 +25,27 @@ import {
   eachDayOfInterval, 
   isSameDay 
 } from "date-fns";
-import { ChevronLeft, ChevronRight, Plus, Calendar as CalendarIcon, CheckCircle2, BarChart2 } from "lucide-react";
+import { 
+  ChevronLeft, 
+  ChevronRight, 
+  Plus, 
+  Calendar as CalendarIcon, 
+  CheckCircle2, 
+  BarChart2,
+  Search,
+  FilterX
+} from "lucide-react";
 import { Task } from "@/lib/types";
+import { cn } from "@/lib/utils";
 
 export default function DailyTaskTrack() {
-  const { tasks, addTask, updateTask, deleteTask, toggleTask, isInitialized } = useTasks();
+  const { tasks, addTask, updateTask, deleteTask, toggleTask, labels, isInitialized } = useTasks();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [isTaskDialogOpen, setIsTaskDialogOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeLabelFilter, setActiveLabelFilter] = useState<string | null>(null);
 
   const days = useMemo(() => {
     const start = startOfWeek(startOfMonth(currentMonth));
@@ -39,10 +54,22 @@ export default function DailyTaskTrack() {
   }, [currentMonth]);
 
   const selectedDateStr = format(selectedDate, "yyyy-MM-dd");
+  
   const dailyTasks = useMemo(() => {
-    return tasks.filter((t) => t.dueDate === selectedDateStr)
-      .sort((a, b) => a.completed === b.completed ? 0 : a.completed ? 1 : -1);
-  }, [tasks, selectedDateStr]);
+    let filtered = tasks.filter((t) => t.dueDate === selectedDateStr);
+    
+    if (searchQuery) {
+      filtered = filtered.filter(t => 
+        t.description.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+    
+    if (activeLabelFilter) {
+      filtered = filtered.filter(t => t.label === activeLabelFilter);
+    }
+
+    return filtered.sort((a, b) => a.completed === b.completed ? 0 : a.completed ? 1 : -1);
+  }, [tasks, selectedDateStr, searchQuery, activeLabelFilter]);
 
   const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
   const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
@@ -131,7 +158,7 @@ export default function DailyTaskTrack() {
           <PomodoroTimer />
 
           <Card className="p-6 md:p-8 shadow-xl shadow-primary/5 min-h-[400px] md:min-h-[450px] flex flex-col bg-white border-white/40">
-            <div className="flex items-center justify-between mb-6 md:mb-8">
+            <div className="flex items-center justify-between mb-6">
               <div>
                 <h3 className="text-xl md:text-2xl font-bold text-primary">{format(selectedDate, "EEEE")}</h3>
                 <p className="text-xs md:text-sm text-muted-foreground font-medium">{format(selectedDate, "do MMMM, yyyy")}</p>
@@ -148,18 +175,60 @@ export default function DailyTaskTrack() {
               </Button>
             </div>
 
-            <ScrollArea className="flex-1 -mx-2 px-2 max-h-[500px]">
+            {/* Search and Filters */}
+            <div className="space-y-4 mb-8">
+              <div className="relative group">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                <Input 
+                  placeholder="Search daily tasks..." 
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9 h-10 bg-muted/30 border-none focus-visible:ring-1 focus-visible:ring-primary/20"
+                />
+              </div>
+              
+              <div className="flex flex-wrap gap-1.5">
+                <Button 
+                  variant={activeLabelFilter === null ? "default" : "outline"} 
+                  size="sm" 
+                  onClick={() => setActiveLabelFilter(null)}
+                  className="h-7 px-3 text-[10px] font-bold uppercase tracking-wider rounded-lg"
+                >
+                  All
+                </Button>
+                {labels.map(l => (
+                  <Button
+                    key={l.id}
+                    variant={activeLabelFilter === l.name ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setActiveLabelFilter(l.name === activeLabelFilter ? null : l.name)}
+                    className={cn(
+                      "h-7 px-3 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-all",
+                      activeLabelFilter === l.name ? l.color : "hover:border-primary/30"
+                    )}
+                  >
+                    {l.name}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            <ScrollArea className="flex-1 -mx-2 px-2 max-h-[400px]">
               <div className="space-y-4">
                 {dailyTasks.length === 0 ? (
-                  <div className="py-16 md:py-24 text-center flex flex-col items-center gap-4">
-                    <div className="w-12 h-12 md:w-16 md:h-16 bg-muted/50 rounded-full flex items-center justify-center text-muted-foreground/30">
-                      <Plus className="w-6 h-6 md:w-8 md:h-8" />
+                  <div className="py-12 md:py-16 text-center flex flex-col items-center gap-4">
+                    <div className="w-12 h-12 bg-muted/50 rounded-full flex items-center justify-center text-muted-foreground/30">
+                      {searchQuery || activeLabelFilter ? <FilterX className="w-6 h-6" /> : <Plus className="w-6 h-6" />}
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground font-semibold">No tasks for this day yet.</p>
-                      <Button variant="link" size="sm" onClick={() => setIsTaskDialogOpen(true)} className="mt-1">
-                        Create your first task
-                      </Button>
+                      <p className="text-sm text-muted-foreground font-semibold">
+                        {searchQuery || activeLabelFilter ? "No matching tasks found." : "No tasks for this day yet."}
+                      </p>
+                      {!searchQuery && !activeLabelFilter && (
+                        <Button variant="link" size="sm" onClick={() => setIsTaskDialogOpen(true)} className="mt-1">
+                          Create your first task
+                        </Button>
+                      )}
                     </div>
                   </div>
                 ) : (
@@ -177,14 +246,14 @@ export default function DailyTaskTrack() {
             </ScrollArea>
 
             {dailyTasks.length > 0 && (
-              <div className="mt-6 md:mt-8 pt-6 md:pt-8 border-t flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="mt-6 pt-6 border-t flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-5 h-5 text-accent" />
-                  <span className="text-sm md:text-base font-bold text-primary">
-                    {dailyTasks.filter(t => t.completed).length}/{dailyTasks.length} Completed
+                  <span className="text-sm font-bold text-primary">
+                    {dailyTasks.filter(t => t.completed).length}/{dailyTasks.length} Done
                   </span>
                 </div>
-                <div className="w-full sm:w-40 h-2 bg-muted rounded-full overflow-hidden shadow-inner">
+                <div className="w-full sm:w-32 h-2 bg-muted rounded-full overflow-hidden shadow-inner">
                   <div 
                     className="h-full bg-accent transition-all duration-700 ease-in-out"
                     style={{ 
