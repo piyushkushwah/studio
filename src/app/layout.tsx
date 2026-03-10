@@ -4,8 +4,8 @@ import { TaskProvider } from '@/components/task-provider';
 import { Toaster } from '@/components/ui/toaster';
 
 export const metadata: Metadata = {
-  title: 'DailyTaskTrack | Smart Task Management',
-  description: 'Organize your day with intelligence and style. DailyTaskTrack helps you visualize your progress through an interactive calendar and AI task parsing.',
+  title: 'DailyTaskTrack | Focus & Productivity',
+  description: 'Organize your day with clarity and style. DailyTaskTrack helps you visualize your progress through an interactive calendar and a professional Pomodoro timer.',
 };
 
 export default function RootLayout({
