@@ -10,8 +10,7 @@ import {
   RotateCcw, 
   Coffee, 
   Brain, 
-  Timer as TimerIcon,
-  Bell
+  Timer as TimerIcon
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
@@ -68,17 +67,9 @@ export function PomodoroTimer() {
       toast({
         title: mode === "work" ? "Time's up!" : "Break over!",
         description: mode === "work" ? "Time for a well-deserved break." : "Ready to focus again?",
-        action: (
-          <Button variant="outline" size="sm" onClick={() => switchMode(nextMode)}>
-            Switch to {MODE_CONFIG[nextMode].label}
-          </Button>
-        ),
       });
 
-      // Simple notification sound (optional)
-      if ("Notification" in window && Notification.permission === "granted") {
-        new Notification(mode === "work" ? "Work session finished!" : "Break finished!");
-      }
+      // Simple notification sound or browser notification could go here
     }
 
     return () => clearInterval(interval);
@@ -148,11 +139,6 @@ export function PomodoroTimer() {
             <Progress 
               value={progress} 
               className="h-2.5 bg-muted"
-              // Custom indicator color mapping
-              style={{ 
-                // @ts-ignore
-                "--progress-background": mode === 'work' ? 'hsl(var(--primary))' : mode === 'short' ? 'hsl(var(--accent))' : 'rgb(37, 99, 235)'
-              }}
             />
             <div className="flex justify-between text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
               <span>{MODE_CONFIG[mode].label}</span>
@@ -165,7 +151,7 @@ export function PomodoroTimer() {
               onClick={toggleTimer}
               className={cn(
                 "flex-1 h-12 rounded-xl text-lg font-bold shadow-md transition-all active:scale-95",
-                isActive ? "bg-white text-primary border-2 border-primary hover:bg-primary/5" : MODE_CONFIG[mode].accent
+                isActive ? "bg-white text-primary border-2 border-primary hover:bg-primary/5" : MODE_CONFIG[mode].accent + " text-white"
               )}
             >
               {isActive ? (
@@ -176,7 +162,7 @@ export function PomodoroTimer() {
               ) : (
                 <>
                   <Play className="w-5 h-5 mr-2 fill-current" />
-                  Focus
+                  Start
                 </>
               )}
             </Button>
