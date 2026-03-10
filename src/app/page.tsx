@@ -6,6 +6,7 @@ import { CalendarCell } from "@/components/calendar-cell";
 import { TaskItem } from "@/components/task-item";
 import { TaskDialog } from "@/components/task-dialog";
 import { LabelManager } from "@/components/label-manager";
+import { PomodoroTimer } from "@/components/pomodoro-timer";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card } from "@/components/ui/card";
@@ -88,44 +89,49 @@ export default function DailyTaskTrack() {
       </header>
 
       <main className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* Calendar Section - Sized down to 7/12 */}
-        <Card className="lg:col-span-7 p-8 shadow-xl shadow-primary/5 bg-white border-white/40">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-2xl font-bold text-primary">
-              {format(currentMonth, "MMMM yyyy")}
-            </h2>
-            <div className="flex gap-2">
-              <Button variant="outline" size="icon" onClick={prevMonth} className="h-9 w-9 bg-white/50">
-                <ChevronLeft className="w-4 h-4" />
-              </Button>
-              <Button variant="outline" size="icon" onClick={nextMonth} className="h-9 w-9 bg-white/50">
-                <ChevronRight className="w-4 h-4" />
-              </Button>
-            </div>
-          </div>
-
-          <div className="calendar-grid">
-            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-              <div key={day} className="text-center text-xs font-bold text-muted-foreground/60 py-2 uppercase tracking-widest">
-                {day}
+        {/* Calendar Section - Sized at 7/12 */}
+        <div className="lg:col-span-7 flex flex-col gap-6">
+          <Card className="p-8 shadow-xl shadow-primary/5 bg-white border-white/40">
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="text-2xl font-bold text-primary">
+                {format(currentMonth, "MMMM yyyy")}
+              </h2>
+              <div className="flex gap-2">
+                <Button variant="outline" size="icon" onClick={prevMonth} className="h-9 w-9 bg-white/50">
+                  <ChevronLeft className="w-4 h-4" />
+                </Button>
+                <Button variant="outline" size="icon" onClick={nextMonth} className="h-9 w-9 bg-white/50">
+                  <ChevronRight className="w-4 h-4" />
+                </Button>
               </div>
-            ))}
-            {days.map((day) => (
-              <CalendarCell
-                key={day.toISOString()}
-                date={day}
-                currentMonth={currentMonth}
-                isSelected={isSameDay(day, selectedDate)}
-                tasks={tasks}
-                onClick={() => setSelectedDate(day)}
-              />
-            ))}
-          </div>
-        </Card>
+            </div>
 
-        {/* Sidebar / Daily List Section - Increased to 5/12 */}
+            <div className="calendar-grid">
+              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+                <div key={day} className="text-center text-xs font-bold text-muted-foreground/60 py-2 uppercase tracking-widest">
+                  {day}
+                </div>
+              ))}
+              {days.map((day) => (
+                <CalendarCell
+                  key={day.toISOString()}
+                  date={day}
+                  currentMonth={currentMonth}
+                  isSelected={isSameDay(day, selectedDate)}
+                  tasks={tasks}
+                  onClick={() => setSelectedDate(day)}
+                />
+              ))}
+            </div>
+          </Card>
+        </div>
+
+        {/* Sidebar Section - Sized at 5/12 */}
         <div className="lg:col-span-5 flex flex-col gap-6">
-          <Card className="p-8 shadow-xl shadow-primary/5 min-h-[550px] flex flex-col bg-white border-white/40">
+          {/* Pomodoro Timer - New Integration */}
+          <PomodoroTimer />
+
+          <Card className="p-8 shadow-xl shadow-primary/5 min-h-[450px] flex flex-col bg-white border-white/40">
             <div className="flex items-center justify-between mb-8">
               <div>
                 <h3 className="text-2xl font-bold text-primary">{format(selectedDate, "EEEE")}</h3>
