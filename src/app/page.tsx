@@ -1,7 +1,6 @@
-
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useTasks } from "@/hooks/use-tasks";
 import { CalendarCell } from "@/components/calendar-cell";
 import { TaskItem } from "@/components/task-item";
@@ -23,7 +22,8 @@ import {
   startOfWeek, 
   endOfWeek, 
   eachDayOfInterval, 
-  isSameDay 
+  isSameDay,
+  getHours
 } from "date-fns";
 import { 
   ChevronLeft, 
@@ -33,9 +33,10 @@ import {
   CheckCircle2, 
   BarChart2,
   Search,
-  FilterX
+  FilterX,
+  Target
 } from "lucide-react";
-import { Task } from "@/lib/types";
+import { Task, Priority } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 export default function DailyTaskTrack() {
@@ -46,6 +47,14 @@ export default function DailyTaskTrack() {
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeLabelFilter, setActiveLabelFilter] = useState<string | null>(null);
+  const [greeting, setGreeting] = useState("Hello");
+
+  useEffect(() => {
+    const hour = getHours(new Date());
+    if (hour < 12) setGreeting("Good Morning");
+    else if (hour < 17) setGreeting("Good Afternoon");
+    else setGreeting("Good Evening");
+  }, []);
 
   const days = useMemo(() => {
     const start = startOfWeek(startOfMonth(currentMonth));
@@ -68,13 +77,21 @@ export default function DailyTaskTrack() {
       filtered = filtered.filter(t => t.label === activeLabelFilter);
     }
 
-    return filtered.sort((a, b) => a.completed === b.completed ? 0 : a.completed ? 1 : -1);
+    // Sort: Priority (High > Med > Low) then Completion
+    const priorityWeight = { high: 3, medium: 2, low: 1 };
+    
+    return filtered.sort((a, b) => {
+      if (a.completed !== b.completed) return a.completed ? 1 : -1;
+      const weightA = priorityWeight[a.priority || 'medium'];
+      const weightB = priorityWeight[b.priority || 'medium'];
+      return weightB - weightA;
+    });
   }, [tasks, selectedDateStr, searchQuery, activeLabelFilter]);
 
   const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
   const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
 
-  const handleTaskSubmit = (taskData: { description: string; dueDate: string; label?: string }) => {
+  const handleTaskSubmit = (taskData: { description: string; dueDate: string; label?: string; priority?: Priority }) => {
     if (editingTask) {
       updateTask(editingTask.id, taskData);
     } else {
@@ -101,8 +118,8 @@ export default function DailyTaskTrack() {
             <CalendarIcon className="w-6 h-6" />
           </div>
           <div>
-            <h1 className="text-xl md:text-2xl font-bold tracking-tight text-primary">DailyTaskTrack</h1>
-            <p className="text-xs md:text-sm text-muted-foreground font-medium">Focused planning for a clearer day</p>
+            <h1 className="text-xl md:text-2xl font-bold tracking-tight text-primary">{greeting}</h1>
+            <p className="text-xs md:text-sm text-muted-foreground font-medium">Ready for another productive day?</p>
           </div>
         </div>
         <div className="flex items-center gap-3">
@@ -159,9 +176,16 @@ export default function DailyTaskTrack() {
 
           <Card className="p-6 md:p-8 shadow-xl shadow-primary/5 min-h-[400px] md:min-h-[450px] flex flex-col bg-white border-white/40">
             <div className="flex items-center justify-between mb-6">
-              <div>
-                <h3 className="text-xl md:text-2xl font-bold text-primary">{format(selectedDate, "EEEE")}</h3>
-                <p className="text-xs md:text-sm text-muted-foreground font-medium">{format(selectedDate, "do MMMM, yyyy")}</p>
+              <div className="flex items-center gap-3">
+                <div className="flex flex-col">
+                  <h3 className="text-xl md:text-2xl font-bold text-primary">{format(selectedDate, "EEEE")}</h3>
+                  <p className="text-xs md:text-sm text-muted-foreground font-medium">{format(selectedDate, "do MMM")}</p>
+                </div>
+                {dailyTasks.some(t => !t.completed && t.priority === 'high') && (
+                  <Badge variant="destructive" className="animate-pulse h-6 px-2 text-[10px] font-bold uppercase">
+                    High Priority
+                  </Badge>
+                )}
               </div>
               <Button 
                 onClick={() => {
@@ -180,7 +204,7 @@ export default function DailyTaskTrack() {
               <div className="relative group">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
                 <Input 
-                  placeholder="Search daily tasks..." 
+                  placeholder="Find a task..." 
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-9 h-10 bg-muted/30 border-none focus-visible:ring-1 focus-visible:ring-primary/20"
@@ -218,17 +242,12 @@ export default function DailyTaskTrack() {
                 {dailyTasks.length === 0 ? (
                   <div className="py-12 md:py-16 text-center flex flex-col items-center gap-4">
                     <div className="w-12 h-12 bg-muted/50 rounded-full flex items-center justify-center text-muted-foreground/30">
-                      {searchQuery || activeLabelFilter ? <FilterX className="w-6 h-6" /> : <Plus className="w-6 h-6" />}
+                      {searchQuery || activeLabelFilter ? <FilterX className="w-6 h-6" /> : <Target className="w-6 h-6" />}
                     </div>
                     <div>
                       <p className="text-sm text-muted-foreground font-semibold">
-                        {searchQuery || activeLabelFilter ? "No matching tasks found." : "No tasks for this day yet."}
+                        {searchQuery || activeLabelFilter ? "No matches." : "Nothing scheduled."}
                       </p>
-                      {!searchQuery && !activeLabelFilter && (
-                        <Button variant="link" size="sm" onClick={() => setIsTaskDialogOpen(true)} className="mt-1">
-                          Create your first task
-                        </Button>
-                      )}
                     </div>
                   </div>
                 ) : (

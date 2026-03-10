@@ -4,7 +4,7 @@ import { Task } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { Trash2, Pencil } from "lucide-react";
+import { Trash2, Pencil, AlertCircle, Flag } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTasks } from "@/hooks/use-tasks";
 
@@ -22,10 +22,19 @@ export function TaskItem({ task, onToggle, onDelete, onEdit }: TaskItemProps) {
   const labelObj = labels.find(l => l.name.toLowerCase() === task.label?.toLowerCase());
   const labelColor = labelObj?.color || "bg-slate-500 text-white hover:bg-slate-600";
 
+  const priorityConfig = {
+    low: { icon: null, class: "text-muted-foreground/60" },
+    medium: { icon: Flag, class: "text-blue-500" },
+    high: { icon: AlertCircle, class: "text-destructive animate-pulse-slow" },
+  };
+
+  const PriorityIcon = task.priority ? priorityConfig[task.priority].icon : null;
+
   return (
     <div className={cn(
       "group flex items-start sm:items-center gap-3 md:gap-4 p-3 md:p-4 rounded-xl border bg-white transition-all hover:shadow-md hover:border-primary/20",
-      task.completed && "bg-white/40 border-accent/20 opacity-80"
+      task.completed && "bg-white/40 border-accent/20 opacity-80",
+      !task.completed && task.priority === 'high' && "border-destructive/30 shadow-sm shadow-destructive/5"
     )}>
       <Checkbox
         checked={task.completed}
@@ -35,12 +44,18 @@ export function TaskItem({ task, onToggle, onDelete, onEdit }: TaskItemProps) {
       
       <div className="flex-1 min-w-0">
         <div className="flex flex-col gap-1.5">
-          <p className={cn(
-            "text-sm md:text-base font-semibold transition-all break-words leading-tight",
-            task.completed ? "text-muted-foreground line-through" : "text-primary"
-          )}>
-            {task.description}
-          </p>
+          <div className="flex items-center gap-2">
+            {PriorityIcon && !task.completed && (
+              <PriorityIcon className={cn("w-4 h-4 shrink-0", priorityConfig[task.priority!].class)} />
+            )}
+            <p className={cn(
+              "text-sm md:text-base font-semibold transition-all break-words leading-tight",
+              task.completed ? "text-muted-foreground line-through" : "text-primary",
+              !task.completed && task.priority === 'high' && "text-destructive"
+            )}>
+              {task.description}
+            </p>
+          </div>
           {task.label && (
             <div className="flex">
               <Badge variant="secondary" className={cn("text-[8px] md:text-[10px] h-4 md:h-5 px-1.5 md:px-2 uppercase font-bold tracking-wider shadow-sm", labelColor)}>

@@ -1,3 +1,5 @@
+export type Priority = 'low' | 'medium' | 'high';
+
 export interface Label {
   id: string;
   name: string;
@@ -11,6 +13,7 @@ export interface Task {
   completed: boolean;
   createdAt: number;
   label?: string; // The name of the label
+  priority?: Priority;
 }
 
 export interface TaskStore {

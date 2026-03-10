@@ -18,15 +18,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Task } from "@/lib/types";
+import { Task, Priority } from "@/lib/types";
 import { format } from "date-fns";
 import { useTasks } from "@/hooks/use-tasks";
 import { cn } from "@/lib/utils";
+import { AlertCircle, Flag } from "lucide-react";
 
 interface TaskDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (task: { description: string; dueDate: string; label?: string }) => void;
+  onSubmit: (task: { description: string; dueDate: string; label?: string; priority?: Priority }) => void;
   initialTask?: Task | null;
   defaultDate?: string;
 }
@@ -42,15 +43,18 @@ export function TaskDialog({
   const [description, setDescription] = useState("");
   const [dueDate, setDueDate] = useState(defaultDate || format(new Date(), "yyyy-MM-dd"));
   const [label, setLabel] = useState<string>("other");
+  const [priority, setPriority] = useState<Priority>("medium");
 
   useEffect(() => {
     if (initialTask) {
       setDescription(initialTask.description);
       setDueDate(initialTask.dueDate);
       setLabel(initialTask.label || "other");
+      setPriority(initialTask.priority || "medium");
     } else {
       setDescription("");
       setLabel("other");
+      setPriority("medium");
       if (defaultDate) setDueDate(defaultDate);
     }
   }, [initialTask, defaultDate, open]);
@@ -58,7 +62,7 @@ export function TaskDialog({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!description.trim() || !dueDate) return;
-    onSubmit({ description, dueDate, label });
+    onSubmit({ description, dueDate, label, priority });
     onOpenChange(false);
   };
 
@@ -79,6 +83,7 @@ export function TaskDialog({
               autoFocus
             />
           </div>
+          
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <UILabel htmlFor="date">Date</UILabel>
@@ -90,24 +95,54 @@ export function TaskDialog({
               />
             </div>
             <div className="space-y-2">
-              <UILabel htmlFor="label">Label</UILabel>
-              <Select value={label} onValueChange={setLabel}>
-                <SelectTrigger id="label">
-                  <SelectValue placeholder="Select label" />
+              <UILabel htmlFor="priority">Priority</UILabel>
+              <Select value={priority} onValueChange={(val) => setPriority(val as Priority)}>
+                <SelectTrigger id="priority">
+                  <SelectValue placeholder="Priority" />
                 </SelectTrigger>
                 <SelectContent>
-                  {labels.map((l) => (
-                    <SelectItem key={l.id} value={l.name}>
-                      <div className="flex items-center gap-2">
-                        <div className={cn("w-2 h-2 rounded-full", l.color.split(' ')[0])} />
-                        {l.name}
-                      </div>
-                    </SelectItem>
-                  ))}
+                  <SelectItem value="low">
+                    <div className="flex items-center gap-2">
+                      <Flag className="w-3 h-3 text-slate-400" />
+                      <span>Low</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="medium">
+                    <div className="flex items-center gap-2">
+                      <Flag className="w-3 h-3 text-blue-500" />
+                      <span>Medium</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="high">
+                    <div className="flex items-center gap-2 text-destructive font-semibold">
+                      <AlertCircle className="w-3 h-3" />
+                      <span>High</span>
+                    </div>
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
+
+          <div className="space-y-2">
+            <UILabel htmlFor="label">Label</UILabel>
+            <Select value={label} onValueChange={setLabel}>
+              <SelectTrigger id="label">
+                <SelectValue placeholder="Select label" />
+              </SelectTrigger>
+              <SelectContent>
+                {labels.map((l) => (
+                  <SelectItem key={l.id} value={l.name}>
+                    <div className="flex items-center gap-2">
+                      <div className={cn("w-2 h-2 rounded-full", l.color.split(' ')[0])} />
+                      {l.name}
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
           <DialogFooter className="pt-4">
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
               Cancel
