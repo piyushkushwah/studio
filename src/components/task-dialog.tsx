@@ -11,6 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label as UILabel } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -22,12 +23,12 @@ import { Task, Priority } from "@/lib/types";
 import { format } from "date-fns";
 import { useTasks } from "@/hooks/use-tasks";
 import { cn } from "@/lib/utils";
-import { AlertCircle, Flag } from "lucide-react";
+import { AlertCircle, Flag, AlignLeft } from "lucide-react";
 
 interface TaskDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (task: { description: string; dueDate: string; label?: string; priority?: Priority }) => void;
+  onSubmit: (task: { description: string; notes?: string; dueDate: string; label?: string; priority?: Priority }) => void;
   initialTask?: Task | null;
   defaultDate?: string;
 }
@@ -41,6 +42,7 @@ export function TaskDialog({
 }: TaskDialogProps) {
   const { labels } = useTasks();
   const [description, setDescription] = useState("");
+  const [notes, setNotes] = useState("");
   const [dueDate, setDueDate] = useState(defaultDate || format(new Date(), "yyyy-MM-dd"));
   const [label, setLabel] = useState<string>("other");
   const [priority, setPriority] = useState<Priority>("medium");
@@ -48,11 +50,13 @@ export function TaskDialog({
   useEffect(() => {
     if (initialTask) {
       setDescription(initialTask.description);
+      setNotes(initialTask.notes || "");
       setDueDate(initialTask.dueDate);
       setLabel(initialTask.label || "other");
       setPriority(initialTask.priority || "medium");
     } else {
       setDescription("");
+      setNotes("");
       setLabel("other");
       setPriority("medium");
       if (defaultDate) setDueDate(defaultDate);
@@ -62,7 +66,7 @@ export function TaskDialog({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!description.trim() || !dueDate) return;
-    onSubmit({ description, dueDate, label, priority });
+    onSubmit({ description, notes, dueDate, label, priority });
     onOpenChange(false);
   };
 
@@ -81,6 +85,20 @@ export function TaskDialog({
               onChange={(e) => setDescription(e.target.value)}
               placeholder="What needs to be done?"
               autoFocus
+            />
+          </div>
+
+          <div className="space-y-2">
+            <UILabel htmlFor="notes" className="flex items-center gap-2">
+              <AlignLeft className="w-3.5 h-3.5" />
+              Notes (Optional)
+            </UILabel>
+            <Textarea
+              id="notes"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Add details, links, or sub-tasks..."
+              className="resize-none h-24"
             />
           </div>
           

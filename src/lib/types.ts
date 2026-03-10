@@ -9,6 +9,7 @@ export interface Label {
 export interface Task {
   id: string;
   description: string;
+  notes?: string;
   dueDate: string; // YYYY-MM-DD
   completed: boolean;
   createdAt: number;

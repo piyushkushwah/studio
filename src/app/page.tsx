@@ -34,7 +34,8 @@ import {
   BarChart2,
   Search,
   FilterX,
-  Target
+  Target,
+  Trash2
 } from "lucide-react";
 import { Task, Priority } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -77,7 +78,6 @@ export default function DailyTaskTrack() {
       filtered = filtered.filter(t => t.label === activeLabelFilter);
     }
 
-    // Sort: Priority (High > Med > Low) then Completion
     const priorityWeight = { high: 3, medium: 2, low: 1 };
     
     return filtered.sort((a, b) => {
@@ -91,7 +91,7 @@ export default function DailyTaskTrack() {
   const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
   const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
 
-  const handleTaskSubmit = (taskData: { description: string; dueDate: string; label?: string; priority?: Priority }) => {
+  const handleTaskSubmit = (taskData: { description: string; notes?: string; dueDate: string; label?: string; priority?: Priority }) => {
     if (editingTask) {
       updateTask(editingTask.id, taskData);
     } else {
@@ -107,6 +107,14 @@ export default function DailyTaskTrack() {
     setEditingTask(task);
     setIsTaskDialogOpen(true);
   };
+
+  const clearCompleted = () => {
+    dailyTasks.filter(t => t.completed).forEach(t => deleteTask(t.id));
+  };
+
+  const completionRate = dailyTasks.length > 0 
+    ? (dailyTasks.filter(t => t.completed).length / dailyTasks.length) * 100 
+    : 0;
 
   if (!isInitialized) return null;
 
@@ -177,15 +185,35 @@ export default function DailyTaskTrack() {
           <Card className="p-6 md:p-8 shadow-xl shadow-primary/5 min-h-[400px] md:min-h-[450px] flex flex-col bg-white border-white/40">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
+                <div className="relative flex items-center justify-center shrink-0">
+                  <svg className="w-12 h-12 transform -rotate-90">
+                    <circle
+                      cx="24"
+                      cy="24"
+                      r="20"
+                      stroke="currentColor"
+                      strokeWidth="3"
+                      fill="transparent"
+                      className="text-muted"
+                    />
+                    <circle
+                      cx="24"
+                      cy="24"
+                      r="20"
+                      stroke="currentColor"
+                      strokeWidth="3"
+                      fill="transparent"
+                      strokeDasharray={126}
+                      strokeDashoffset={126 - (126 * completionRate) / 100}
+                      className="text-accent transition-all duration-700 ease-in-out"
+                    />
+                  </svg>
+                  <span className="absolute text-[10px] font-bold text-primary">{Math.round(completionRate)}%</span>
+                </div>
                 <div className="flex flex-col">
                   <h3 className="text-xl md:text-2xl font-bold text-primary">{format(selectedDate, "EEEE")}</h3>
                   <p className="text-xs md:text-sm text-muted-foreground font-medium">{format(selectedDate, "do MMM")}</p>
                 </div>
-                {dailyTasks.some(t => !t.completed && t.priority === 'high') && (
-                  <Badge variant="destructive" className="animate-pulse h-6 px-2 text-[10px] font-bold uppercase">
-                    High Priority
-                  </Badge>
-                )}
               </div>
               <Button 
                 onClick={() => {
@@ -272,14 +300,17 @@ export default function DailyTaskTrack() {
                     {dailyTasks.filter(t => t.completed).length}/{dailyTasks.length} Done
                   </span>
                 </div>
-                <div className="w-full sm:w-32 h-2 bg-muted rounded-full overflow-hidden shadow-inner">
-                  <div 
-                    className="h-full bg-accent transition-all duration-700 ease-in-out"
-                    style={{ 
-                      width: `${(dailyTasks.filter(t => t.completed).length / dailyTasks.length) * 100}%` 
-                    }}
-                  />
-                </div>
+                {dailyTasks.some(t => t.completed) && (
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={clearCompleted}
+                    className="text-muted-foreground hover:text-destructive h-8 px-2"
+                  >
+                    <Trash2 className="w-3.5 h-3.5 mr-2" />
+                    Clear Completed
+                  </Button>
+                )}
               </div>
             )}
           </Card>
