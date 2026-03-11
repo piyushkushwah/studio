@@ -8,6 +8,7 @@ import { TaskDialog } from "@/components/task-dialog";
 import { LabelManager } from "@/components/label-manager";
 import { PomodoroTimer } from "@/components/pomodoro-timer";
 import { AppTour } from "@/components/app-tour";
+import { SmartTaskInput } from "@/components/smart-task-input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card } from "@/components/ui/card";
@@ -37,7 +38,8 @@ import {
   Trash2,
   Clock,
   Quote,
-  HelpCircle
+  HelpCircle,
+  Trophy
 } from "lucide-react";
 import { Task, Priority } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -45,7 +47,7 @@ import Link from "next/link";
 import { getDailyQuote } from "@/lib/quotes";
 
 export default function DailyTaskTrack() {
-  const { tasks, addTask, updateTask, deleteTask, toggleTask, labels, isInitialized } = useTasks();
+  const { tasks, addTask, updateTask, deleteTask, toggleTask, labels, isInitialized, dailyGoals, setDailyGoal } = useTasks();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [isTaskDialogOpen, setIsTaskDialogOpen] = useState(false);
@@ -95,6 +97,9 @@ export default function DailyTaskTrack() {
     });
   }, [tasks, selectedDateStr, searchQuery, activeLabelFilter]);
 
+  const dailyGoalValue = dailyGoals[selectedDateStr] || 0;
+  const completedCount = dailyTasks.filter(t => t.completed).length;
+
   const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
   const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
 
@@ -110,6 +115,16 @@ export default function DailyTaskTrack() {
     setEditingTask(null);
   };
 
+  const handleSmartTaskParsed = (parsedTask: { description: string; dueDate?: string }) => {
+    addTask({
+      description: parsedTask.description,
+      dueDate: parsedTask.dueDate || selectedDateStr,
+      completed: false,
+      priority: 'medium',
+      label: 'other'
+    });
+  };
+
   const handleEdit = (task: Task) => {
     setEditingTask(task);
     setIsTaskDialogOpen(true);
@@ -120,7 +135,7 @@ export default function DailyTaskTrack() {
   };
 
   const completionRate = dailyTasks.length > 0 
-    ? (dailyTasks.filter(t => t.completed).length / dailyTasks.length) * 100 
+    ? (completedCount / dailyTasks.length) * 100 
     : 0;
 
   if (!isInitialized) return null;
@@ -255,8 +270,33 @@ export default function DailyTaskTrack() {
               </Button>
             </div>
 
-            {/* Search and Filters */}
+            {/* AI Smart Input */}
+            <div className="mb-6">
+              <SmartTaskInput onTaskParsed={handleSmartTaskParsed} />
+            </div>
+
+            {/* Daily Goal & Search */}
             <div className="space-y-5 mb-8">
+              <div className="flex items-center gap-4 p-4 bg-primary/5 rounded-2xl border border-primary/10">
+                <div className="p-2 bg-white rounded-lg shadow-sm">
+                  <Trophy className="w-4 h-4 text-primary" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-primary/60">Daily Focus Goal</p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-bold">{completedCount} / {dailyGoalValue || 0} tasks</span>
+                    <Input 
+                      type="number" 
+                      min="0" 
+                      max="20"
+                      value={dailyGoalValue}
+                      onChange={(e) => setDailyGoal(selectedDateStr, parseInt(e.target.value) || 0)}
+                      className="w-16 h-8 text-xs font-bold text-center border-none bg-white shadow-sm rounded-lg"
+                    />
+                  </div>
+                </div>
+              </div>
+
               <div className="relative group">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
                 <Input 
@@ -293,7 +333,7 @@ export default function DailyTaskTrack() {
               </div>
             </div>
 
-            <ScrollArea className="flex-1 -mx-2 px-2 max-h-[450px]">
+            <ScrollArea className="flex-1 -mx-2 px-2 max-h-[400px]">
               <div className="space-y-4">
                 {dailyTasks.length === 0 ? (
                   <div className="py-16 text-center flex flex-col items-center gap-5">
@@ -327,7 +367,7 @@ export default function DailyTaskTrack() {
                     <CheckCircle2 className="w-5 h-5 text-accent" />
                   </div>
                   <span className="text-sm font-black text-primary tracking-tight">
-                    {dailyTasks.filter(t => t.completed).length} OF {dailyTasks.length} COMPLETED
+                    {completedCount} OF {dailyTasks.length} COMPLETED
                   </span>
                 </div>
                 {dailyTasks.some(t => t.completed) && (

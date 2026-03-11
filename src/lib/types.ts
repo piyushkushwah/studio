@@ -26,10 +26,16 @@ export interface Task {
   priority?: Priority;
 }
 
+export interface DailyGoal {
+  date: string; // YYYY-MM-DD
+  targetTasks: number;
+}
+
 export interface TaskContextType {
   tasks: Task[];
   labels: Label[];
   sessions: Session[];
+  dailyGoals: Record<string, number>;
   addTask: (taskData: Omit<Task, 'id' | 'createdAt'>) => void;
   updateTask: (id: string, updates: Partial<Task>) => void;
   deleteTask: (id: string) => void;
@@ -39,5 +45,6 @@ export interface TaskContextType {
   addSession: (duration: number, type: 'work' | 'short' | 'manual', note?: string, date?: string) => void;
   updateSession: (id: string, updates: Partial<Session>) => void;
   deleteSession: (id: string) => void;
+  setDailyGoal: (date: string, target: number) => void;
   isInitialized: boolean;
 }

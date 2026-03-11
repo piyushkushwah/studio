@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Task, Label, Session, TaskContextType } from '@/lib/types';
-import { format, parseISO } from 'date-fns';
+import { format } from 'date-fns';
 
 const DEFAULT_LABELS: Label[] = [
   { id: '1', name: 'work', color: 'bg-blue-600 text-white hover:bg-blue-700' },
@@ -18,12 +18,14 @@ export function TaskProvider({ children }: { children: ReactNode }) {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [labels, setLabels] = useState<Label[]>(DEFAULT_LABELS);
   const [sessions, setSessions] = useState<Session[]>([]);
+  const [dailyGoals, setDailyGoals] = useState<Record<string, number>>({});
   const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
     const savedTasks = localStorage.getItem('daily_task_track_tasks');
     const savedLabels = localStorage.getItem('daily_task_track_labels');
     const savedSessions = localStorage.getItem('daily_task_track_sessions');
+    const savedGoals = localStorage.getItem('daily_task_track_goals');
     
     if (savedTasks) {
       try {
@@ -48,6 +50,14 @@ export function TaskProvider({ children }: { children: ReactNode }) {
         console.error("Failed to parse sessions", e);
       }
     }
+
+    if (savedGoals) {
+      try {
+        setDailyGoals(JSON.parse(savedGoals));
+      } catch (e) {
+        console.error("Failed to parse goals", e);
+      }
+    }
     
     setIsInitialized(true);
   }, []);
@@ -57,8 +67,9 @@ export function TaskProvider({ children }: { children: ReactNode }) {
       localStorage.setItem('daily_task_track_tasks', JSON.stringify(tasks));
       localStorage.setItem('daily_task_track_labels', JSON.stringify(labels));
       localStorage.setItem('daily_task_track_sessions', JSON.stringify(sessions));
+      localStorage.setItem('daily_task_track_goals', JSON.stringify(dailyGoals));
     }
-  }, [tasks, labels, sessions, isInitialized]);
+  }, [tasks, labels, sessions, dailyGoals, isInitialized]);
 
   const addTask = (taskData: Omit<Task, 'id' | 'createdAt'>) => {
     const newTask: Task = {
@@ -122,11 +133,19 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     setSessions(prev => prev.filter(s => s.id !== id));
   };
 
+  const setDailyGoal = (date: string, target: number) => {
+    setDailyGoals(prev => ({
+      ...prev,
+      [date]: target
+    }));
+  };
+
   return (
     <TaskContext.Provider value={{ 
       tasks, 
       labels, 
       sessions,
+      dailyGoals,
       addTask, 
       updateTask, 
       deleteTask, 
@@ -136,6 +155,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
       addSession,
       updateSession,
       deleteSession,
+      setDailyGoal,
       isInitialized 
     }}>
       {children}

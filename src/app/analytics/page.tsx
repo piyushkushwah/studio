@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { useTasks } from "@/hooks/use-tasks";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
+import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts";
 import { 
   ChartContainer, 
   ChartTooltip, 
@@ -12,12 +12,13 @@ import {
   ChartLegend, 
   ChartLegendContent 
 } from "@/components/ui/chart";
-import { ArrowLeft, PieChart as PieChartIcon, Info, Download, FileSpreadsheet } from "lucide-react";
+import { ArrowLeft, PieChart as PieChartIcon, Info, Download, FileSpreadsheet, Zap, Flame, Calendar as CalendarIcon } from "lucide-react";
 import Link from "next/link";
-import { subDays, format, eachDayOfInterval } from "date-fns";
+import { subDays, format, eachDayOfInterval, isSameDay, startOfMonth, endOfMonth } from "date-fns";
+import { cn } from "@/lib/utils";
 
 export default function AnalyticsPage() {
-  const { tasks, labels, isInitialized } = useTasks();
+  const { tasks, labels, isInitialized, sessions } = useTasks();
 
   const chartConfig = useMemo(() => {
     const config: any = {};
@@ -66,6 +67,32 @@ export default function AnalyticsPage() {
       };
     });
   }, [tasks]);
+
+  const heatmapData = useMemo(() => {
+    const days = eachDayOfInterval({
+      start: subDays(new Date(), 27), // Last 4 weeks
+      end: new Date(),
+    });
+
+    return days.map(day => {
+      const dateStr = format(day, "yyyy-MM-dd");
+      const completed = tasks.filter(t => t.dueDate === dateStr && t.completed).length;
+      return { date: dateStr, count: completed };
+    });
+  }, [tasks]);
+
+  const peakFocusHour = useMemo(() => {
+    if (!sessions.length) return "N/A";
+    const hourCounts: Record<number, number> = {};
+    sessions.forEach(s => {
+      const hour = new Date(s.startTime).getHours();
+      hourCounts[hour] = (hourCounts[hour] || 0) + s.durationMinutes;
+    });
+    const peakHour = Object.entries(hourCounts).sort((a, b) => b[1] - a[1])[0];
+    if (!peakHour) return "N/A";
+    const h = parseInt(peakHour[0]);
+    return `${h % 12 || 12}${h >= 12 ? 'PM' : 'AM'}`;
+  }, [sessions]);
 
   const stats = useMemo(() => {
     const total = tasks.length;
@@ -141,19 +168,11 @@ export default function AnalyticsPage() {
       </header>
 
       <main className="w-full max-w-5xl space-y-6">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card className="shadow-sm border-white/40 bg-white/50 backdrop-blur-sm">
             <CardHeader className="pb-2">
               <CardDescription className="font-medium">Total Lifetime</CardDescription>
               <CardTitle className="text-2xl font-bold text-primary">{stats.total}</CardTitle>
-            </CardHeader>
-          </Card>
-          <Card className="shadow-sm border-white/40 bg-white/50 backdrop-blur-sm">
-            <CardHeader className="pb-2">
-              <CardDescription className="font-medium">Completed</CardDescription>
-              <CardTitle className="text-2xl font-bold text-accent">
-                {stats.completed}
-              </CardTitle>
             </CardHeader>
           </Card>
           <Card className="shadow-sm border-white/40 bg-white/50 backdrop-blur-sm">
@@ -164,7 +183,54 @@ export default function AnalyticsPage() {
               </CardTitle>
             </CardHeader>
           </Card>
+          <Card className="shadow-sm border-white/40 bg-white/50 backdrop-blur-sm">
+            <CardHeader className="pb-2">
+              <CardDescription className="font-medium flex items-center gap-1">
+                <Flame className="w-3 h-3 text-orange-500" />
+                Peak Focus Hour
+              </CardDescription>
+              <CardTitle className="text-2xl font-bold text-orange-600">
+                {peakFocusHour}
+              </CardTitle>
+            </CardHeader>
+          </Card>
+          <Card className="shadow-sm border-white/40 bg-white/50 backdrop-blur-sm">
+            <CardHeader className="pb-2">
+              <CardDescription className="font-medium">Completed</CardDescription>
+              <CardTitle className="text-2xl font-bold text-accent">
+                {stats.completed}
+              </CardTitle>
+            </CardHeader>
+          </Card>
         </div>
+
+        {/* Consistency Heatmap */}
+        <Card className="shadow-xl shadow-primary/5 border-white/40 bg-white/50 backdrop-blur-sm">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <CalendarIcon className="w-4 h-4 text-primary" />
+              <CardTitle className="text-lg">Productivity Heatmap</CardTitle>
+            </div>
+            <CardDescription>Daily task completion consistency (last 28 days)</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-1.5 justify-center sm:justify-start">
+              {heatmapData.map((day, i) => (
+                <div 
+                  key={i}
+                  title={`${day.date}: ${day.count} tasks`}
+                  className={cn(
+                    "w-6 h-6 rounded-sm transition-colors",
+                    day.count === 0 ? "bg-muted/30" :
+                    day.count < 2 ? "bg-accent/20" :
+                    day.count < 4 ? "bg-accent/50" :
+                    "bg-accent"
+                  )}
+                />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Label Distribution */}
