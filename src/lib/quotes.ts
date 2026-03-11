@@ -1,19 +1,24 @@
 export const MOTIVATIONAL_QUOTES = [
+  "25 minutes of pure focus can change your entire day. Trust the timer.",
+  "A checkmark on your list is a win for your future self.",
+  "Your streak is more than a number; it's a habit of excellence.",
+  "The calendar doesn't lie. Make today a masterpiece.",
+  "High priority tasks deserve your highest energy.",
+  "Clear your mind, clear your list.",
+  "Focus is a choice. Choose to be productive today.",
+  "Small tasks are the building blocks of great achievements.",
+  "Don't just track time—make time count.",
+  "Your future is written in your daily task list.",
+  "Consistency beats intensity every single time.",
+  "The best way to finish is to simply start the next Pomodoro.",
+  "Labels help organize your world. Focus helps you conquer it.",
+  "Every task completed is a step closer to your dream.",
+  "Focus on progress, not perfection.",
   "Action is the foundational key to all success.",
-  "Your only limit is your mind.",
-  "Don't stop until you're proud.",
-  "Focus on being productive instead of busy.",
-  "The secret of getting ahead is getting started.",
-  "It always seems impossible until it's done.",
-  "Discipline is choosing between what you want now and what you want most.",
-  "The way to get started is to quit talking and begin doing.",
-  "Efficiency is doing things right; effectiveness is doing the right things.",
-  "Your future is created by what you do today, not tomorrow.",
-  "Productivity is never an accident. It is always the result of a commitment to excellence.",
-  "Amateurs sit and wait for inspiration, the rest of us just get up and go to work.",
-  "The most effective way to do it, is to do it.",
-  "Either you run the day or the day runs you.",
-  "Done is better than perfect."
+  "Deep work is the superpower of the 21st century.",
+  "Manage your energy, not just your time.",
+  "Big goals are just a series of small, well-executed tasks.",
+  "Productivity is never an accident; it is a commitment to excellence."
 ];
 
 export function getDailyQuote() {
