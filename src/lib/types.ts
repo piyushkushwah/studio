@@ -36,6 +36,7 @@ export interface TaskContextType {
   labels: Label[];
   sessions: Session[];
   dailyGoals: Record<string, number>;
+  streak: number;
   addTask: (taskData: Omit<Task, 'id' | 'createdAt'>) => void;
   updateTask: (id: string, updates: Partial<Task>) => void;
   deleteTask: (id: string) => void;

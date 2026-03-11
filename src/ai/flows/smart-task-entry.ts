@@ -65,15 +65,19 @@ const taskPrompt = ai.definePrompt({
     ],
   },
   prompt: `
-    You are a task management assistant. Extract a clear task description and an optional due date from the user's input.
+    You are a professional task management assistant. Your goal is to convert messy, natural language user input into a clean task object.
+
+    CONTEXT:
     Today's date is: {{{currentDate}}}
-    User Input: {{{naturalLanguageTask}}}
+
+    INPUT:
+    "{{{naturalLanguageTask}}}"
     
-    Instructions:
-    1. Resolve relative dates like "tomorrow", "next Monday", "Friday", or "next week" relative to today's date.
-    2. If no specific date or relative time is mentioned, set dueDate to null.
-    3. Keep the description professional, concise, and focused on the action.
-    4. Ensure the output is strictly valid JSON according to the schema.
+    INSTRUCTIONS:
+    1. Resolve all relative dates (e.g., "tomorrow", "next Wed", "in two days") based on the current date provided.
+    2. If no time/date is mentioned, set 'dueDate' to null.
+    3. Ensure the description is action-oriented and clear. Remove filler words like "I need to", "Could you", etc.
+    4. Provide the output as a clean JSON object matching the schema.
   `,
 });
 

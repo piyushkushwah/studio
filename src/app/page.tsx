@@ -39,15 +39,18 @@ import {
   Clock,
   Quote,
   HelpCircle,
-  Trophy
+  Trophy,
+  Flame,
+  Star
 } from "lucide-react";
 import { Task, Priority } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { getDailyQuote } from "@/lib/quotes";
+import { useToast } from "@/hooks/use-toast";
 
 export default function DailyTaskTrack() {
-  const { tasks, addTask, updateTask, deleteTask, toggleTask, labels, isInitialized, dailyGoals, setDailyGoal } = useTasks();
+  const { tasks, addTask, updateTask, deleteTask, toggleTask, labels, isInitialized, dailyGoals, setDailyGoal, streak } = useTasks();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [isTaskDialogOpen, setIsTaskDialogOpen] = useState(false);
@@ -56,6 +59,7 @@ export default function DailyTaskTrack() {
   const [activeLabelFilter, setActiveLabelFilter] = useState<string | null>(null);
   const [greeting, setGreeting] = useState("Hello");
   const [quote, setQuote] = useState("");
+  const { toast } = useToast();
 
   useEffect(() => {
     const hour = getHours(new Date());
@@ -99,6 +103,20 @@ export default function DailyTaskTrack() {
 
   const dailyGoalValue = dailyGoals[selectedDateStr] || 0;
   const completedCount = dailyTasks.filter(t => t.completed).length;
+  const goalMet = dailyGoalValue > 0 && completedCount >= dailyGoalValue;
+
+  useEffect(() => {
+    if (goalMet && isInitialized) {
+      const lastCelebrated = localStorage.getItem(`celebrated_${selectedDateStr}`);
+      if (!lastCelebrated) {
+        toast({
+          title: "Goal Reached! 🎉",
+          description: `You've completed your goal of ${dailyGoalValue} tasks for today. Keep it up!`,
+        });
+        localStorage.setItem(`celebrated_${selectedDateStr}`, "true");
+      }
+    }
+  }, [goalMet, selectedDateStr, dailyGoalValue, toast, isInitialized]);
 
   const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
   const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
@@ -150,7 +168,15 @@ export default function DailyTaskTrack() {
             <CalendarIcon className="w-7 h-7" />
           </div>
           <div>
-            <h1 className="text-2xl md:text-3xl font-black tracking-tight text-primary leading-tight">{greeting}</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl md:text-3xl font-black tracking-tight text-primary leading-tight">{greeting}</h1>
+              {streak > 0 && (
+                <div className="flex items-center gap-1 bg-orange-100 text-orange-600 px-2 py-0.5 rounded-full text-xs font-bold border border-orange-200">
+                  <Flame className="w-3 h-3 fill-current" />
+                  {streak} Day Streak
+                </div>
+              )}
+            </div>
             <div className="flex items-center gap-2 mt-1">
               <Quote className="w-3 h-3 text-accent" />
               <p className="text-xs italic text-muted-foreground font-medium">{quote}</p>
@@ -224,7 +250,10 @@ export default function DailyTaskTrack() {
 
         {/* Sidebar Section */}
         <div id="tour-tasks" className="lg:col-span-5 flex flex-col gap-8 w-full">
-          <Card className="p-8 md:p-10 shadow-2xl shadow-primary/5 min-h-[500px] flex flex-col bg-white border-white/50 rounded-[2rem]">
+          <Card className={cn(
+            "p-8 md:p-10 shadow-2xl transition-all duration-500 min-h-[500px] flex flex-col bg-white border-white/50 rounded-[2rem]",
+            goalMet ? "shadow-accent/10 border-accent/20 ring-1 ring-accent/10" : "shadow-primary/5"
+          )}>
             <div className="flex items-center justify-between mb-8">
               <div className="flex items-center gap-4">
                 <div className="relative flex items-center justify-center shrink-0">
@@ -247,10 +276,18 @@ export default function DailyTaskTrack() {
                       fill="transparent"
                       strokeDasharray={151}
                       strokeDashoffset={151 - (151 * completionRate) / 100}
-                      className="text-accent transition-all duration-1000 ease-in-out"
+                      className={cn(
+                        "transition-all duration-1000 ease-in-out",
+                        goalMet ? "text-accent" : "text-primary"
+                      )}
                     />
                   </svg>
-                  <span className="absolute text-[11px] font-black text-primary">{Math.round(completionRate)}%</span>
+                  <span className={cn(
+                    "absolute text-[11px] font-black",
+                    goalMet ? "text-accent" : "text-primary"
+                  )}>
+                    {goalMet ? <Star className="w-3 h-3 fill-current" /> : `${Math.round(completionRate)}%`}
+                  </span>
                 </div>
                 <div className="flex flex-col">
                   <h3 className="text-2xl md:text-3xl font-black text-primary tracking-tight">{format(selectedDate, "EEEE")}</h3>
@@ -277,12 +314,21 @@ export default function DailyTaskTrack() {
 
             {/* Daily Goal & Search */}
             <div className="space-y-5 mb-8">
-              <div className="flex items-center gap-4 p-4 bg-primary/5 rounded-2xl border border-primary/10">
-                <div className="p-2 bg-white rounded-lg shadow-sm">
-                  <Trophy className="w-4 h-4 text-primary" />
+              <div className={cn(
+                "flex items-center gap-4 p-4 rounded-2xl border transition-colors",
+                goalMet ? "bg-accent/5 border-accent/20" : "bg-primary/5 border-primary/10"
+              )}>
+                <div className={cn(
+                  "p-2 rounded-lg shadow-sm transition-colors",
+                  goalMet ? "bg-accent text-white" : "bg-white text-primary"
+                )}>
+                  <Trophy className="w-4 h-4" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-primary/60">Daily Focus Goal</p>
+                  <p className={cn(
+                    "text-[10px] font-black uppercase tracking-widest",
+                    goalMet ? "text-accent" : "text-primary/60"
+                  )}>Daily Focus Goal</p>
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-bold">{completedCount} / {dailyGoalValue || 0} tasks</span>
                     <Input 

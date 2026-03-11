@@ -1,8 +1,8 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo } from 'react';
 import { Task, Label, Session, TaskContextType } from '@/lib/types';
-import { format } from 'date-fns';
+import { format, subDays, isSameDay, parseISO } from 'date-fns';
 
 const DEFAULT_LABELS: Label[] = [
   { id: '1', name: 'work', color: 'bg-blue-600 text-white hover:bg-blue-700' },
@@ -70,6 +70,32 @@ export function TaskProvider({ children }: { children: ReactNode }) {
       localStorage.setItem('daily_task_track_goals', JSON.stringify(dailyGoals));
     }
   }, [tasks, labels, sessions, dailyGoals, isInitialized]);
+
+  const streak = useMemo(() => {
+    if (!tasks.length) return 0;
+    
+    let currentStreak = 0;
+    let checkDate = new Date();
+    
+    // Check if tasks were completed today or yesterday to continue streak
+    while (true) {
+      const dateStr = format(checkDate, 'yyyy-MM-dd');
+      const completedOnDate = tasks.some(t => t.dueDate === dateStr && t.completed);
+      
+      if (completedOnDate) {
+        currentStreak++;
+        checkDate = subDays(checkDate, 1);
+      } else {
+        // If no tasks completed today, check if yesterday had completions
+        if (isSameDay(checkDate, new Date())) {
+          checkDate = subDays(checkDate, 1);
+          continue;
+        }
+        break;
+      }
+    }
+    return currentStreak;
+  }, [tasks]);
 
   const addTask = (taskData: Omit<Task, 'id' | 'createdAt'>) => {
     const newTask: Task = {
@@ -146,6 +172,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
       labels, 
       sessions,
       dailyGoals,
+      streak,
       addTask, 
       updateTask, 
       deleteTask, 
