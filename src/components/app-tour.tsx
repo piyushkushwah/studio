@@ -124,7 +124,7 @@ export function AppTour() {
       setIsOpen(open);
       if (!open) clearHighlights();
     }}>
-      <DialogContent className="sm:max-w-[400px] border-primary/20 shadow-2xl">
+      <DialogContent className="sm:max-w-[400px] border-primary/20 shadow-2xl z-[100]">
         <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-primary text-white p-3 rounded-full shadow-xl">
           <Info className="w-6 h-6" />
         </div>

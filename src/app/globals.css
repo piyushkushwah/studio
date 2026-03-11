@@ -93,7 +93,7 @@
 /* Tour Highlighting */
 .tour-highlight {
   position: relative;
-  z-index: 51 !important;
+  z-index: 70 !important; /* Above overlay (50) but below dialog box (100) */
   pointer-events: none;
   box-shadow: 0 0 0 4px hsl(var(--primary)), 0 0 20px 10px rgba(var(--primary), 0.3);
   animation: tour-pulse 2s infinite;
