@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { 
   Dialog, 
   DialogContent, 
@@ -45,24 +45,32 @@ const TOUR_STEPS: TourStep[] = [
   },
 ];
 
+const STORAGE_KEY = "daily_task_track_tour_seen";
+
 export function AppTour() {
   const [isOpen, setIsOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
 
   useEffect(() => {
-    const hasSeenTour = localStorage.getItem("daily_task_track_tour_seen");
+    const hasSeenTour = localStorage.getItem(STORAGE_KEY);
     if (!hasSeenTour) {
-      setTimeout(() => {
+      const timer = setTimeout(() => {
         setIsOpen(true);
-      }, 1000);
+      }, 1500);
+      return () => clearTimeout(timer);
     }
+  }, []);
+
+  const markAsSeen = useCallback(() => {
+    localStorage.setItem(STORAGE_KEY, "true");
   }, []);
 
   const handleNext = () => {
     if (currentStep < TOUR_STEPS.length - 1) {
       setCurrentStep(prev => prev + 1);
     } else {
-      handleComplete();
+      setIsOpen(false);
+      markAsSeen();
     }
   };
 
@@ -72,9 +80,13 @@ export function AppTour() {
     }
   };
 
-  const handleComplete = () => {
-    setIsOpen(false);
-    localStorage.setItem("daily_task_track_tour_seen", "true");
+  const onOpenChange = (open: boolean) => {
+    setIsOpen(open);
+    // If the user manually closes the dialog (clicks outside, etc.), 
+    // we consider the tour "seen" so it doesn't nag them again.
+    if (!open) {
+      markAsSeen();
+    }
   };
 
   const restartTour = () => {
@@ -89,7 +101,7 @@ export function AppTour() {
   const step = TOUR_STEPS[currentStep];
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[400px] border-primary/20 shadow-2xl">
         <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-primary text-white p-3 rounded-full shadow-xl">
           <Info className="w-6 h-6" />
