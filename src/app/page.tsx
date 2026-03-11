@@ -7,6 +7,7 @@ import { TaskItem } from "@/components/task-item";
 import { TaskDialog } from "@/components/task-dialog";
 import { LabelManager } from "@/components/label-manager";
 import { PomodoroTimer } from "@/components/pomodoro-timer";
+import { AppTour } from "@/components/app-tour";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card } from "@/components/ui/card";
@@ -35,7 +36,8 @@ import {
   Target,
   Trash2,
   Clock,
-  Quote
+  Quote,
+  HelpCircle
 } from "lucide-react";
 import { Task, Priority } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -125,7 +127,9 @@ export default function DailyTaskTrack() {
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-8 flex flex-col items-center">
-      <header className="w-full max-w-6xl flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 md:mb-12">
+      <AppTour />
+      
+      <header id="tour-header" className="w-full max-w-6xl flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 md:mb-12">
         <div className="flex items-center gap-5">
           <div className="bg-primary text-white p-3 rounded-2xl shadow-xl shadow-primary/20 shrink-0">
             <CalendarIcon className="w-7 h-7" />
@@ -140,7 +144,7 @@ export default function DailyTaskTrack() {
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <PomodoroTimer />
-          <div className="flex items-center gap-2 h-12 bg-white border px-3 rounded-2xl shadow-sm">
+          <div id="tour-nav" className="flex items-center gap-2 h-12 bg-white border px-3 rounded-2xl shadow-sm">
             <LabelManager />
             <Link href="/time-tracking">
               <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-primary/5 group" title="Time Tracking">
@@ -152,13 +156,22 @@ export default function DailyTaskTrack() {
                 <BarChart2 className="w-4 h-4 text-primary group-hover:scale-110 transition-transform" />
               </Button>
             </Link>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => (window as any).restartAppTour?.()}
+              className="h-9 w-9 rounded-xl hover:bg-primary/5 group" 
+              title="App Tour"
+            >
+              <HelpCircle className="w-4 h-4 text-primary group-hover:scale-110 transition-transform" />
+            </Button>
           </div>
         </div>
       </header>
 
       <main className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
         {/* Calendar Section */}
-        <div className="lg:col-span-7 flex flex-col gap-8 w-full">
+        <div id="tour-calendar" className="lg:col-span-7 flex flex-col gap-8 w-full">
           <Card className="p-6 md:p-10 shadow-2xl shadow-primary/5 bg-white border-white/50 rounded-[2rem]">
             <div className="flex items-center justify-between mb-8 md:mb-10">
               <h2 className="text-2xl md:text-3xl font-black text-primary tracking-tight">
@@ -195,7 +208,7 @@ export default function DailyTaskTrack() {
         </div>
 
         {/* Sidebar Section */}
-        <div className="lg:col-span-5 flex flex-col gap-8 w-full">
+        <div id="tour-tasks" className="lg:col-span-5 flex flex-col gap-8 w-full">
           <Card className="p-8 md:p-10 shadow-2xl shadow-primary/5 min-h-[500px] flex flex-col bg-white border-white/50 rounded-[2rem]">
             <div className="flex items-center justify-between mb-8">
               <div className="flex items-center gap-4">
@@ -230,6 +243,7 @@ export default function DailyTaskTrack() {
                 </div>
               </div>
               <Button 
+                id="tour-add-task"
                 onClick={() => {
                   setEditingTask(null);
                   setIsTaskDialogOpen(true);

@@ -87,7 +87,7 @@ export function PomodoroTimer() {
   const progress = ((MODE_CONFIG[mode].seconds - timeLeft) / MODE_CONFIG[mode].seconds) * 100;
 
   return (
-    <div className="relative flex items-center gap-3 bg-white border shadow-sm rounded-2xl px-4 h-12 transition-all hover:border-primary/30 group">
+    <div id="tour-timer" className="relative flex items-center gap-3 bg-white border shadow-sm rounded-2xl px-4 h-12 transition-all hover:border-primary/30 group">
       <Button
         variant="ghost"
         size="icon"
