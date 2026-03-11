@@ -8,6 +8,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Slider } from "@/components/ui/slider";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
   Music, 
   Volume2, 
@@ -18,12 +19,13 @@ import {
   AlertCircle,
   Loader2,
   Sparkles,
-  Square
+  Square,
+  Zap
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 
-// Verified high-quality tracks provided by the user for deep focus
+// Verified high-quality tracks for deep focus
 const SOUNDS = [
   { 
     id: "jazzy-lofi", 
@@ -36,6 +38,42 @@ const SOUNDS = [
     label: "Jazz 'Bread'", 
     icon: Sparkles, 
     url: "https://archive.org/download/kalaido-hanging-lanterns_202101/%2F%28no%20copyright%20music%29%20jazz%20type%20beat%20bread%20royalty%20free%20youtube%20music%20prod.%20by%20lukrembo.mp3",
+  },
+  {
+    id: "amano",
+    label: "Amano",
+    icon: Music,
+    url: "https://archive.org/download/lofi-plvgkk/Amano.mp3",
+  },
+  {
+    id: "full-moon",
+    label: "Full Moon",
+    icon: Sparkles,
+    url: "https://archive.org/download/lofi-plvgkk/Full%20Moon.mp3",
+  },
+  {
+    id: "waiting",
+    label: "Waiting",
+    icon: Headphones,
+    url: "https://archive.org/download/lofi-plvgkk/Waiting.mp3",
+  },
+  {
+    id: "anubias",
+    label: "Anubias",
+    icon: Music,
+    url: "https://archive.org/download/lofi-plvgkk/Anubias.mp3",
+  },
+  {
+    id: "ending-1",
+    label: "Ending 1",
+    icon: Zap,
+    url: "https://archive.org/download/sound-track-mp3-torrent-2-w96kkm/Ending%201.mp3",
+  },
+  {
+    id: "ending-2",
+    label: "Ending 2",
+    icon: Music,
+    url: "https://archive.org/download/sound-track-mp3-torrent-2-w96kkm/Ending%202.mp3",
   },
 ];
 
@@ -76,14 +114,13 @@ export function FocusPlayer() {
     }
   }, [activeSoundId]);
 
-  // Sync Playback State (Crucial fix for "song not stopping")
+  // Sync Playback State
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio || !activeSoundId || isLoading) return;
 
     if (isPlaying) {
       audio.play().catch((err) => {
-        // Browser autoplay policy might block initial play
         if (err.name !== 'AbortError') {
           console.error("Playback failed:", err);
           setIsPlaying(false);
@@ -93,7 +130,6 @@ export function FocusPlayer() {
       audio.pause();
     }
 
-    // Cleanup on unmount to ensure audio stops
     return () => {
       audio.pause();
     };
@@ -101,10 +137,8 @@ export function FocusPlayer() {
 
   const toggleSound = (soundId: string) => {
     if (activeSoundId === soundId) {
-      // If clicking the same sound, toggle play/pause
       setIsPlaying(!isPlaying);
     } else {
-      // Switching to a new sound
       setActiveSoundId(soundId);
       setIsPlaying(true);
     }
@@ -160,17 +194,17 @@ export function FocusPlayer() {
               )}
             </Button>
             <div className="hidden md:flex flex-col pr-2">
-              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground leading-none mb-0.5">Deep Focus</span>
+              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground leading-none mb-0.5">Focus Music</span>
               <span className="text-xs font-bold truncate max-w-[70px]">
                 {activeSoundId ? activeSoundLabel : "Off"}
               </span>
             </div>
           </div>
         </PopoverTrigger>
-        <PopoverContent className="w-64 p-4 rounded-[1.5rem] shadow-2xl border-primary/10">
+        <PopoverContent className="w-72 p-4 rounded-[1.5rem] shadow-2xl border-primary/10">
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h4 className="font-black text-primary text-sm uppercase tracking-widest">Chill Lo-Fi</h4>
+              <h4 className="font-black text-primary text-sm uppercase tracking-widest">Lo-Fi Radio</h4>
               <div className="flex items-center gap-1">
                 {activeSoundId && (
                   <>
@@ -195,36 +229,38 @@ export function FocusPlayer() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-2">
-              {SOUNDS.map((sound) => {
-                const Icon = sound.icon;
-                const isActive = activeSoundId === sound.id;
-                return (
-                  <Button
-                    key={sound.id}
-                    variant={isActive ? "default" : "outline"}
-                    className={cn(
-                      "h-16 flex flex-col gap-1 rounded-xl transition-all border-primary/5 p-2 overflow-hidden",
-                      isActive && isPlaying && !hasError ? "ring-2 ring-primary ring-offset-2" : "",
-                      isActive && hasError ? "border-destructive text-destructive" : ""
-                    )}
-                    onClick={() => toggleSound(sound.id)}
-                    disabled={isLoading && !isActive}
-                  >
-                    {isLoading && isActive ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Icon className="w-4 h-4" />
-                    )}
-                    <span className="text-[9px] font-bold uppercase tracking-tighter text-center whitespace-nowrap overflow-hidden text-ellipsis w-full">
-                      {sound.label}
-                    </span>
-                  </Button>
-                );
-              })}
-            </div>
+            <ScrollArea className="h-[300px] -mx-1 px-1">
+              <div className="grid grid-cols-2 gap-2 pb-2">
+                {SOUNDS.map((sound) => {
+                  const Icon = sound.icon;
+                  const isActive = activeSoundId === sound.id;
+                  return (
+                    <Button
+                      key={sound.id}
+                      variant={isActive ? "default" : "outline"}
+                      className={cn(
+                        "h-16 flex flex-col gap-1 rounded-xl transition-all border-primary/5 p-2 overflow-hidden",
+                        isActive && isPlaying && !hasError ? "ring-2 ring-primary ring-offset-2 shadow-inner" : "",
+                        isActive && hasError ? "border-destructive text-destructive" : ""
+                      )}
+                      onClick={() => toggleSound(sound.id)}
+                      disabled={isLoading && !isActive}
+                    >
+                      {isLoading && isActive ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Icon className="w-4 h-4" />
+                      )}
+                      <span className="text-[9px] font-bold uppercase tracking-tighter text-center whitespace-nowrap overflow-hidden text-ellipsis w-full">
+                        {sound.label}
+                      </span>
+                    </Button>
+                  );
+                })}
+              </div>
+            </ScrollArea>
 
-            <div className="space-y-3 pt-2">
+            <div className="space-y-3 pt-2 border-t">
               <div className="flex items-center justify-between text-[10px] font-black text-muted-foreground uppercase tracking-widest">
                 <span>Volume</span>
                 <span>{volume[0]}%</span>
