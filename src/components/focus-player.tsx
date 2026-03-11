@@ -17,7 +17,8 @@ import {
   Pause,
   AlertCircle,
   Loader2,
-  Sparkles
+  Sparkles,
+  Square
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
@@ -54,7 +55,7 @@ export function FocusPlayer() {
     }
   }, [volume]);
 
-  // Audio management
+  // Handle Source Changes
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
@@ -71,35 +72,39 @@ export function FocusPlayer() {
       setHasError(false);
       audio.pause();
       audio.src = sound.url;
-      audio.load(); // Explicitly load the new source
+      audio.load();
     }
   }, [activeSoundId]);
 
-  const handlePlay = async () => {
-    if (!audioRef.current || !activeSoundId) return;
-    try {
-      setHasError(false);
-      await audioRef.current.play();
-      setIsPlaying(true);
-    } catch (err: any) {
-      // Browser autoplay policy might block initial play
-      if (err.name !== 'AbortError') {
-        console.error("Playback error:", err);
-        setHasError(true);
-        setIsPlaying(false);
-      }
+  // Sync Playback State (Crucial fix for "song not stopping")
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio || !activeSoundId || isLoading) return;
+
+    if (isPlaying) {
+      audio.play().catch((err) => {
+        // Browser autoplay policy might block initial play
+        if (err.name !== 'AbortError') {
+          console.error("Playback failed:", err);
+          setIsPlaying(false);
+        }
+      });
+    } else {
+      audio.pause();
     }
-  };
+
+    // Cleanup on unmount to ensure audio stops
+    return () => {
+      audio.pause();
+    };
+  }, [isPlaying, activeSoundId, isLoading]);
 
   const toggleSound = (soundId: string) => {
     if (activeSoundId === soundId) {
-      if (isPlaying) {
-        audioRef.current?.pause();
-        setIsPlaying(false);
-      } else {
-        handlePlay();
-      }
+      // If clicking the same sound, toggle play/pause
+      setIsPlaying(!isPlaying);
     } else {
+      // Switching to a new sound
       setActiveSoundId(soundId);
       setIsPlaying(true);
     }
@@ -119,9 +124,6 @@ export function FocusPlayer() {
 
   const handleCanPlay = () => {
     setIsLoading(false);
-    if (isPlaying) {
-      handlePlay();
-    }
   };
 
   const activeSoundLabel = SOUNDS.find(s => s.id === activeSoundId)?.label || "Off";
@@ -135,8 +137,6 @@ export function FocusPlayer() {
         crossOrigin="anonymous"
         onError={handleAudioError}
         onCanPlay={handleCanPlay}
-        onPause={() => setIsPlaying(false)}
-        onPlay={() => setIsPlaying(true)}
       />
       
       <Popover>
@@ -171,16 +171,28 @@ export function FocusPlayer() {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h4 className="font-black text-primary text-sm uppercase tracking-widest">Chill Lo-Fi</h4>
-              {activeSoundId && (
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="h-8 w-8 rounded-full"
-                  onClick={() => setIsPlaying(!isPlaying)}
-                >
-                  {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-                </Button>
-              )}
+              <div className="flex items-center gap-1">
+                {activeSoundId && (
+                  <>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-8 w-8 rounded-full"
+                      onClick={() => setIsPlaying(!isPlaying)}
+                    >
+                      {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-8 w-8 rounded-full text-muted-foreground hover:text-destructive"
+                      onClick={() => setActiveSoundId(null)}
+                    >
+                      <Square className="w-3 h-3 fill-current" />
+                    </Button>
+                  </>
+                )}
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-2">
