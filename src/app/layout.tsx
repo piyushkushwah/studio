@@ -6,6 +6,9 @@ import { Toaster } from '@/components/ui/toaster';
 export const metadata: Metadata = {
   title: 'DailyTaskTrack | Focus & Productivity',
   description: 'Organize your day with clarity and style. DailyTaskTrack helps you visualize your progress through an interactive calendar and a professional Pomodoro timer.',
+  icons: {
+    icon: 'data:,',
+  },
 };
 
 export default function RootLayout({
