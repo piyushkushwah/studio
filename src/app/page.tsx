@@ -8,7 +8,6 @@ import { TaskDialog } from "@/components/task-dialog";
 import { LabelManager } from "@/components/label-manager";
 import { PomodoroTimer } from "@/components/pomodoro-timer";
 import { AppTour } from "@/components/app-tour";
-import { SmartTaskInput } from "@/components/smart-task-input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card } from "@/components/ui/card";
@@ -131,16 +130,6 @@ export default function DailyTaskTrack() {
       });
     }
     setEditingTask(null);
-  };
-
-  const handleSmartTaskParsed = (parsedTask: { description: string; dueDate?: string }) => {
-    addTask({
-      description: parsedTask.description,
-      dueDate: parsedTask.dueDate || selectedDateStr,
-      completed: false,
-      priority: 'medium',
-      label: 'other'
-    });
   };
 
   const handleEdit = (task: Task) => {
@@ -305,11 +294,6 @@ export default function DailyTaskTrack() {
               >
                 <Plus className="w-7 h-7" />
               </Button>
-            </div>
-
-            {/* AI Smart Input */}
-            <div className="mb-6">
-              <SmartTaskInput onTaskParsed={handleSmartTaskParsed} />
             </div>
 
             {/* Daily Goal & Search */}
