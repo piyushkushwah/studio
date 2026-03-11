@@ -10,8 +10,9 @@ export interface Session {
   id: string;
   startTime: number;
   durationMinutes: number;
-  type: 'work' | 'short';
+  type: 'work' | 'short' | 'manual';
   date: string; // YYYY-MM-DD
+  note?: string;
 }
 
 export interface Task {
@@ -35,6 +36,8 @@ export interface TaskContextType {
   toggleTask: (id: string) => void;
   addLabel: (name: string, color: string) => void;
   deleteLabel: (id: string) => void;
-  addSession: (duration: number, type: 'work' | 'short') => void;
+  addSession: (duration: number, type: 'work' | 'short' | 'manual', note?: string, date?: string) => void;
+  updateSession: (id: string, updates: Partial<Session>) => void;
+  deleteSession: (id: string) => void;
   isInitialized: boolean;
 }

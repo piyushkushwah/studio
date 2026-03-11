@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Task, Label, Session, TaskContextType } from '@/lib/types';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 
 const DEFAULT_LABELS: Label[] = [
   { id: '1', name: 'work', color: 'bg-blue-600 text-white hover:bg-blue-700' },
@@ -99,15 +99,27 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     setLabels((prev) => prev.filter((l) => l.id !== id));
   };
 
-  const addSession = (durationMinutes: number, type: 'work' | 'short') => {
+  const addSession = (durationMinutes: number, type: 'work' | 'short' | 'manual', note?: string, date?: string) => {
+    const sessionDate = date || format(new Date(), 'yyyy-MM-dd');
     const newSession: Session = {
       id: crypto.randomUUID(),
       startTime: Date.now(),
       durationMinutes,
       type,
-      date: format(new Date(), 'yyyy-MM-dd'),
+      date: sessionDate,
+      note: note,
     };
     setSessions(prev => [newSession, ...prev]);
+  };
+
+  const updateSession = (id: string, updates: Partial<Session>) => {
+    setSessions(prev => 
+      prev.map(s => s.id === id ? { ...s, ...updates } : s)
+    );
+  };
+
+  const deleteSession = (id: string) => {
+    setSessions(prev => prev.filter(s => s.id !== id));
   };
 
   return (
@@ -122,6 +134,8 @@ export function TaskProvider({ children }: { children: ReactNode }) {
       addLabel, 
       deleteLabel, 
       addSession,
+      updateSession,
+      deleteSession,
       isInitialized 
     }}>
       {children}
