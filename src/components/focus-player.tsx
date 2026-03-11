@@ -25,35 +25,35 @@ import {
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 
-// Using widely supported public domain/stable audio assets
+// Using widely supported public domain MP3 assets from Archive.org
 const SOUNDS = [
   { 
     id: "rain", 
     label: "Rain", 
     icon: CloudRain, 
-    url: "https://actions.google.com/sounds/v1/weather/rain_on_roof.ogg",
-    type: "audio/ogg"
+    url: "https://archive.org/download/heavy_rain_loop/heavy_rain_loop.mp3",
+    type: "audio/mpeg"
   },
   { 
     id: "forest", 
     label: "Forest", 
     icon: TreePine, 
-    url: "https://actions.google.com/sounds/v1/ambient/forest_ambience.ogg",
-    type: "audio/ogg"
+    url: "https://archive.org/download/morning-birds-singing-in-the-forest/morning-birds-singing-in-the-forest.mp3",
+    type: "audio/mpeg"
   },
   { 
     id: "coffee", 
     label: "Cafe", 
     icon: Coffee, 
-    url: "https://actions.google.com/sounds/v1/crowds/city_market_ambience.ogg",
-    type: "audio/ogg"
+    url: "https://archive.org/download/cafe-ambience/cafe-ambience.mp3",
+    type: "audio/mpeg"
   },
   { 
     id: "white-noise", 
     label: "Static", 
     icon: Wind, 
-    url: "https://actions.google.com/sounds/v1/weather/heavy_wind_and_rain.ogg",
-    type: "audio/ogg"
+    url: "https://archive.org/download/white-noise-10-min/white-noise-10-min.mp3",
+    type: "audio/mpeg"
   },
 ];
 
@@ -73,7 +73,7 @@ export function FocusPlayer() {
     }
   }, [volume]);
 
-  // Declarative audio management
+  // Audio management
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
@@ -101,7 +101,6 @@ export function FocusPlayer() {
       await audioRef.current.play();
       setIsPlaying(true);
     } catch (err: any) {
-      // AbortError is common if user clicks rapidly, we can ignore it
       if (err.name !== 'AbortError') {
         console.error("Playback Error:", err);
         setHasError(true);
@@ -120,7 +119,7 @@ export function FocusPlayer() {
       }
     } else {
       setActiveSoundId(soundId);
-      setIsPlaying(true); // Auto-play when switching
+      setIsPlaying(true);
     }
   };
 
@@ -132,7 +131,7 @@ export function FocusPlayer() {
     toast({
       variant: "destructive",
       title: "Sound Unavailable",
-      description: "This soundscape couldn't be loaded. Please try another one.",
+      description: "We're having trouble reaching the sound server. Please try a different track.",
     });
   };
 
@@ -150,6 +149,7 @@ export function FocusPlayer() {
       <audio 
         ref={audioRef} 
         loop 
+        preload="auto"
         onError={handleAudioError}
         onCanPlay={handleCanPlay}
         onPause={() => setIsPlaying(false)}
@@ -246,7 +246,7 @@ export function FocusPlayer() {
             
             {hasError && (
               <p className="text-[10px] text-destructive font-bold text-center animate-pulse">
-                Playback error. Try switching sounds.
+                Connection issue. Try another track.
               </p>
             )}
           </div>
