@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useRef, useEffect } from "react";
@@ -14,9 +13,7 @@ import {
   Volume2, 
   VolumeX, 
   CloudRain, 
-  TreePine, 
-  Coffee, 
-  Wind,
+  Waves,
   Play,
   Pause,
   AlertCircle,
@@ -32,28 +29,12 @@ const SOUNDS = [
     label: "Rain", 
     icon: CloudRain, 
     url: "https://archive.org/download/heavy_rain_loop/heavy_rain_loop.mp3",
-    type: "audio/mpeg"
   },
   { 
-    id: "forest", 
-    label: "Forest", 
-    icon: TreePine, 
-    url: "https://archive.org/download/morning-birds-singing-in-the-forest/morning-birds-singing-in-the-forest.mp3",
-    type: "audio/mpeg"
-  },
-  { 
-    id: "coffee", 
-    label: "Cafe", 
-    icon: Coffee, 
-    url: "https://archive.org/download/cafe-ambience/cafe-ambience.mp3",
-    type: "audio/mpeg"
-  },
-  { 
-    id: "white-noise", 
-    label: "Static", 
-    icon: Wind, 
-    url: "https://archive.org/download/white-noise-10-min/white-noise-10-min.mp3",
-    type: "audio/mpeg"
+    id: "ocean", 
+    label: "Ocean", 
+    icon: Waves, 
+    url: "https://archive.org/download/ocean-waves-1/ocean-waves-1.mp3",
   },
 ];
 
@@ -102,7 +83,6 @@ export function FocusPlayer() {
       setIsPlaying(true);
     } catch (err: any) {
       if (err.name !== 'AbortError') {
-        console.error("Playback Error:", err);
         setHasError(true);
         setIsPlaying(false);
       }
@@ -123,8 +103,7 @@ export function FocusPlayer() {
     }
   };
 
-  const handleAudioError = (e: any) => {
-    console.error("Audio Load Error:", e);
+  const handleAudioError = () => {
     setHasError(true);
     setIsPlaying(false);
     setIsLoading(false);
