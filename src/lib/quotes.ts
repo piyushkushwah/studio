@@ -18,7 +18,11 @@ export const MOTIVATIONAL_QUOTES = [
   "Deep work is the superpower of the 21st century.",
   "Manage your energy, not just your time.",
   "Big goals are just a series of small, well-executed tasks.",
-  "Productivity is never an accident; it is a commitment to excellence."
+  "Productivity is never an accident; it is a commitment to excellence.",
+  "Let the Focus Radio drown out the noise while you conquer your list.",
+  "Your productivity heatmap looks better with every finished task.",
+  "One focus session at a time, you are rewriting your potential.",
+  "Organize with labels, execute with focus, celebrate with checkmarks."
 ];
 
 export function getDailyQuote() {
@@ -27,19 +31,11 @@ export function getDailyQuote() {
 }
 
 /**
- * Fetches a random quote from a public API with local fallback
+ * Returns a relevant motivational quote from the local library.
+ * Prioritizes app-specific context over generic external quotes.
  */
 export async function getRandomQuote(): Promise<string> {
-  try {
-    const response = await fetch('https://dummyjson.com/quotes/random', {
-      next: { revalidate: 0 } // Ensure we don't cache stale quotes
-    });
-    if (!response.ok) throw new Error('API limit or network error');
-    const data = await response.json();
-    return data.quote;
-  } catch (error) {
-    console.error('Quote API failed, using fallback:', error);
-    const randomIndex = Math.floor(Math.random() * MOTIVATIONAL_QUOTES.length);
-    return MOTIVATIONAL_QUOTES[randomIndex];
-  }
+  // We prioritize the local, relevant library for this app's context
+  const randomIndex = Math.floor(Math.random() * MOTIVATIONAL_QUOTES.length);
+  return MOTIVATIONAL_QUOTES[randomIndex];
 }
