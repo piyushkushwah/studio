@@ -12,29 +12,43 @@ import {
   Music, 
   Volume2, 
   VolumeX, 
-  CloudRain, 
-  Waves,
+  Coffee, 
+  Headphones,
+  Moon,
   Play,
   Pause,
   AlertCircle,
-  Loader2
+  Loader2,
+  Sparkles
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 
-// Using widely supported public domain MP3 assets from Archive.org
+// Using verified high-quality public domain/creative commons MP3 assets for deep focus
 const SOUNDS = [
   { 
-    id: "rain", 
-    label: "Rain", 
-    icon: CloudRain, 
-    url: "https://archive.org/download/heavy_rain_loop/heavy_rain_loop.mp3",
+    id: "lofi", 
+    label: "Lo-Fi Chill", 
+    icon: Headphones, 
+    url: "https://archive.org/download/soft-lofi-beats/Soft%20Lofi%20Beats.mp3",
   },
   { 
-    id: "ocean", 
-    label: "Ocean", 
-    icon: Waves, 
-    url: "https://archive.org/download/ocean-waves-1/ocean-waves-1.mp3",
+    id: "piano", 
+    label: "Chill Piano", 
+    icon: Sparkles, 
+    url: "https://archive.org/download/chill-piano-background-music/Chill%20Piano%20Background%20Music.mp3",
+  },
+  { 
+    id: "ambient", 
+    label: "Deep Ambient", 
+    icon: Moon, 
+    url: "https://archive.org/download/deep-focus-ambient/Deep%20Focus%20Ambient.mp3",
+  },
+  { 
+    id: "cafe", 
+    label: "Lo-Fi Cafe", 
+    icon: Coffee, 
+    url: "https://archive.org/download/lofi-beats-for-study/Lofi%20Beats%20for%20Study.mp3",
   },
 ];
 
@@ -43,7 +57,7 @@ export function FocusPlayer() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [hasError, setHasError] = useState(false);
-  const [volume, setVolume] = useState([50]);
+  const [volume, setVolume] = useState([40]);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const { toast } = useToast();
 
@@ -71,7 +85,7 @@ export function FocusPlayer() {
       setHasError(false);
       audio.pause();
       audio.src = sound.url;
-      audio.load();
+      audio.load(); // Explicitly load the new source
     }
   }, [activeSoundId]);
 
@@ -82,7 +96,9 @@ export function FocusPlayer() {
       await audioRef.current.play();
       setIsPlaying(true);
     } catch (err: any) {
+      // Browser autoplay policy might block initial play
       if (err.name !== 'AbortError') {
+        console.error("Playback error:", err);
         setHasError(true);
         setIsPlaying(false);
       }
@@ -103,14 +119,15 @@ export function FocusPlayer() {
     }
   };
 
-  const handleAudioError = () => {
+  const handleAudioError = (e: any) => {
+    console.error("Audio Load Error:", e);
     setHasError(true);
     setIsPlaying(false);
     setIsLoading(false);
     toast({
       variant: "destructive",
-      title: "Sound Unavailable",
-      description: "We're having trouble reaching the sound server. Please try a different track.",
+      title: "Audio Link Broken",
+      description: "We couldn't reach the sound server. Please try a different track.",
     });
   };
 
@@ -129,6 +146,7 @@ export function FocusPlayer() {
         ref={audioRef} 
         loop 
         preload="auto"
+        crossOrigin="anonymous"
         onError={handleAudioError}
         onCanPlay={handleCanPlay}
         onPause={() => setIsPlaying(false)}
@@ -156,8 +174,8 @@ export function FocusPlayer() {
               )}
             </Button>
             <div className="hidden md:flex flex-col pr-2">
-              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground leading-none mb-0.5">Focus Music</span>
-              <span className="text-xs font-bold truncate max-w-[60px]">
+              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground leading-none mb-0.5">Deep Focus</span>
+              <span className="text-xs font-bold truncate max-w-[70px]">
                 {activeSoundId ? activeSoundLabel : "Off"}
               </span>
             </div>
@@ -166,7 +184,7 @@ export function FocusPlayer() {
         <PopoverContent className="w-64 p-4 rounded-[1.5rem] shadow-2xl border-primary/10">
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h4 className="font-black text-primary text-sm uppercase tracking-widest">Soundscapes</h4>
+              <h4 className="font-black text-primary text-sm uppercase tracking-widest">Chill Lo-Fi</h4>
               {activeSoundId && (
                 <Button 
                   variant="ghost" 
@@ -188,7 +206,7 @@ export function FocusPlayer() {
                     key={sound.id}
                     variant={isActive ? "default" : "outline"}
                     className={cn(
-                      "h-16 flex flex-col gap-1 rounded-xl transition-all border-primary/5",
+                      "h-16 flex flex-col gap-1 rounded-xl transition-all border-primary/5 p-2 overflow-hidden",
                       isActive && isPlaying && !hasError ? "ring-2 ring-primary ring-offset-2" : "",
                       isActive && hasError ? "border-destructive text-destructive" : ""
                     )}
@@ -200,7 +218,9 @@ export function FocusPlayer() {
                     ) : (
                       <Icon className="w-4 h-4" />
                     )}
-                    <span className="text-[10px] font-bold uppercase tracking-tighter">{sound.label}</span>
+                    <span className="text-[9px] font-bold uppercase tracking-tighter text-center whitespace-nowrap overflow-hidden text-ellipsis w-full">
+                      {sound.label}
+                    </span>
                   </Button>
                 );
               })}
@@ -224,8 +244,8 @@ export function FocusPlayer() {
             </div>
             
             {hasError && (
-              <p className="text-[10px] text-destructive font-bold text-center animate-pulse">
-                Connection issue. Try another track.
+              <p className="text-[10px] text-destructive font-bold text-center animate-pulse leading-tight">
+                Connection issue with this track.<br/>Try another one.
               </p>
             )}
           </div>
