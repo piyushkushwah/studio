@@ -27,15 +27,15 @@ import { useToast } from "@/hooks/use-toast";
 const SOUNDS = [
   { 
     id: "jazzy-lofi", 
-    label: "Jazzy Lofi", 
+    label: "KaizanBlu Lofi", 
     icon: Headphones, 
     url: "https://archive.org/download/kalaido-hanging-lanterns_202101/%5BNo%20Copyright%20Music%5D%20Chill%20Jazzy%20Lofi%20Hip-Hop%20Beat%20%28Copyright%20Free%29%20Music%20By%20KaizanBlu.mp3",
   },
   { 
     id: "jazz-bread", 
-    label: "Jazz 'Bread'", 
+    label: "Lukrembo - Bread", 
     icon: Sparkles, 
-    url: "https://archive.org/download/kalaido-hanging-lanterns_202101/%2F%28no%20copyright%20music%29%20jazz%20type%20beat%20bread%20royalty%20free%20youtube%20music%20prod.%20by%20lukrembo.mp3",
+    url: "https://archive.org/download/kalaido-hanging-lanterns_202101/%28no%20copyright%20music%29%20jazz%20type%20beat%20bread%20royalty%20free%20youtube%20music%20prod.%20by%20lukrembo.mp3",
   },
 ];
 
