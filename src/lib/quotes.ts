@@ -20,3 +20,21 @@ export function getDailyQuote() {
   const dayOfYear = Math.floor((new Date().getTime() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000);
   return MOTIVATIONAL_QUOTES[dayOfYear % MOTIVATIONAL_QUOTES.length];
 }
+
+/**
+ * Fetches a random quote from a public API with local fallback
+ */
+export async function getRandomQuote(): Promise<string> {
+  try {
+    const response = await fetch('https://dummyjson.com/quotes/random', {
+      next: { revalidate: 0 } // Ensure we don't cache stale quotes
+    });
+    if (!response.ok) throw new Error('API limit or network error');
+    const data = await response.json();
+    return data.quote;
+  } catch (error) {
+    console.error('Quote API failed, using fallback:', error);
+    const randomIndex = Math.floor(Math.random() * MOTIVATIONAL_QUOTES.length);
+    return MOTIVATIONAL_QUOTES[randomIndex];
+  }
+}

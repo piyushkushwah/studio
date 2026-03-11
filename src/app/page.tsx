@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { useTasks } from "@/hooks/use-tasks";
 import { CalendarCell } from "@/components/calendar-cell";
 import { TaskItem } from "@/components/task-item";
@@ -45,7 +45,7 @@ import {
 import { Task, Priority } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
-import { getDailyQuote } from "@/lib/quotes";
+import { getRandomQuote } from "@/lib/quotes";
 import { useToast } from "@/hooks/use-toast";
 
 export default function DailyTaskTrack() {
@@ -57,8 +57,13 @@ export default function DailyTaskTrack() {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeLabelFilter, setActiveLabelFilter] = useState<string | null>(null);
   const [greeting, setGreeting] = useState("Hello");
-  const [quote, setQuote] = useState("");
+  const [quote, setQuote] = useState("Loading inspiration...");
   const { toast } = useToast();
+
+  const fetchNewQuote = useCallback(async () => {
+    const newQuote = await getRandomQuote();
+    setQuote(newQuote);
+  }, []);
 
   useEffect(() => {
     const hour = getHours(new Date());
@@ -66,8 +71,14 @@ export default function DailyTaskTrack() {
     else if (hour < 17) setGreeting("Good Afternoon");
     else setGreeting("Good Evening");
     
-    setQuote(getDailyQuote());
-  }, []);
+    // Initial fetch
+    fetchNewQuote();
+
+    // Set interval to fetch every 1 minute
+    const intervalId = setInterval(fetchNewQuote, 60000);
+
+    return () => clearInterval(intervalId);
+  }, [fetchNewQuote]);
 
   const days = useMemo(() => {
     const start = startOfWeek(startOfMonth(currentMonth));
@@ -156,19 +167,19 @@ export default function DailyTaskTrack() {
           <div className="bg-primary text-white p-3 rounded-2xl shadow-xl shadow-primary/20 shrink-0">
             <CalendarIcon className="w-7 h-7" />
           </div>
-          <div>
+          <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
               <h1 className="text-2xl md:text-3xl font-black tracking-tight text-primary leading-tight">{greeting}</h1>
               {streak > 0 && (
-                <div className="flex items-center gap-1 bg-orange-100 text-orange-600 px-2 py-0.5 rounded-full text-xs font-bold border border-orange-200">
+                <div className="flex items-center gap-1 bg-orange-100 text-orange-600 px-2 py-0.5 rounded-full text-xs font-bold border border-orange-200 shrink-0">
                   <Flame className="w-3 h-3 fill-current" />
                   {streak} Day Streak
                 </div>
               )}
             </div>
-            <div className="flex items-center gap-2 mt-1">
-              <Quote className="w-3 h-3 text-accent" />
-              <p className="text-xs italic text-muted-foreground font-medium">{quote}</p>
+            <div className="flex items-start gap-2 mt-1 max-w-md">
+              <Quote className="w-3 h-3 text-accent mt-1 shrink-0" />
+              <p className="text-xs italic text-muted-foreground font-medium line-clamp-2 transition-opacity duration-500">{quote}</p>
             </div>
           </div>
         </div>
