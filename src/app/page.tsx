@@ -7,6 +7,7 @@ import { TaskItem } from "@/components/task-item";
 import { TaskDialog } from "@/components/task-dialog";
 import { LabelManager } from "@/components/label-manager";
 import { PomodoroTimer } from "@/components/pomodoro-timer";
+import { FocusPlayer } from "@/components/focus-player";
 import { AppTour } from "@/components/app-tour";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -194,6 +195,7 @@ export default function DailyTaskTrack() {
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-3">
+          <FocusPlayer />
           <PomodoroTimer />
           <div id="tour-nav" className="flex items-center gap-2 h-12 bg-white border px-3 rounded-2xl shadow-sm">
             <LabelManager />
