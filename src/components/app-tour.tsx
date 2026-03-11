@@ -24,24 +24,24 @@ const TOUR_STEPS: TourStep[] = [
     description: "Your new command center for productivity. Let's take a 30-second tour of the main features.",
   },
   {
-    title: "The Focus Engine",
-    description: "Use the Pomodoro Timer in the header to work in 25-minute sprints. It automatically tracks your 'Deep Work' sessions.",
+    title: "Focus Suite: Timer & Radio",
+    description: "Work in 25-minute sprints with the Pomodoro Timer. Enhance your concentration with the built-in Focus Radio, featuring curated Jazz and Lo-Fi beats to block out distractions.",
   },
   {
     title: "Interactive Planning",
-    description: "Click any date on the calendar to view or schedule tasks. The dots show your daily workload at a glance.",
+    description: "Click any date on the calendar to view or schedule tasks. The indicator dots show your daily workload at a glance.",
   },
   {
     title: "Daily Mission Control",
-    description: "Manage your tasks for the selected day in the sidebar. You can search, filter by labels, and track your completion rate.",
+    description: "Manage your tasks for the selected day in the sidebar. Track your completion progress and hit your daily focus goals.",
   },
   {
     title: "Smart Task Creation",
-    description: "Click the '+' button to add a new task. You can set priorities, add detailed notes, and assign high-contrast labels.",
+    description: "Click the '+' button to add a new task. You can set priorities, add detailed notes, and assign high-contrast labels for better organization.",
   },
   {
     title: "Navigation & Insights",
-    description: "Quickly jump to your Time Tracking logs, view detailed Productivity Analytics, or manage your custom Labels.",
+    description: "Quickly jump to your Time Tracking logs, view detailed Productivity Analytics, or manage your custom Labels using the navigation bar.",
   },
 ];
 
