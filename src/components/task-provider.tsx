@@ -20,7 +20,6 @@ export function TaskProvider({ children }: { children: ReactNode }) {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // Load data on mount
   useEffect(() => {
     const savedTasks = localStorage.getItem('daily_task_track_tasks');
     const savedLabels = localStorage.getItem('daily_task_track_labels');
@@ -53,7 +52,6 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     setIsInitialized(true);
   }, []);
 
-  // Save data whenever it changes
   useEffect(() => {
     if (isInitialized) {
       localStorage.setItem('daily_task_track_tasks', JSON.stringify(tasks));
