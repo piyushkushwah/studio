@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useRef, useEffect } from "react";
@@ -17,9 +18,11 @@ import {
   Coffee, 
   Wind,
   Play,
-  Pause
+  Pause,
+  AlertCircle
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
 
 const SOUNDS = [
   { 
@@ -51,8 +54,10 @@ const SOUNDS = [
 export function FocusPlayer() {
   const [activeSound, setActiveSound] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [hasError, setHasError] = useState(false);
   const [volume, setVolume] = useState([50]);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     if (audioRef.current) {
@@ -60,24 +65,37 @@ export function FocusPlayer() {
     }
   }, [volume]);
 
+  const handlePlay = async () => {
+    if (!audioRef.current) return;
+    try {
+      setHasError(false);
+      await audioRef.current.play();
+      setIsPlaying(true);
+    } catch (err) {
+      console.error("Playback failed:", err);
+      setIsPlaying(false);
+      // Don't toast for "play() interrupted" errors as they are common and harmless
+      if (err instanceof Error && err.name !== 'AbortError') {
+        setHasError(true);
+      }
+    }
+  };
+
   const toggleSound = (soundId: string) => {
     if (activeSound === soundId) {
       if (isPlaying) {
         audioRef.current?.pause();
         setIsPlaying(false);
       } else {
-        audioRef.current?.play();
-        setIsPlaying(true);
+        handlePlay();
       }
     } else {
       const sound = SOUNDS.find(s => s.id === soundId);
-      if (sound) {
-        if (audioRef.current) {
-          audioRef.current.src = sound.url;
-          audioRef.current.play();
-        }
+      if (sound && audioRef.current) {
+        audioRef.current.src = sound.url;
+        audioRef.current.load(); // Ensure the new source is loaded
         setActiveSound(soundId);
-        setIsPlaying(true);
+        handlePlay();
       }
     }
   };
@@ -90,15 +108,30 @@ export function FocusPlayer() {
         audioRef.current?.pause();
         setIsPlaying(false);
       } else {
-        audioRef.current?.play();
-        setIsPlaying(true);
+        handlePlay();
       }
     }
   };
 
+  const handleAudioError = () => {
+    setHasError(true);
+    setIsPlaying(false);
+    toast({
+      variant: "destructive",
+      title: "Audio Error",
+      description: "Could not load the focus sound. Please try another one.",
+    });
+  };
+
   return (
     <div className="flex items-center gap-2">
-      <audio ref={audioRef} loop />
+      <audio 
+        ref={audioRef} 
+        loop 
+        onError={handleAudioError}
+        onPause={() => setIsPlaying(false)}
+        onPlay={() => setIsPlaying(true)}
+      />
       
       <Popover>
         <PopoverTrigger asChild>
@@ -108,10 +141,11 @@ export function FocusPlayer() {
               size="icon"
               className={cn(
                 "h-9 w-9 rounded-xl transition-colors",
-                isPlaying ? "text-primary bg-primary/5" : "text-muted-foreground"
+                isPlaying ? "text-primary bg-primary/5" : "text-muted-foreground",
+                hasError && "text-destructive"
               )}
             >
-              <Music className={cn("w-4 h-4", isPlaying && "animate-pulse")} />
+              {hasError ? <AlertCircle className="w-4 h-4" /> : <Music className={cn("w-4 h-4", isPlaying && "animate-pulse")} />}
             </Button>
             <div className="hidden md:flex flex-col pr-2">
               <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground leading-none mb-0.5">Focus Music</span>
