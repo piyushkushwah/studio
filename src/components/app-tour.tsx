@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { 
   Dialog, 
   DialogContent, 
@@ -17,45 +17,38 @@ interface TourStep {
   title: string;
   description: string;
   targetId: string;
-  position: "bottom" | "top" | "left" | "right";
 }
 
 const TOUR_STEPS: TourStep[] = [
   {
     title: "Welcome to DailyTaskTrack!",
-    description: "Let's take a quick look at how to supercharge your productivity. This tour will guide you through the main features.",
+    description: "Your new command center for productivity. Let's take a 30-second tour of the main features.",
     targetId: "tour-header",
-    position: "bottom",
   },
   {
-    title: "Master Your Time",
-    description: "Use the integrated Pomodoro Timer to stay focused. It switches between 25-minute work sessions and 5-minute breaks automatically.",
+    title: "The Focus Engine",
+    description: "This is your Pomodoro Timer. Use it to work in 25-minute sprints. It automatically tracks your 'Deep Work' sessions.",
     targetId: "tour-timer",
-    position: "bottom",
   },
   {
-    title: "Interactive Calendar",
-    description: "Click any date to view or plan tasks for that specific day. The dots indicate how many tasks are scheduled and their status.",
+    title: "Interactive Planning",
+    description: "Click any date on this calendar to view or schedule tasks. The dots show your daily workload at a glance.",
     targetId: "tour-calendar",
-    position: "right",
   },
   {
-    title: "Daily Focus",
-    description: "This is your command center for the day. You can search, filter by labels, and track your daily completion rate here.",
+    title: "Daily Mission Control",
+    description: "Manage your tasks for the selected day here. You can search, filter by labels, and track your completion rate.",
     targetId: "tour-tasks",
-    position: "left",
   },
   {
-    title: "Add a Task",
-    description: "Ready to get started? Click this button to create your first task. You can set priorities, labels, and even add detailed notes.",
+    title: "Smart Task Creation",
+    description: "Click here to add a new task. You can set priorities, add detailed notes, and assign high-contrast labels.",
     targetId: "tour-add-task",
-    position: "left",
   },
   {
-    title: "Analytics & Logs",
-    description: "Track your long-term progress and focus sessions here. You can even export your data to an Excel-compatible CSV file.",
+    title: "Navigation & Insights",
+    description: "Quickly jump to your Time Tracking logs, view detailed Productivity Analytics, or manage your custom Labels.",
     targetId: "tour-nav",
-    position: "bottom",
   },
 ];
 
@@ -63,16 +56,38 @@ export function AppTour() {
   const [isOpen, setIsOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
 
+  const clearHighlights = useCallback(() => {
+    document.querySelectorAll(".tour-highlight").forEach((el) => {
+      el.classList.remove("tour-highlight");
+    });
+  }, []);
+
+  const applyHighlight = useCallback((stepIndex: number) => {
+    clearHighlights();
+    const step = TOUR_STEPS[stepIndex];
+    const element = document.getElementById(step.targetId);
+    if (element) {
+      element.classList.add("tour-highlight");
+      element.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, [clearHighlights]);
+
   useEffect(() => {
     const hasSeenTour = localStorage.getItem("daily_task_track_tour_seen");
     if (!hasSeenTour) {
-      setIsOpen(true);
+      // Small delay to ensure layout is ready
+      setTimeout(() => {
+        setIsOpen(true);
+        applyHighlight(0);
+      }, 1000);
     }
-  }, []);
+  }, [applyHighlight]);
 
   const handleNext = () => {
     if (currentStep < TOUR_STEPS.length - 1) {
-      setCurrentStep(currentStep + 1);
+      const nextStep = currentStep + 1;
+      setCurrentStep(nextStep);
+      applyHighlight(nextStep);
     } else {
       handleComplete();
     }
@@ -80,29 +95,35 @@ export function AppTour() {
 
   const handlePrev = () => {
     if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
+      const prevStep = currentStep - 1;
+      setCurrentStep(prevStep);
+      applyHighlight(prevStep);
     }
   };
 
   const handleComplete = () => {
     setIsOpen(false);
+    clearHighlights();
     localStorage.setItem("daily_task_track_tour_seen", "true");
   };
 
   const restartTour = () => {
     setCurrentStep(0);
     setIsOpen(true);
+    applyHighlight(0);
   };
 
-  // Expose restart function to window for the "Help" button
   useEffect(() => {
     (window as any).restartAppTour = restartTour;
-  }, []);
+  }, [applyHighlight]);
 
   const step = TOUR_STEPS[currentStep];
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={isOpen} onOpenChange={(open) => {
+      setIsOpen(open);
+      if (!open) clearHighlights();
+    }}>
       <DialogContent className="sm:max-w-[400px] border-primary/20 shadow-2xl">
         <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-primary text-white p-3 rounded-full shadow-xl">
           <Info className="w-6 h-6" />
@@ -151,7 +172,7 @@ export function AppTour() {
           >
             {currentStep === TOUR_STEPS.length - 1 ? (
               <>
-                Finish
+                Got it
                 <Check className="w-4 h-4 ml-1" />
               </>
             ) : (

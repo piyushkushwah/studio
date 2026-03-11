@@ -89,3 +89,20 @@
   50% { transform: scale(1.1); }
   100% { transform: scale(1); }
 }
+
+/* Tour Highlighting */
+.tour-highlight {
+  position: relative;
+  z-index: 51 !important;
+  pointer-events: none;
+  box-shadow: 0 0 0 4px hsl(var(--primary)), 0 0 20px 10px rgba(var(--primary), 0.3);
+  animation: tour-pulse 2s infinite;
+  transition: all 0.3s ease-in-out;
+  border-radius: var(--radius);
+}
+
+@keyframes tour-pulse {
+  0% { box-shadow: 0 0 0 0px hsl(var(--primary) / 0.8), 0 0 0 0px hsl(var(--primary) / 0.4); }
+  70% { box-shadow: 0 0 0 10px hsl(var(--primary) / 0), 0 0 20px 10px hsl(var(--primary) / 0); }
+  100% { box-shadow: 0 0 0 0px hsl(var(--primary) / 0), 0 0 0 0px hsl(var(--primary) / 0); }
+}
