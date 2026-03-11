@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import { 
   format, 
   addMonths, 
@@ -57,7 +58,7 @@ export default function DailyTaskTrack() {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeLabelFilter, setActiveLabelFilter] = useState<string | null>(null);
   const [greeting, setGreeting] = useState("Hello");
-  const [quote, setQuote] = useState("Loading inspiration...");
+  const [quote, setQuote] = useState<string | null>(null);
   const { toast } = useToast();
 
   const fetchNewQuote = useCallback(async () => {
@@ -177,9 +178,18 @@ export default function DailyTaskTrack() {
                 </div>
               )}
             </div>
-            <div className="flex items-start gap-2 mt-1 max-w-md">
+            <div className="flex items-start gap-2 mt-1 max-w-md h-8">
               <Quote className="w-3 h-3 text-accent mt-1 shrink-0" />
-              <p className="text-xs italic text-muted-foreground font-medium line-clamp-2 transition-opacity duration-500">{quote}</p>
+              {quote ? (
+                <p className="text-xs italic text-muted-foreground font-medium line-clamp-2 transition-opacity duration-500">
+                  {quote}
+                </p>
+              ) : (
+                <div className="space-y-1.5 py-1 w-full">
+                  <Skeleton className="h-2 w-full max-w-[280px]" />
+                  <Skeleton className="h-2 w-[180px]" />
+                </div>
+              )}
             </div>
           </div>
         </div>
