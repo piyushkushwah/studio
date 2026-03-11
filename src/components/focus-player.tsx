@@ -12,9 +12,7 @@ import {
   Music, 
   Volume2, 
   VolumeX, 
-  Coffee, 
   Headphones,
-  Moon,
   Play,
   Pause,
   AlertCircle,
@@ -24,31 +22,19 @@ import {
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 
-// Using verified high-quality public domain/creative commons MP3 assets for deep focus
+// Verified high-quality tracks provided by the user for deep focus
 const SOUNDS = [
   { 
-    id: "lofi", 
-    label: "Lo-Fi Chill", 
+    id: "jazzy-lofi", 
+    label: "Jazzy Lofi", 
     icon: Headphones, 
-    url: "https://archive.org/download/soft-lofi-beats/Soft%20Lofi%20Beats.mp3",
+    url: "https://archive.org/download/kalaido-hanging-lanterns_202101/%5BNo%20Copyright%20Music%5D%20Chill%20Jazzy%20Lofi%20Hip-Hop%20Beat%20%28Copyright%20Free%29%20Music%20By%20KaizanBlu.mp3",
   },
   { 
-    id: "piano", 
-    label: "Chill Piano", 
+    id: "jazz-bread", 
+    label: "Jazz 'Bread'", 
     icon: Sparkles, 
-    url: "https://archive.org/download/chill-piano-background-music/Chill%20Piano%20Background%20Music.mp3",
-  },
-  { 
-    id: "ambient", 
-    label: "Deep Ambient", 
-    icon: Moon, 
-    url: "https://archive.org/download/deep-focus-ambient/Deep%20Focus%20Ambient.mp3",
-  },
-  { 
-    id: "cafe", 
-    label: "Lo-Fi Cafe", 
-    icon: Coffee, 
-    url: "https://archive.org/download/lofi-beats-for-study/Lofi%20Beats%20for%20Study.mp3",
+    url: "https://archive.org/download/kalaido-hanging-lanterns_202101/%2F%28no%20copyright%20music%29%20jazz%20type%20beat%20bread%20royalty%20free%20youtube%20music%20prod.%20by%20lukrembo.mp3",
   },
 ];
 
@@ -126,8 +112,8 @@ export function FocusPlayer() {
     setIsLoading(false);
     toast({
       variant: "destructive",
-      title: "Audio Link Broken",
-      description: "We couldn't reach the sound server. Please try a different track.",
+      title: "Stream Unavailable",
+      description: "We couldn't reach the focus track. Please try again or check your connection.",
     });
   };
 
