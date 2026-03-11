@@ -92,8 +92,10 @@ export function FocusPlayer() {
     } else {
       const sound = SOUNDS.find(s => s.id === soundId);
       if (sound && audioRef.current) {
+        // Reset and load new source
+        audioRef.current.pause();
         audioRef.current.src = sound.url;
-        audioRef.current.load(); // Ensure the new source is loaded
+        audioRef.current.load(); // Crucial: reload the media element with the new source
         setActiveSound(soundId);
         handlePlay();
       }
