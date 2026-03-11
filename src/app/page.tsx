@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useMemo, useEffect, useCallback } from "react";
@@ -73,10 +74,8 @@ export default function DailyTaskTrack() {
     else if (hour < 17) setGreeting("Good Afternoon");
     else setGreeting("Good Evening");
     
-    // Initial fetch
     fetchNewQuote();
 
-    // Set interval to fetch every 1 minute
     const intervalId = setInterval(fetchNewQuote, 60000);
 
     return () => clearInterval(intervalId);
@@ -223,7 +222,6 @@ export default function DailyTaskTrack() {
       </header>
 
       <main className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
-        {/* Calendar Section */}
         <div id="tour-calendar" className="lg:col-span-7 flex flex-col gap-8 w-full">
           <Card className="p-6 md:p-10 shadow-2xl shadow-primary/5 bg-white border-white/50 rounded-[2rem]">
             <div className="flex items-center justify-between mb-8 md:mb-10">
@@ -260,10 +258,9 @@ export default function DailyTaskTrack() {
           </Card>
         </div>
 
-        {/* Sidebar Section */}
         <div id="tour-tasks" className="lg:col-span-5 flex flex-col gap-8 w-full">
           <Card className={cn(
-            "p-8 md:p-10 shadow-2xl transition-all duration-500 min-h-[500px] flex flex-col bg-white border-white/50 rounded-[2rem]",
+            "p-8 md:p-10 shadow-2xl transition-all duration-500 max-h-[800px] flex flex-col bg-white border-white/50 rounded-[2rem]",
             goalMet ? "shadow-accent/10 border-accent/20 ring-1 ring-accent/10" : "shadow-primary/5"
           )}>
             <div className="flex items-center justify-between mb-8">
@@ -301,8 +298,8 @@ export default function DailyTaskTrack() {
                     {goalMet ? <Star className="w-3 h-3 fill-current" /> : `${Math.round(completionRate)}%`}
                   </span>
                 </div>
-                <div className="flex flex-col">
-                  <h3 className="text-2xl md:text-3xl font-black text-primary tracking-tight">{format(selectedDate, "EEEE")}</h3>
+                <div className="flex flex-col text-primary">
+                  <h3 className="text-2xl md:text-3xl font-black tracking-tight">{format(selectedDate, "EEEE")}</h3>
                   <p className="text-sm text-muted-foreground font-bold uppercase tracking-widest">{format(selectedDate, "do MMMM")}</p>
                 </div>
               </div>
@@ -319,7 +316,6 @@ export default function DailyTaskTrack() {
               </Button>
             </div>
 
-            {/* Daily Goal & Search */}
             <div className="space-y-5 mb-8">
               <div className={cn(
                 "flex items-center gap-4 p-4 rounded-2xl border transition-colors",
@@ -386,8 +382,8 @@ export default function DailyTaskTrack() {
               </div>
             </div>
 
-            <ScrollArea className="flex-1 -mx-2 px-2 max-h-[400px]">
-              <div className="space-y-4">
+            <ScrollArea className="flex-1 -mx-2 px-2">
+              <div className="space-y-4 pb-4">
                 {dailyTasks.length === 0 ? (
                   <div className="py-16 text-center flex flex-col items-center gap-5">
                     <div className="w-16 h-16 bg-muted/30 rounded-full flex items-center justify-center text-muted-foreground/20">
@@ -414,7 +410,7 @@ export default function DailyTaskTrack() {
             </ScrollArea>
 
             {dailyTasks.length > 0 && (
-              <div className="mt-8 pt-8 border-t flex flex-col sm:flex-row sm:items-center justify-between gap-5">
+              <div className="mt-4 pt-6 border-t flex flex-col sm:flex-row sm:items-center justify-between gap-5">
                 <div className="flex items-center gap-3">
                   <div className="bg-accent/10 p-2 rounded-lg">
                     <CheckCircle2 className="w-5 h-5 text-accent" />
