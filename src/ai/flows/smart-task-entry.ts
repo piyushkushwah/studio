@@ -17,12 +17,11 @@ const SmartTaskEntryInputSchema = z.object({
 export type SmartTaskEntryInput = z.infer<typeof SmartTaskEntryInputSchema>;
 
 const SmartTaskEntryOutputSchema = z.object({
-  description: z.string().describe('The extracted clear task description.'),
+  description: z.string().describe('The action-oriented task description.'),
   dueDate: z
     .string()
     .nullable()
-    .optional()
-    .describe("The extracted due date in YYYY-MM-DD format, or null if no date is mentioned."),
+    .describe("The extracted due date in YYYY-MM-DD format, or null if not specified."),
 });
 export type SmartTaskEntryOutput = z.infer<typeof SmartTaskEntryOutputSchema>;
 
@@ -30,10 +29,11 @@ export type SmartTaskEntryOutput = z.infer<typeof SmartTaskEntryOutputSchema>;
  * Server action to extract task details from natural language.
  */
 export async function extractTaskDetails(input: SmartTaskEntryInput): Promise<SmartTaskEntryOutput> {
-  // Explicit check for API key before calling the flow
+  // Check for API key in environment
   const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENAI_API_KEY;
+  
   if (!apiKey) {
-    console.error('AI_FLOW_ERROR: Missing API Key in environment.');
+    console.error('AI_FLOW_ERROR: Missing Gemini API Key.');
     throw new Error('MISSING_API_KEY');
   }
 
@@ -42,9 +42,14 @@ export async function extractTaskDetails(input: SmartTaskEntryInput): Promise<Sm
   } catch (error: any) {
     console.error('AI_FLOW_EXECUTION_FAILED:', error);
     
-    const message = error.message || '';
-    if (message.includes('429')) throw new Error('QUOTA_EXCEEDED');
-    if (message.includes('403') || message.includes('API_KEY_INVALID')) throw new Error('INVALID_API_KEY');
+    // Check for specific error codes from the Gemini API
+    const errorMsg = error.message?.toLowerCase() || '';
+    if (errorMsg.includes('429') || errorMsg.includes('quota')) {
+      throw new Error('QUOTA_EXCEEDED');
+    }
+    if (errorMsg.includes('403') || errorMsg.includes('invalid api key')) {
+      throw new Error('INVALID_API_KEY');
+    }
     
     throw new Error('AI_PARSING_FAILED');
   }
@@ -56,28 +61,19 @@ const taskPrompt = ai.definePrompt({
   output: { schema: SmartTaskEntryOutputSchema },
   config: {
     model: 'googleai/gemini-1.5-flash',
-    safetySettings: [
-      { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_NONE' },
-      { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_NONE' },
-      { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' },
-      { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' },
-      { category: 'HARM_CATEGORY_CIVIC_INTEGRITY', threshold: 'BLOCK_NONE' },
-    ],
   },
-  prompt: `
-    You are a professional task management assistant. Your goal is to convert messy, natural language user input into a clean task object.
-
-    CONTEXT:
-    Today's date is: {{{currentDate}}}
-
-    INPUT:
-    "{{{naturalLanguageTask}}}"
+  system: `You are a professional productivity assistant. Your goal is to extract structured task data from messy natural language input.
     
-    INSTRUCTIONS:
-    1. Resolve all relative dates (e.g., "tomorrow", "next Wed", "in two days") based on the current date provided.
-    2. If no time/date is mentioned, set 'dueDate' to null.
-    3. Ensure the description is action-oriented and clear. Remove filler words like "I need to", "Could you", etc.
-    4. Provide the output as a clean JSON object matching the schema.
+    RULES:
+    1. Resolve relative dates (e.g., 'tomorrow', 'next Friday', 'in 3 days') based on the provided currentDate.
+    2. If no date is mentioned, return null for dueDate.
+    3. Keep descriptions action-oriented and remove filler words like 'I need to' or 'remind me to'.
+    4. Ensure the output is valid JSON according to the schema.`,
+  prompt: `
+    Current Date: {{currentDate}}
+    User Input: "{{naturalLanguageTask}}"
+    
+    Extract the action and resolve the due date.
   `,
 });
 
@@ -88,16 +84,16 @@ const smartTaskEntryFlow = ai.defineFlow(
     outputSchema: SmartTaskEntryOutputSchema,
   },
   async (input) => {
-    // Ensure we have a reference date for relative parsing
-    const contextInput = {
+    // Default to today if no date provided to help AI resolve relative terms
+    const currentDate = input.currentDate || new Date().toISOString().split('T')[0];
+    
+    const { output } = await taskPrompt({
       ...input,
-      currentDate: input.currentDate || new Date().toISOString().split('T')[0],
-    };
-
-    const { output } = await taskPrompt(contextInput);
+      currentDate,
+    });
 
     if (!output) {
-      throw new Error('AI_EMPTY_RESPONSE');
+      throw new Error('No output from model');
     }
 
     return {

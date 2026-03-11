@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Loader2, ArrowRight } from "lucide-react";
+import { Sparkles, Loader2, ArrowRight, AlertCircle } from "lucide-react";
 import { extractTaskDetails } from "@/ai/flows/smart-task-entry";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
@@ -25,7 +25,7 @@ export function SmartTaskInput({ onTaskParsed }: SmartTaskInputProps) {
 
     setIsLoading(true);
     try {
-      // Pass the local client date to ensure relative dates are resolved correctly for the user's timezone
+      // Pass the client's local date to the AI for relative date resolution
       const currentDate = format(new Date(), "yyyy-MM-dd");
       
       const result = await extractTaskDetails({ 
@@ -40,22 +40,24 @@ export function SmartTaskInput({ onTaskParsed }: SmartTaskInputProps) {
         });
         setValue("");
         toast({
-          title: "Task Extracted",
-          description: `"${result.description}" ${result.dueDate ? `set for ${result.dueDate}` : 'added to today'}.`,
+          title: "Task Added ✨",
+          description: `"${result.description}" ${result.dueDate ? `scheduled for ${result.dueDate}` : 'added to your list'}.`,
         });
       }
     } catch (error: any) {
       console.error("SmartTaskInput Error:", error);
       
-      let title = "AI Parsing Failed";
-      let description = "We couldn't process that task. Try being more specific or add it manually.";
+      let title = "AI Assistant Busy";
+      let description = "We couldn't parse that automatically. Please try adding it manually.";
       
       if (error.message === 'QUOTA_EXCEEDED') {
-        title = "Daily Limit Reached";
-        description = "Your Gemini AI free tier quota is exhausted. Please try again later or use manual entry.";
+        title = "AI Limit Reached";
+        description = "The daily AI capacity for your current plan is exhausted. Please use manual entry.";
       } else if (error.message === 'INVALID_API_KEY' || error.message === 'MISSING_API_KEY') {
-        title = "Configuration Error";
-        description = "The AI service is not properly configured. Check your API key.";
+        title = "AI Not Configured";
+        description = "The AI service is missing a valid API key. Please check your environment variables.";
+      } else if (error.message === 'AI_PARSING_FAILED') {
+        description = "The AI was confused by that request. Try being more specific like 'Buy milk tomorrow'.";
       }
 
       toast({
@@ -76,7 +78,7 @@ export function SmartTaskInput({ onTaskParsed }: SmartTaskInputProps) {
       <Input
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        placeholder="Smart add: 'Doctor appointment next Friday'..."
+        placeholder="Smart add: 'Gym tomorrow' or 'Laundry next Mon'"
         className="pl-10 pr-12 bg-white border-primary/10 focus:border-primary/30 transition-all h-11 rounded-xl shadow-sm"
         disabled={isLoading}
       />
