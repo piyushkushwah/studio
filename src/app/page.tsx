@@ -71,7 +71,6 @@ export default function DailyTaskTrack() {
   
   const { toast } = useToast();
 
-  // On mount, check if there's a redirect result (for browsers that don't support popups)
   useEffect(() => {
     if (!auth) return;
     
@@ -82,7 +81,6 @@ export default function DailyTaskTrack() {
         }
       })
       .catch((error: any) => {
-        console.error("Auth Redirect Error:", error);
         if (error.code === 'auth/unauthorized-domain') {
           toast({ 
             variant: "destructive", 
@@ -104,12 +102,12 @@ export default function DailyTaskTrack() {
     provider.setCustomParameters({ prompt: 'select_account' });
     
     try {
-      // Use signInWithPopup for a more reliable experience in most web environments
       await signInWithPopup(auth, provider);
-      toast({ title: "Logged In", description: "Successfully connected to your Google account." });
+      toast({ title: "Success", description: "Logged in successfully." });
     } catch (error: any) {
-      console.error("Auth Login Error:", error);
-      if (error.code === 'auth/unauthorized-domain') {
+      if (error.code === 'auth/popup-closed-by-user') {
+        toast({ title: "Sign In Canceled", description: "The login window was closed before completion." });
+      } else if (error.code === 'auth/unauthorized-domain') {
         toast({ 
           variant: "destructive", 
           title: "Setup Required", 
@@ -128,7 +126,7 @@ export default function DailyTaskTrack() {
   const handleLogout = async () => {
     if (!auth) return;
     await signOut(auth);
-    toast({ title: "Signed Out", description: "Your local workspace is still available." });
+    toast({ title: "Signed Out", description: "Successfully logged out." });
   };
 
   const fetchNewQuote = useCallback(async () => {
@@ -198,21 +196,19 @@ export default function DailyTaskTrack() {
 
   const completionRate = dailyTasks.length > 0 ? (completedCount / dailyTasks.length) * 100 : 0;
 
-  // Render a loader if we are in an intermediate state (loading auth or initial sync)
   if (authLoading || isAuthProcessing || (user && !isInitialized)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="w-10 h-10 animate-spin text-primary" />
           <p className="text-muted-foreground font-medium animate-pulse">
-            {authLoading || isAuthProcessing ? "Identifying User..." : "Synchronizing Workspace..."}
+            {authLoading || isAuthProcessing ? "Authenticating..." : "Synchronizing workspace..."}
           </p>
         </div>
       </div>
     );
   }
 
-  // If no user is authenticated, show the login screen
   if (!user) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-6">
@@ -222,7 +218,7 @@ export default function DailyTaskTrack() {
           </div>
           <div className="space-y-3">
             <h2 className="text-4xl font-black text-primary tracking-tight">DailyTaskTrack</h2>
-            <p className="text-muted-foreground font-medium px-4">Professional Productivity Command Center.</p>
+            <p className="text-muted-foreground font-medium px-4">Your Professional Productivity Command Center.</p>
           </div>
           
           <div className="space-y-4">
@@ -241,26 +237,25 @@ export default function DailyTaskTrack() {
                     <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" />
                     <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.66l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
                   </svg>
-                  Connect with Google
+                  Sign in with Google
                 </>
               )}
             </Button>
             <div className="flex items-center gap-2 text-muted-foreground/30 py-2">
               <div className="h-px bg-current flex-1" />
-              <span className="text-[10px] font-black uppercase tracking-widest">Real-time Cloud Sync</span>
+              <span className="text-[10px] font-black uppercase tracking-widest">Secure Cloud Sync</span>
               <div className="h-px bg-current flex-1" />
             </div>
           </div>
           
           <div className="pt-2">
-            <p className="text-[10px] text-muted-foreground uppercase font-black tracking-[0.2em]">Secure Authentication • Auto Save</p>
+            <p className="text-[10px] text-muted-foreground uppercase font-black tracking-[0.2em]">Google Auth • Real-time Backup</p>
           </div>
         </Card>
       </div>
     );
   }
 
-  // Final Dashboard Render
   return (
     <div className="min-h-screen bg-background p-4 md:p-8 flex flex-col items-center overflow-x-hidden animate-in fade-in duration-700">
       <AppTour />

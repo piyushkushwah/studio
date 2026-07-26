@@ -310,6 +310,11 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     const userId = user.uid;
     const unsubs: Unsubscribe[] = [];
     
+    // Fail-safe initialization timer
+    const initTimer = setTimeout(() => {
+      if (!isInitialized) setIsInitialized(true);
+    }, 5000);
+
     const tasksRef = collection(firestore, 'users', userId, 'tasks');
     unsubs.push(onSnapshot(tasksRef, (snapshot) => {
       setTasks(snapshot.docs
@@ -317,9 +322,11 @@ export function TaskProvider({ children }: { children: ReactNode }) {
         .sort((a, b) => b.createdAt - a.createdAt)
       );
       setIsInitialized(true);
+      clearTimeout(initTimer);
     }, (err) => {
       console.error("Firestore sync error:", err);
-      setIsInitialized(true); // Don't block UI if sync fails
+      setIsInitialized(true); 
+      clearTimeout(initTimer);
     }));
 
     const labelsRef = collection(firestore, 'users', userId, 'labels');
@@ -344,8 +351,11 @@ export function TaskProvider({ children }: { children: ReactNode }) {
       }
     }));
 
-    return () => unsubs.forEach(unsub => unsub());
-  }, [user, authLoading, firestore]);
+    return () => {
+      unsubs.forEach(unsub => unsub());
+      clearTimeout(initTimer);
+    };
+  }, [user, authLoading, firestore, isInitialized]);
 
   const streak = useMemo(() => {
     if (!tasks.length) return 0;
