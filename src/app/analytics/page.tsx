@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useMemo } from "react";
@@ -12,7 +13,7 @@ import {
   ChartLegend, 
   ChartLegendContent 
 } from "@/components/ui/chart";
-import { ArrowLeft, PieChart as PieChartIcon, Info, Download, FileSpreadsheet, Zap, Flame, Calendar as CalendarIcon } from "lucide-react";
+import { ArrowLeft, PieChart as PieChartIcon, Info, Download, FileSpreadsheet, Zap, Flame, Calendar as CalendarIcon, Coffee } from "lucide-react";
 import Link from "next/link";
 import { subDays, format, eachDayOfInterval, isSameDay, startOfMonth, endOfMonth } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -28,6 +29,8 @@ export default function AnalyticsPage() {
         color: `hsl(var(--chart-${(index % 5) + 1}))`,
       };
     });
+    config["work"] = { label: "Work", color: "hsl(var(--primary))" };
+    config["break"] = { label: "Break", color: "hsl(var(--accent))" };
     config["completed"] = { label: "Completed", color: "hsl(var(--accent))" };
     return config;
   }, [labels]);
@@ -50,6 +53,20 @@ export default function AnalyticsPage() {
       };
     });
   }, [tasks, chartConfig]);
+
+  const timeAllocationData = useMemo(() => {
+    const workTime = sessions
+      .filter(s => s.type === 'work' || s.type === 'manual')
+      .reduce((acc, s) => acc + s.durationMinutes, 0);
+    const breakTime = sessions
+      .filter(s => s.type === 'short')
+      .reduce((acc, s) => acc + s.durationMinutes, 0);
+
+    return [
+      { name: 'Work', value: workTime, fill: 'hsl(var(--primary))' },
+      { name: 'Break', value: breakTime, fill: 'hsl(var(--accent))' }
+    ].filter(d => d.value > 0);
+  }, [sessions]);
 
   const weeklyTrendData = useMemo(() => {
     const last7Days = eachDayOfInterval({
@@ -154,7 +171,7 @@ export default function AnalyticsPage() {
           <div className="bg-primary text-white p-2 rounded-lg shrink-0">
             <PieChartIcon className="w-5 h-5" />
           </div>
-          <h1 className="text-lg md:text-xl font-bold text-primary truncate">Task Analytics</h1>
+          <h1 className="text-lg md:text-xl font-bold text-primary truncate">Productivity Analytics</h1>
         </div>
         <Button 
           variant="outline" 
@@ -171,33 +188,33 @@ export default function AnalyticsPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card className="shadow-sm border-white/40 bg-white/50 backdrop-blur-sm">
             <CardHeader className="pb-2">
-              <CardDescription className="font-medium">Total Lifetime</CardDescription>
-              <CardTitle className="text-2xl font-bold text-primary">{stats.total}</CardTitle>
+              <CardDescription className="font-black text-[10px] uppercase tracking-widest">Total Tasks</CardDescription>
+              <CardTitle className="text-2xl font-black text-primary">{stats.total}</CardTitle>
             </CardHeader>
           </Card>
           <Card className="shadow-sm border-white/40 bg-white/50 backdrop-blur-sm">
             <CardHeader className="pb-2">
-              <CardDescription className="font-medium">Efficiency</CardDescription>
-              <CardTitle className="text-2xl font-bold">
+              <CardDescription className="font-black text-[10px] uppercase tracking-widest">Efficiency</CardDescription>
+              <CardTitle className="text-2xl font-black">
                 {stats.rate}%
               </CardTitle>
             </CardHeader>
           </Card>
           <Card className="shadow-sm border-white/40 bg-white/50 backdrop-blur-sm">
             <CardHeader className="pb-2">
-              <CardDescription className="font-medium flex items-center gap-1">
+              <CardDescription className="font-black text-[10px] uppercase tracking-widest flex items-center gap-1">
                 <Flame className="w-3 h-3 text-orange-500" />
                 Peak Focus Hour
               </CardDescription>
-              <CardTitle className="text-2xl font-bold text-orange-600">
+              <CardTitle className="text-2xl font-black text-orange-600">
                 {peakFocusHour}
               </CardTitle>
             </CardHeader>
           </Card>
           <Card className="shadow-sm border-white/40 bg-white/50 backdrop-blur-sm">
             <CardHeader className="pb-2">
-              <CardDescription className="font-medium">Completed</CardDescription>
-              <CardTitle className="text-2xl font-bold text-accent">
+              <CardDescription className="font-black text-[10px] uppercase tracking-widest">Completed</CardDescription>
+              <CardTitle className="text-2xl font-black text-accent">
                 {stats.completed}
               </CardTitle>
             </CardHeader>
@@ -233,6 +250,43 @@ export default function AnalyticsPage() {
         </Card>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Time Allocation (Work vs Break) */}
+          <Card className="shadow-xl shadow-primary/5 border-white/40 bg-white/50 backdrop-blur-sm">
+            <CardHeader>
+              <CardTitle className="text-lg">Time Allocation</CardTitle>
+              <CardDescription>Work focus vs Break time distribution</CardDescription>
+            </CardHeader>
+            <CardContent className="h-[300px] flex items-center justify-center">
+              {sessions.length > 0 ? (
+                <ChartContainer config={chartConfig} className="h-full w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={timeAllocationData}
+                        dataKey="value"
+                        nameKey="name"
+                        cx="50%"
+                        cy="50%"
+                        outerRadius="80%"
+                        innerRadius="50%"
+                        paddingAngle={5}
+                        strokeWidth={0}
+                      >
+                        {timeAllocationData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.fill} />
+                        ))}
+                      </Pie>
+                      <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+                      <ChartLegend content={<ChartLegendContent />} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </ChartContainer>
+              ) : (
+                <EmptyState />
+              )}
+            </CardContent>
+          </Card>
+
           {/* Label Distribution */}
           <Card className="shadow-xl shadow-primary/5 border-white/40 bg-white/50 backdrop-blur-sm">
             <CardHeader>
@@ -269,41 +323,6 @@ export default function AnalyticsPage() {
               )}
             </CardContent>
           </Card>
-
-          {/* Weekly Trend */}
-          <Card className="shadow-xl shadow-primary/5 border-white/40 bg-white/50 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle className="text-lg">7-Day Progress</CardTitle>
-              <CardDescription>Completed tasks this week</CardDescription>
-            </CardHeader>
-            <CardContent className="h-[300px]">
-              {tasks.length > 0 ? (
-                <ChartContainer config={chartConfig} className="h-full w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={weeklyTrendData}>
-                      <CartesianGrid vertical={false} strokeDasharray="3 3" opacity={0.3} />
-                      <XAxis 
-                        dataKey="date" 
-                        axisLine={false} 
-                        tickLine={false} 
-                        tick={{fill: 'hsl(var(--muted-foreground))', fontSize: 12}}
-                      />
-                      <YAxis hide />
-                      <ChartTooltip content={<ChartTooltipContent />} />
-                      <Bar 
-                        dataKey="completed" 
-                        fill="hsl(var(--accent))" 
-                        radius={[4, 4, 0, 0]} 
-                        barSize={32}
-                      />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </ChartContainer>
-              ) : (
-                <EmptyState />
-              )}
-            </CardContent>
-          </Card>
         </div>
       </main>
     </div>
@@ -319,7 +338,7 @@ function EmptyState() {
       <div>
         <h4 className="font-bold text-lg">No Data Available</h4>
         <p className="text-muted-foreground text-sm max-w-[200px]">
-          Start adding tasks to visualize your productivity.
+          Start adding tasks and logging sessions to visualize your progress.
         </p>
       </div>
     </div>

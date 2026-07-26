@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useMemo, useState } from "react";
@@ -15,7 +16,7 @@ import {
   DialogFooter,
   DialogDescription
 } from "@/components/ui/dialog";
-import { ArrowLeft, Clock, Zap, Coffee, History, Plus, Pencil, Trash2, Calendar as CalendarIcon } from "lucide-react";
+import { ArrowLeft, Clock, Zap, Coffee, History, Plus, Pencil, Trash2, Calendar as CalendarIcon, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { format, parseISO } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -26,7 +27,6 @@ export default function TimeTrackingPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingSession, setEditingSession] = useState<Session | null>(null);
   
-  // Form state
   const [formData, setFormData] = useState({
     duration: "25",
     date: format(new Date(), "yyyy-MM-dd"),
@@ -39,6 +39,18 @@ export default function TimeTrackingPage() {
       .filter(s => s.type === 'work' || s.type === 'manual')
       .reduce((acc, s) => acc + s.durationMinutes, 0);
   }, [sessions]);
+
+  const totalBreakTime = useMemo(() => {
+    return sessions
+      .filter(s => s.type === 'short')
+      .reduce((acc, s) => acc + s.durationMinutes, 0);
+  }, [sessions]);
+
+  const efficiency = useMemo(() => {
+    const total = totalFocusTime + totalBreakTime;
+    if (total === 0) return 0;
+    return Math.round((totalFocusTime / total) * 100);
+  }, [totalFocusTime, totalBreakTime]);
 
   const dailySessions = useMemo(() => {
     const grouped: Record<string, typeof sessions> = {};
@@ -117,28 +129,37 @@ export default function TimeTrackingPage() {
       </header>
 
       <main className="w-full max-w-5xl space-y-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card className="shadow-sm border-white/40 bg-white/50 backdrop-blur-sm">
             <CardHeader className="pb-2">
-              <CardDescription className="font-medium">Total Deep Work</CardDescription>
-              <CardTitle className="text-2xl font-bold text-primary flex items-baseline gap-1">
+              <CardDescription className="font-bold uppercase tracking-widest text-[10px]">Total Deep Work</CardDescription>
+              <CardTitle className="text-2xl font-black text-primary flex items-baseline gap-1">
                 {Math.floor(totalFocusTime / 60)}h {totalFocusTime % 60}m
               </CardTitle>
             </CardHeader>
           </Card>
           <Card className="shadow-sm border-white/40 bg-white/50 backdrop-blur-sm">
             <CardHeader className="pb-2">
-              <CardDescription className="font-medium">Total Sessions</CardDescription>
-              <CardTitle className="text-2xl font-bold text-accent">
-                {sessions.length}
+              <CardDescription className="font-bold uppercase tracking-widest text-[10px]">Total Break Time</CardDescription>
+              <CardTitle className="text-2xl font-black text-accent flex items-baseline gap-1">
+                {Math.floor(totalBreakTime / 60)}h {totalBreakTime % 60}m
               </CardTitle>
             </CardHeader>
           </Card>
           <Card className="shadow-sm border-white/40 bg-white/50 backdrop-blur-sm">
             <CardHeader className="pb-2">
-              <CardDescription className="font-medium">Work vs Break</CardDescription>
-              <CardTitle className="text-2xl font-bold">
-                {sessions.filter(s => s.type === 'work' || s.type === 'manual').length}:{sessions.filter(s => s.type === 'short').length}
+              <CardDescription className="font-bold uppercase tracking-widest text-[10px]">Focus Intensity</CardDescription>
+              <CardTitle className="text-2xl font-black text-orange-600 flex items-center gap-2">
+                <TrendingUp className="w-5 h-5" />
+                {efficiency}%
+              </CardTitle>
+            </CardHeader>
+          </Card>
+          <Card className="shadow-sm border-white/40 bg-white/50 backdrop-blur-sm">
+            <CardHeader className="pb-2">
+              <CardDescription className="font-bold uppercase tracking-widest text-[10px]">Logged Sessions</CardDescription>
+              <CardTitle className="text-2xl font-black">
+                {sessions.length}
               </CardTitle>
             </CardHeader>
           </Card>
@@ -150,7 +171,7 @@ export default function TimeTrackingPage() {
               <History className="w-5 h-5 text-primary" />
               <CardTitle className="text-lg">Activity Log</CardTitle>
             </div>
-            <CardDescription>A chronological record of your productivity sessions</CardDescription>
+            <CardDescription>A chronological record of your productivity and rest sessions</CardDescription>
           </CardHeader>
           <CardContent>
             {sessions.length === 0 ? (
@@ -165,7 +186,7 @@ export default function TimeTrackingPage() {
                 <div className="space-y-8">
                   {dailySessions.map(([date, daySessions]) => (
                     <div key={date} className="space-y-4">
-                      <h4 className="text-sm font-black uppercase tracking-widest text-primary/40 border-b pb-2">
+                      <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/40 border-b pb-2">
                         {format(parseISO(date), 'EEEE, MMMM do')}
                       </h4>
                       <div className="grid gap-3">
@@ -186,13 +207,16 @@ export default function TimeTrackingPage() {
                                   <p className="font-bold text-sm">
                                     {session.type === 'work' ? 'Focus Session' : session.type === 'manual' ? 'Manual Entry' : 'Short Break'}
                                   </p>
-                                  <p className="text-xs text-muted-foreground">
+                                  <p className="text-[10px] text-muted-foreground font-medium">
                                     {session.type === 'manual' ? 'Manual record' : `Started at ${format(session.startTime, 'h:mm a')}`}
                                   </p>
                                 </div>
                               </div>
                               <div className="flex items-center gap-4">
-                                <span className="font-black text-sm text-primary">
+                                <span className={cn(
+                                  "font-black text-sm",
+                                  session.type === 'short' ? "text-accent" : "text-primary"
+                                )}>
                                   {session.durationMinutes}m
                                 </span>
                                 <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -206,8 +230,8 @@ export default function TimeTrackingPage() {
                               </div>
                             </div>
                             {session.note && (
-                              <p className="mt-2 text-xs text-muted-foreground bg-muted/30 p-2 rounded-md">
-                                {session.note}
+                              <p className="mt-2 text-xs text-muted-foreground bg-muted/30 p-2 rounded-md italic">
+                                "{session.note}"
                               </p>
                             )}
                           </div>
