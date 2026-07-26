@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -11,15 +12,18 @@ import { useAuth } from '../provider';
 export function useUser() {
   const auth = useAuth();
   
-  // Initialize state safely. auth might be null if Firebase failed to initialize.
-  const [user, setUser] = useState<User | null>(auth?.currentUser || null);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // If auth is not available, we can't listen for state changes
     if (!auth) {
       setLoading(false);
       return;
+    }
+
+    // Set initial state from currentUser if available
+    if (auth.currentUser) {
+      setUser(auth.currentUser);
     }
 
     const unsubscribe = onAuthStateChanged(auth, (authUser) => {

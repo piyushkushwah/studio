@@ -75,22 +75,25 @@ export default function DailyTaskTrack() {
   useEffect(() => {
     if (!auth) return;
     
+    // Check if we are returning from a redirect
+    setIsStarting(true);
     getRedirectResult(auth)
       .then((result) => {
         if (result) {
           toast({ title: "Welcome back!", description: `Logged in as ${result.user.displayName}` });
         }
+        setIsStarting(false);
       })
       .catch((error: any) => {
-        console.error("Auth Redirect Result Error:", error);
+        console.error("Auth Redirect Error:", error);
+        setIsStarting(false);
         if (error.code === 'auth/unauthorized-domain') {
           toast({ 
             variant: "destructive", 
-            title: "Authorized Domain Required", 
-            description: `Please add "${window.location.hostname}" to your Firebase Console > Auth > Settings > Authorized Domains.` 
+            title: "Setup Required", 
+            description: `Add "${window.location.hostname}" to authorized domains in Firebase Console > Auth > Settings.` 
           });
         }
-        setIsStarting(false);
       });
   }, [auth, toast]);
 
@@ -108,16 +111,16 @@ export default function DailyTaskTrack() {
       await signInWithRedirect(auth, provider);
     } catch (error: any) {
       console.error("Auth Login Initiation Error:", error);
+      setIsStarting(false);
       if (error.code === 'auth/unauthorized-domain') {
         toast({ 
           variant: "destructive", 
-          title: "Setup Required", 
-          description: `Add "${window.location.hostname}" to authorized domains in Firebase Console.` 
+          title: "Authorized Domain Required", 
+          description: `Add "${window.location.hostname}" to your Firebase Console authorized domains list.` 
         });
       } else {
         toast({ variant: "destructive", title: "Sign In Failed", description: error.message || "Could not sign in with Google." });
       }
-      setIsStarting(false);
     }
   };
 
@@ -193,12 +196,15 @@ export default function DailyTaskTrack() {
 
   const completionRate = dailyTasks.length > 0 ? (completedCount / dailyTasks.length) * 100 : 0;
 
-  if (authLoading || (user && !isInitialized)) {
+  // Show loading while checking auth OR while waiting for Firestore sync
+  if (authLoading || isStarting || (user && !isInitialized)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="w-10 h-10 animate-spin text-primary" />
-          <p className="text-muted-foreground font-medium animate-pulse">Syncing your focus data...</p>
+          <p className="text-muted-foreground font-medium animate-pulse">
+            {isStarting ? "Authenticating..." : "Syncing your focus data..."}
+          </p>
         </div>
       </div>
     );

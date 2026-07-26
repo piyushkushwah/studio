@@ -316,6 +316,10 @@ export function TaskProvider({ children }: { children: ReactNode }) {
         .map(doc => ({ ...doc.data(), id: doc.id } as Task))
         .sort((a, b) => b.createdAt - a.createdAt)
       );
+      setIsInitialized(true);
+    }, (err) => {
+      console.error("Firestore sync error:", err);
+      setIsInitialized(true); // Don't block UI if sync fails
     }));
 
     const labelsRef = collection(firestore, 'users', userId, 'labels');
@@ -340,7 +344,6 @@ export function TaskProvider({ children }: { children: ReactNode }) {
       }
     }));
 
-    setIsInitialized(true);
     return () => unsubs.forEach(unsub => unsub());
   }, [user, authLoading, firestore]);
 

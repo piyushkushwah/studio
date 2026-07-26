@@ -8,24 +8,33 @@ import { firebaseConfig } from './config';
 
 /**
  * Initializes Firebase App and services.
- * Uses explicit config to avoid Hosting-specific auto-discovery errors like 404 init.json.
+ * Uses explicit config and ensures singleton initialization to avoid Hosting-specific auto-discovery errors.
  */
+let app: FirebaseApp | null = null;
+let db: Firestore | null = null;
+let firebaseAuth: Auth | null = null;
+
 export function initializeFirebase(): {
   firebaseApp: FirebaseApp | null;
   firestore: Firestore | null;
   auth: Auth | null;
 } {
+  if (typeof window === 'undefined') {
+    return { firebaseApp: null, firestore: null, auth: null };
+  }
+
   try {
-    // Prevent the SDK from trying to find config on the server/hosting origin
-    if (typeof window !== 'undefined') {
-      (window as any).FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+    if (!app) {
+      app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+      db = getFirestore(app);
+      firebaseAuth = getAuth(app);
     }
 
-    const firebaseApp = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
-    const firestore = getFirestore(firebaseApp);
-    const auth = getAuth(firebaseApp);
-
-    return { firebaseApp, firestore, auth };
+    return { 
+      firebaseApp: app, 
+      firestore: db, 
+      auth: firebaseAuth 
+    };
   } catch (error) {
     console.error('Error initializing Firebase services:', error);
     return { firebaseApp: null, firestore: null, auth: null };
