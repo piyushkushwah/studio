@@ -6,18 +6,23 @@ import { initializeFirebase } from './index';
 
 /**
  * A client-side wrapper that initializes Firebase and provides it to the app.
- * This component ensures Firebase is only initialized on the client.
+ * Handles cases where initialization might return null due to missing configuration.
  */
 export function FirebaseClientProvider({
   children,
 }: {
   children: ReactNode;
 }) {
-  // Memoize the initialization so it only happens once on the client
-  const { firebaseApp, firestore, auth } = useMemo(() => initializeFirebase(), []);
+  const services = useMemo(() => initializeFirebase(), []);
 
+  // If services are not available, we still want to render the children 
+  // but Firebase hooks will return null or error states correctly via context.
   return (
-    <FirebaseProvider firebaseApp={firebaseApp} firestore={firestore} auth={auth}>
+    <FirebaseProvider 
+      firebaseApp={services.firebaseApp as any} 
+      firestore={services.firestore as any} 
+      auth={services.auth as any}
+    >
       {children}
     </FirebaseProvider>
   );

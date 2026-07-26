@@ -2,7 +2,7 @@ import type {Metadata} from 'next';
 import './globals.css';
 import { TaskProvider } from '@/components/task-provider';
 import { Toaster } from '@/components/ui/toaster';
-import { FirebaseClientProvider } from '@/firebase';
+import { FirebaseClientProvider } from '@/firebase/client-provider';
 
 export const metadata: Metadata = {
   title: 'DailyTaskTrack | Focus & Productivity',

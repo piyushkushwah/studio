@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useMemo, useEffect, useCallback } from "react";
@@ -130,13 +129,20 @@ export default function DailyTaskTrack() {
 
   const completionRate = dailyTasks.length > 0 ? (completedCount / dailyTasks.length) * 100 : 0;
 
-  if (!isInitialized) return null;
+  if (!isInitialized) return (
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="flex flex-col items-center gap-2">
+        <Skeleton className="w-12 h-12 rounded-2xl" />
+        <Skeleton className="w-32 h-4" />
+      </div>
+    </div>
+  );
 
   return (
-    <div className="min-h-screen bg-background p-4 md:p-8 flex flex-col items-center">
+    <div className="min-h-screen bg-background p-4 md:p-8 flex flex-col items-center overflow-x-hidden">
       <AppTour />
       
-      <header id="tour-header" className="w-full max-w-6xl flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 md:mb-12">
+      <header id="tour-header" className="w-full max-w-6xl flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 md:mb-12 shrink-0">
         <div className="flex items-center gap-5">
           <div className="bg-primary text-white p-3 rounded-2xl shadow-xl shadow-primary/20 shrink-0">
             <CalendarIcon className="w-7 h-7" />
@@ -186,49 +192,49 @@ export default function DailyTaskTrack() {
           </Card>
         </div>
 
-        <div id="tour-tasks" className="lg:col-span-5 flex flex-col gap-8 w-full h-full lg:max-h-[800px]">
-          <Card className={cn("p-8 md:p-10 shadow-2xl transition-all duration-500 h-full flex flex-col bg-white border-white/50 rounded-[2rem]", goalMet ? "shadow-accent/10 border-accent/20 ring-1 ring-accent/10" : "shadow-primary/5")}>
-            <div className="flex items-center justify-between mb-8 shrink-0">
+        <div id="tour-tasks" className="lg:col-span-5 flex flex-col w-full lg:sticky lg:top-8 h-full lg:h-[calc(100vh-12rem)]">
+          <Card className={cn("p-6 md:p-8 shadow-2xl transition-all duration-500 h-full flex flex-col bg-white border-white/50 rounded-[2rem] overflow-hidden", goalMet ? "shadow-accent/10 border-accent/20 ring-1 ring-accent/10" : "shadow-primary/5")}>
+            <div className="flex items-center justify-between mb-6 shrink-0">
               <div className="flex items-center gap-4">
                 <div className="relative flex items-center justify-center shrink-0">
-                  <svg className="w-14 h-14 transform -rotate-90">
-                    <circle cx="28" cy="28" r="24" stroke="currentColor" strokeWidth="4" fill="transparent" className="text-muted/40" />
-                    <circle cx="28" cy="28" r="24" stroke="currentColor" strokeWidth="4" fill="transparent" strokeDasharray={151} strokeDashoffset={151 - (151 * completionRate) / 100} className={cn("transition-all duration-1000 ease-in-out", goalMet ? "text-accent" : "text-primary")} />
+                  <svg className="w-12 h-12 transform -rotate-90">
+                    <circle cx="24" cy="24" r="20" stroke="currentColor" strokeWidth="4" fill="transparent" className="text-muted/20" />
+                    <circle cx="24" cy="24" r="20" stroke="currentColor" strokeWidth="4" fill="transparent" strokeDasharray={126} strokeDashoffset={126 - (126 * completionRate) / 100} className={cn("transition-all duration-1000 ease-in-out", goalMet ? "text-accent" : "text-primary")} />
                   </svg>
-                  <span className={cn("absolute text-[11px] font-black", goalMet ? "text-accent" : "text-primary")}>{goalMet ? <Star className="w-3 h-3 fill-current" /> : `${Math.round(completionRate)}%`}</span>
+                  <span className={cn("absolute text-[10px] font-black", goalMet ? "text-accent" : "text-primary")}>{goalMet ? <Star className="w-3 h-3 fill-current" /> : `${Math.round(completionRate)}%`}</span>
                 </div>
                 <div className="flex flex-col text-primary">
-                  <h3 className="text-2xl md:text-3xl font-black tracking-tight">{format(selectedDate, "EEEE")}</h3>
-                  <p className="text-sm text-muted-foreground font-bold uppercase tracking-widest">{format(selectedDate, "do MMMM")}</p>
+                  <h3 className="text-xl md:text-2xl font-black tracking-tight leading-none">{format(selectedDate, "EEEE")}</h3>
+                  <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest mt-1">{format(selectedDate, "do MMMM")}</p>
                 </div>
               </div>
-              <Button id="tour-add-task" onClick={() => { setEditingTask(null); setIsTaskDialogOpen(true); }} size="icon" className="rounded-2xl h-14 w-14 shadow-xl shadow-primary/20 shrink-0"><Plus className="w-7 h-7" /></Button>
+              <Button id="tour-add-task" onClick={() => { setEditingTask(null); setIsTaskDialogOpen(true); }} size="icon" className="rounded-2xl h-12 w-12 shadow-xl shadow-primary/20 shrink-0"><Plus className="w-6 h-6" /></Button>
             </div>
 
-            <div className="space-y-5 mb-8 shrink-0">
-              <div className={cn("flex items-center gap-4 p-4 rounded-2xl border transition-colors", goalMet ? "bg-accent/5 border-accent/20" : "bg-primary/5 border-primary/10")}>
-                <div className={cn("p-2 rounded-lg shadow-sm transition-colors", goalMet ? "bg-accent text-white" : "bg-white text-primary")}><Trophy className="w-4 h-4" /></div>
+            <div className="space-y-4 mb-6 shrink-0">
+              <div className={cn("flex items-center gap-3 p-3 rounded-2xl border transition-colors", goalMet ? "bg-accent/5 border-accent/20" : "bg-primary/5 border-primary/10")}>
+                <div className={cn("p-2 rounded-lg shadow-sm transition-colors shrink-0", goalMet ? "bg-accent text-white" : "bg-white text-primary")}><Trophy className="w-3.5 h-3.5" /></div>
                 <div className="flex-1">
-                  <p className={cn("text-[10px] font-black uppercase tracking-widest", goalMet ? "text-accent" : "text-primary/60")}>Daily Focus Goal</p>
+                  <p className={cn("text-[9px] font-black uppercase tracking-widest", goalMet ? "text-accent" : "text-primary/60")}>Goal</p>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-bold">{completedCount} / {dailyGoalValue || 0} tasks</span>
-                    <Input type="number" min="0" max="20" value={dailyGoalValue} onChange={(e) => setDailyGoal(selectedDateStr, parseInt(e.target.value) || 0)} className="w-16 h-8 text-xs font-bold text-center border-none bg-white shadow-sm rounded-lg" />
+                    <span className="text-xs font-bold">{completedCount} / {dailyGoalValue || 0}</span>
+                    <Input type="number" min="0" max="20" value={dailyGoalValue} onChange={(e) => setDailyGoal(selectedDateStr, parseInt(e.target.value) || 0)} className="w-12 h-6 text-[10px] font-bold text-center border-none bg-white shadow-sm rounded-lg" />
                   </div>
                 </div>
               </div>
-              <div className="relative group"><Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary" /><Input placeholder="Find a task..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-11 h-12 bg-muted/20 border-transparent rounded-xl" /></div>
-              <div className="flex flex-wrap gap-2">
-                <Button variant={activeLabelFilter === null ? "default" : "outline"} size="sm" onClick={() => setActiveLabelFilter(null)} className="h-8 px-4 text-[10px] font-black uppercase tracking-widest rounded-xl">All</Button>
-                {labels.map(l => (<Button key={l.id} variant={activeLabelFilter === l.name ? "default" : "outline"} size="sm" onClick={() => setActiveLabelFilter(l.name === activeLabelFilter ? null : l.name)} className={cn("h-8 px-4 text-[10px] font-black uppercase tracking-widest rounded-xl", activeLabelFilter === l.name ? l.color : "hover:border-primary/30")}>{l.name}</Button>))}
+              <div className="relative group"><Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground group-focus-within:text-primary" /><Input placeholder="Search..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-9 h-10 bg-muted/20 border-transparent rounded-xl text-xs" /></div>
+              <div className="flex flex-wrap gap-1.5">
+                <Button variant={activeLabelFilter === null ? "default" : "outline"} size="sm" onClick={() => setActiveLabelFilter(null)} className="h-7 px-3 text-[9px] font-black uppercase tracking-widest rounded-lg">All</Button>
+                {labels.map(l => (<Button key={l.id} variant={activeLabelFilter === l.name ? "default" : "outline"} size="sm" onClick={() => setActiveLabelFilter(l.name === activeLabelFilter ? null : l.name)} className={cn("h-7 px-3 text-[9px] font-black uppercase tracking-widest rounded-lg", activeLabelFilter === l.name ? l.color : "hover:border-primary/30")}>{l.name}</Button>))}
               </div>
             </div>
 
-            <ScrollArea className="flex-1 min-h-0 -mx-2 px-2">
-              <div className="space-y-4 pb-4">
+            <ScrollArea className="flex-1 -mx-2 px-2 overflow-y-auto">
+              <div className="space-y-3 pb-4">
                 {dailyTasks.length === 0 ? (
-                  <div className="py-16 text-center flex flex-col items-center gap-5">
-                    <div className="w-16 h-16 bg-muted/30 rounded-full flex items-center justify-center text-muted-foreground/20">{searchQuery || activeLabelFilter ? <FilterX className="w-8 h-8" /> : <Target className="w-8 h-8" />}</div>
-                    <p className="text-base text-muted-foreground font-bold">{searchQuery || activeLabelFilter ? "No matches found." : "No tasks scheduled."}</p>
+                  <div className="py-12 text-center flex flex-col items-center gap-4">
+                    <div className="w-12 h-12 bg-muted/30 rounded-full flex items-center justify-center text-muted-foreground/20">{searchQuery || activeLabelFilter ? <FilterX className="w-6 h-6" /> : <Target className="w-6 h-6" />}</div>
+                    <p className="text-xs text-muted-foreground font-bold">{searchQuery || activeLabelFilter ? "No matches." : "No tasks."}</p>
                   </div>
                 ) : (
                   dailyTasks.map((task) => (<TaskItem key={task.id} task={task} onToggle={toggleTask} onDelete={deleteTask} onEdit={(t) => { setEditingTask(t); setIsTaskDialogOpen(true); }} />))
@@ -237,12 +243,9 @@ export default function DailyTaskTrack() {
             </ScrollArea>
 
             {dailyTasks.length > 0 && (
-              <div className="mt-4 pt-6 border-t flex flex-col sm:flex-row sm:items-center justify-between gap-5 shrink-0">
-                <div className="flex items-center gap-3">
-                  <div className="bg-accent/10 p-2 rounded-lg"><CheckCircle2 className="w-5 h-5 text-accent" /></div>
-                  <span className="text-sm font-black text-primary tracking-tight">{completedCount} OF {dailyTasks.length} COMPLETED</span>
-                </div>
-                {dailyTasks.some(t => t.completed) && (<Button variant="ghost" size="sm" onClick={clearCompleted} className="text-muted-foreground hover:text-destructive hover:bg-destructive/5 font-bold h-10 px-4 rounded-xl"><Trash2 className="w-4 h-4 mr-2" />Clear Finished</Button>)}
+              <div className="mt-4 pt-4 border-t flex items-center justify-between shrink-0">
+                <span className="text-[10px] font-black text-primary tracking-tight uppercase">{completedCount} / {dailyTasks.length} DONE</span>
+                {dailyTasks.some(t => t.completed) && (<Button variant="ghost" size="sm" onClick={clearCompleted} className="text-muted-foreground hover:text-destructive hover:bg-destructive/5 font-bold h-8 px-3 rounded-lg text-[10px] uppercase"><Trash2 className="w-3 h-3 mr-1.5" />Clear</Button>)}
               </div>
             )}
           </Card>
