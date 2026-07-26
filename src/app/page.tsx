@@ -4,7 +4,7 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { useTasks } from "@/hooks/use-tasks";
 import { useAuth, useUser } from "@/firebase";
-import { signInAnonymously, updateProfile, signOut } from "firebase/auth";
+import { signInWithPopup, GoogleAuthProvider, signOut } from "firebase/auth";
 import { CalendarCell } from "@/components/calendar-cell";
 import { TaskItem } from "@/components/task-item";
 import { TaskDialog } from "@/components/task-dialog";
@@ -14,8 +14,7 @@ import { FocusPlayer } from "@/components/focus-player";
 import { AppTour } from "@/components/app-tour";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
@@ -42,11 +41,9 @@ import {
   Trash2,
   Clock,
   Quote,
-  HelpCircle,
   Trophy,
   Flame,
   Star,
-  UserCircle,
   LogOut,
   Layout,
   ArrowRight,
@@ -71,37 +68,30 @@ export default function DailyTaskTrack() {
   const [activeLabelFilter, setActiveLabelFilter] = useState<string | null>(null);
   const [greeting, setGreeting] = useState("Hello");
   const [quote, setQuote] = useState<string | null>(null);
-  
-  // Name Entry State
-  const [nameInput, setNameInput] = useState("");
   const [isStarting, setIsStarting] = useState(false);
   
   const { toast } = useToast();
 
-  const handleStart = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleLogin = async () => {
     if (!auth) {
       toast({ variant: "destructive", title: "Wait a moment", description: "The focus system is still warming up. Please try again in 2 seconds." });
       return;
     }
-    if (!nameInput.trim()) return;
     
     setIsStarting(true);
+    const provider = new GoogleAuthProvider();
     try {
-      const userCredential = await signInAnonymously(auth);
-      await updateProfile(userCredential.user, { 
-        displayName: nameInput.trim() 
-      });
-      toast({ title: "Welcome!", description: `Ready to get productive, ${nameInput.trim()}?` });
+      await signInWithPopup(auth, provider);
+      toast({ title: "Welcome Back!", description: "Your productivity dashboard is ready." });
     } catch (error: any) {
       console.error("Auth error:", error);
-      let message = error.message || "Could not start your session.";
+      let message = error.message || "Could not sign in with Google.";
       if (error.code === 'auth/configuration-not-found') {
-        message = "Anonymous authentication is not enabled. In the Firebase Console, go to Authentication > Sign-in method > Enable Anonymous.";
+        message = "Google Authentication is not enabled. In the Firebase Console, go to Authentication > Sign-in method > Enable Google.";
       }
       toast({ 
         variant: "destructive", 
-        title: "Configuration Needed", 
+        title: "Sign In Failed", 
         description: message 
       });
     } finally {
@@ -112,7 +102,6 @@ export default function DailyTaskTrack() {
   const handleLogout = async () => {
     if (!auth) return;
     await signOut(auth);
-    setNameInput("");
   };
 
   const fetchNewQuote = useCallback(async () => {
@@ -182,59 +171,55 @@ export default function DailyTaskTrack() {
 
   const completionRate = dailyTasks.length > 0 ? (completedCount / dailyTasks.length) * 100 : 0;
 
-  if (!isInitialized || authLoading) return (
+  if (authLoading || (user && !isInitialized)) return (
     <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="flex flex-col items-center gap-2">
-        <Skeleton className="w-12 h-12 rounded-2xl" />
-        <Skeleton className="w-32 h-4" />
+      <div className="flex flex-col items-center gap-4">
+        <Loader2 className="w-10 h-10 animate-spin text-primary" />
+        <p className="text-muted-foreground font-medium animate-pulse">Syncing your focus data...</p>
       </div>
     </div>
   );
 
-  if (!user || !user.displayName) return (
+  if (!user) return (
     <div className="min-h-screen bg-background flex items-center justify-center p-6">
-      <Card className="max-w-md w-full p-8 text-center space-y-6 shadow-2xl rounded-[2.5rem] border-white/50 bg-white/80 backdrop-blur-xl">
+      <Card className="max-w-md w-full p-8 text-center space-y-8 shadow-2xl rounded-[2.5rem] border-white/50 bg-white/80 backdrop-blur-xl">
         <div className="bg-primary/10 w-24 h-24 rounded-[2rem] flex items-center justify-center mx-auto text-primary animate-in zoom-in-50 duration-500">
           <Layout className="w-12 h-12" />
         </div>
-        <div className="space-y-2">
-          <h2 className="text-3xl font-black text-primary tracking-tight">DailyTaskTrack</h2>
-          <p className="text-muted-foreground font-medium">Ready to focus? Enter your name to begin.</p>
+        <div className="space-y-3">
+          <h2 className="text-4xl font-black text-primary tracking-tight">DailyTaskTrack</h2>
+          <p className="text-muted-foreground font-medium px-4">The command center for your high-performance day.</p>
         </div>
         
-        <form onSubmit={handleStart} className="space-y-4">
-          <div className="relative">
-            <UserCircle className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-            <Input 
-              placeholder="Your Name" 
-              value={nameInput}
-              onChange={(e) => setNameInput(e.target.value)}
-              className="h-14 pl-12 rounded-2xl text-lg font-medium border-primary/10 focus:border-primary focus:ring-primary/5 transition-all"
-              autoFocus
-              disabled={isStarting || !auth}
-            />
-          </div>
+        <div className="space-y-4">
           <Button 
-            type="submit"
-            className="w-full h-14 rounded-2xl text-lg font-bold shadow-xl shadow-primary/20 gap-3 group transition-all active:scale-[0.98]"
-            disabled={!nameInput.trim() || isStarting || !auth}
+            onClick={handleLogin}
+            className="w-full h-16 rounded-2xl text-lg font-bold shadow-xl shadow-primary/20 gap-3 group transition-all active:scale-[0.98]"
+            disabled={isStarting || !auth}
           >
             {isStarting ? (
               <Loader2 className="w-6 h-6 animate-spin" />
-            ) : !auth ? (
-              <Loader2 className="w-6 h-6 animate-spin" />
             ) : (
               <>
-                Let's Go
-                <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
+                <svg className="w-6 h-6 mr-2" viewBox="0 0 24 24">
+                  <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                  <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                  <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" />
+                  <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.66l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+                </svg>
+                Sign in with Google
               </>
             )}
           </Button>
-          {!auth && <p className="text-[10px] text-orange-600 font-bold uppercase tracking-widest">Waiting for Firebase...</p>}
-        </form>
+          <div className="flex items-center gap-2 text-muted-foreground/40 py-2">
+            <div className="h-px bg-current flex-1" />
+            <span className="text-[10px] font-black uppercase tracking-widest">Cloud Sync Active</span>
+            <div className="h-px bg-current flex-1" />
+          </div>
+        </div>
         
         <div className="pt-2">
-          <p className="text-[10px] text-muted-foreground uppercase font-black tracking-[0.2em]">Instant Access • Cloud Sync Enabled</p>
+          <p className="text-[10px] text-muted-foreground uppercase font-black tracking-[0.2em]">Instant Setup • Professional Tools</p>
         </div>
       </Card>
     </div>
@@ -269,22 +254,25 @@ export default function DailyTaskTrack() {
           <FocusPlayer />
           <PomodoroTimer />
           <div id="tour-nav" className="flex items-center gap-1 h-12 bg-white border px-2 rounded-2xl shadow-sm">
-            <LabelManager />
+            <div className="flex flex-col items-center px-1">
+              <LabelManager />
+              <span className="text-[8px] font-black uppercase tracking-tighter text-muted-foreground/60 -mt-1">Labels</span>
+            </div>
             <Link href="/time-tracking">
-              <Button variant="ghost" className="flex flex-col items-center justify-center gap-0.5 h-auto py-1 px-3 rounded-xl hover:bg-primary/5 group" title="Time Tracking">
+              <Button variant="ghost" className="flex flex-col items-center justify-center gap-0 h-auto py-1 px-3 rounded-xl hover:bg-primary/5 group" title="Time Tracking">
                 <Clock className="w-4 h-4 text-primary transition-transform group-hover:scale-110" />
-                <span className="text-[8px] font-black uppercase tracking-tighter text-primary/60">Log</span>
+                <span className="text-[8px] font-black uppercase tracking-tighter text-muted-foreground/60 mt-0.5">Log</span>
               </Button>
             </Link>
             <Link href="/analytics">
-              <Button variant="ghost" className="flex flex-col items-center justify-center gap-0.5 h-auto py-1 px-3 rounded-xl hover:bg-primary/5 group" title="Analytics">
+              <Button variant="ghost" className="flex flex-col items-center justify-center gap-0 h-auto py-1 px-3 rounded-xl hover:bg-primary/5 group" title="Analytics">
                 <BarChart2 className="w-4 h-4 text-primary transition-transform group-hover:scale-110" />
-                <span className="text-[8px] font-black uppercase tracking-tighter text-primary/60">Stats</span>
+                <span className="text-[8px] font-black uppercase tracking-tighter text-muted-foreground/60 mt-0.5">Stats</span>
               </Button>
             </Link>
-            <Button variant="ghost" onClick={handleLogout} className="flex flex-col items-center justify-center gap-0.5 h-auto py-1 px-3 rounded-xl hover:bg-destructive/5 group" title="Sign Out">
+            <Button variant="ghost" onClick={handleLogout} className="flex flex-col items-center justify-center gap-0 h-auto py-1 px-3 rounded-xl hover:bg-destructive/5 group" title="Sign Out">
               <LogOut className="w-4 h-4 text-muted-foreground group-hover:text-destructive transition-transform group-hover:scale-110" />
-              <span className="text-[8px] font-black uppercase tracking-tighter text-muted-foreground/60">Exit</span>
+              <span className="text-[8px] font-black uppercase tracking-tighter text-muted-foreground/60 mt-0.5">Exit</span>
             </Button>
           </div>
           <Avatar className="h-12 w-12 border-2 border-white shadow-sm ring-2 ring-primary/10">
@@ -337,11 +325,11 @@ export default function DailyTaskTrack() {
                   <p className={cn("text-[9px] font-black uppercase tracking-widest", goalMet ? "text-accent" : "text-primary/60")}>Goal</p>
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold">{completedCount} / {dailyGoalValue || 0}</span>
-                    <Input type="number" min="0" max="20" value={dailyGoalValue} onChange={(e) => setDailyGoal(selectedDateStr, parseInt(e.target.value) || 0)} className="w-12 h-6 text-[10px] font-bold text-center border-none bg-white shadow-sm rounded-lg" />
+                    <input type="number" min="0" max="20" value={dailyGoalValue} onChange={(e) => setDailyGoal(selectedDateStr, parseInt(e.target.value) || 0)} className="w-12 h-6 text-[10px] font-bold text-center border-none bg-white shadow-sm rounded-lg outline-none" />
                   </div>
                 </div>
               </div>
-              <div className="relative group"><Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground group-focus-within:text-primary" /><Input placeholder="Search..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-9 h-10 bg-muted/20 border-transparent rounded-xl text-xs" /></div>
+              <div className="relative group"><Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground group-focus-within:text-primary" /><input placeholder="Search..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-9 h-10 bg-muted/20 border-transparent rounded-xl text-xs outline-none focus:ring-1 focus:ring-primary/20" /></div>
               <div className="flex flex-wrap gap-1.5">
                 <Button variant={activeLabelFilter === null ? "default" : "outline"} size="sm" onClick={() => setActiveLabelFilter(null)} className="h-7 px-3 text-[9px] font-black uppercase tracking-widest rounded-lg">All</Button>
                 {labels.map(l => (<Button key={l.id} variant={activeLabelFilter === l.name ? "default" : "outline"} size="sm" onClick={() => setActiveLabelFilter(l.name === activeLabelFilter ? null : l.name)} className={cn("h-7 px-3 text-[9px] font-black uppercase tracking-widest rounded-lg", activeLabelFilter === l.name ? l.color : "hover:border-primary/30")}>{l.name}</Button>))}
@@ -375,3 +363,4 @@ export default function DailyTaskTrack() {
     </div>
   );
 }
+
