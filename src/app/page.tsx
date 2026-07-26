@@ -1,10 +1,9 @@
-
 "use client";
 
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { useTasks } from "@/hooks/use-tasks";
 import { useAuth, useUser } from "@/firebase";
-import { signInWithPopup, GoogleAuthProvider, signOut } from "firebase/auth";
+import { signInWithRedirect, GoogleAuthProvider, signOut } from "firebase/auth";
 import { CalendarCell } from "@/components/calendar-cell";
 import { TaskItem } from "@/components/task-item";
 import { TaskDialog } from "@/components/task-dialog";
@@ -46,7 +45,6 @@ import {
   Star,
   LogOut,
   Layout,
-  ArrowRight,
   Loader2
 } from "lucide-react";
 import { Task, Priority } from "@/lib/types";
@@ -81,22 +79,17 @@ export default function DailyTaskTrack() {
     setIsStarting(true);
     const provider = new GoogleAuthProvider();
     try {
-      await signInWithPopup(auth, provider);
-      toast({ title: "Welcome Back!", description: "Your productivity dashboard is ready." });
+      // Using Redirect instead of Popup to avoid COOP issues in workstation environment
+      await signInWithRedirect(auth, provider);
     } catch (error: any) {
-      if (error.code === 'auth/popup-closed-by-user') return;
-
       console.error("Auth error:", error);
       let message = error.message || "Could not sign in with Google.";
       
-      if (error.code === 'auth/configuration-not-found') {
-        message = "Google Authentication is not enabled in Firebase Console.";
-      } else if (error.code === 'auth/unauthorized-domain') {
-        message = `This domain is not authorized. Please add it to Authorized Domains in Firebase Console.`;
+      if (error.code === 'auth/unauthorized-domain') {
+        message = `This domain is not authorized. Please add ${window.location.hostname} to Authorized Domains in Firebase Console.`;
       }
       
       toast({ variant: "destructive", title: "Sign In Failed", description: message });
-    } finally {
       setIsStarting(false);
     }
   };
@@ -173,7 +166,6 @@ export default function DailyTaskTrack() {
 
   const completionRate = dailyTasks.length > 0 ? (completedCount / dailyTasks.length) * 100 : 0;
 
-  // Global loading state: waiting for auth OR waiting for data sync while logged in
   if (authLoading || (user && !isInitialized)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -185,7 +177,6 @@ export default function DailyTaskTrack() {
     );
   }
 
-  // Not logged in: Show landing/login screen
   if (!user) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-6">
@@ -233,7 +224,6 @@ export default function DailyTaskTrack() {
     );
   }
 
-  // Logged in: Show Dashboard
   return (
     <div className="min-h-screen bg-background p-4 md:p-8 flex flex-col items-center overflow-x-hidden">
       <AppTour />

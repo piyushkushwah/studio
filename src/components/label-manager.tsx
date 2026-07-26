@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { useTasks } from "@/hooks/use-tasks";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -48,7 +48,7 @@ export function LabelManager() {
       <DialogTrigger asChild>
         <Button variant="ghost" className="flex flex-col items-center justify-center gap-0.5 h-auto py-1 px-3 rounded-xl hover:bg-primary/5 group" title="Manage Labels">
           <Tag className="w-4 h-4 text-primary transition-transform group-hover:scale-110" />
-          <span className="text-[8px] font-black uppercase tracking-tighter text-primary/60">Labels</span>
+          <span className="text-[8px] font-black uppercase tracking-tighter text-muted-foreground/60 mt-0.5">Labels</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">

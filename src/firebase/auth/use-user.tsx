@@ -22,9 +22,6 @@ export function useUser() {
       return;
     }
 
-    // Update state to current user in case it changed before the effect ran
-    setUser(auth.currentUser);
-
     const unsubscribe = onAuthStateChanged(auth, (authUser) => {
       setUser(authUser);
       setLoading(false);

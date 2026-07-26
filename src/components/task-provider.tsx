@@ -1,7 +1,6 @@
-
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo, useCallback, useRef } from 'react';
 import { Task, Label, Session, TaskContextType, CustomSong } from '@/lib/types';
 import { format, subDays, isSameDay } from 'date-fns';
 import { 
@@ -38,30 +37,23 @@ export function TaskProvider({ children }: { children: ReactNode }) {
   const db = useFirestore();
   const { user, loading: authLoading } = useUser();
 
-  // Global Data State
   const [tasks, setTasks] = useState<Task[]>([]);
   const [labels, setLabels] = useState<Label[]>(DEFAULT_LABELS);
   const [sessions, setSessions] = useState<Session[]>([]);
   const [dailyGoals, setDailyGoals] = useState<Record<string, number>>({});
   const [customSongs, setCustomSongs] = useState<CustomSong[]>([]);
   
-  // Timer States
   const [workTimerLeft, setWorkTimerLeft] = useState(TIMER_CONFIG.work);
   const [breakTimerLeft, setBreakTimerLeft] = useState(TIMER_CONFIG.short);
   const [isWorkTimerActive, setWorkTimerActive] = useState(false);
   const [isBreakTimerActive, setBreakTimerActive] = useState(false);
   
   const [isInitialized, setIsInitialized] = useState(false);
+  const initializationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Firestore Sync Effect
   useEffect(() => {
-    // If auth is still loading, wait.
     if (authLoading) return;
 
-    // Reset initialization state on user change to ensure clean sync
-    setIsInitialized(false);
-
-    // If no user is logged in, reset and mark as initialized (login screen will show)
     if (!user) {
       setTasks([]);
       setLabels(DEFAULT_LABELS);
@@ -72,12 +64,16 @@ export function TaskProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    // User exists, setup listeners
     if (!db) {
-      // If Firestore is missing, we can't sync, but we should let the UI know we're "ready" (with empty data)
       setIsInitialized(true);
       return;
     }
+
+    // Safety fallback: if listeners don't respond in 3 seconds, show the dashboard anyway
+    // This prevents the "Syncing..." screen from getting stuck due to network/COOP issues
+    initializationTimeoutRef.current = setTimeout(() => {
+      setIsInitialized(true);
+    }, 3000);
 
     const tasksRef = collection(db, 'users', user.uid, 'tasks');
     const labelsRef = collection(db, 'users', user.uid, 'labels');
@@ -87,9 +83,11 @@ export function TaskProvider({ children }: { children: ReactNode }) {
 
     const unsubTasks = onSnapshot(tasksRef, (snapshot) => {
       setTasks(snapshot.docs.map(d => ({ id: d.id, ...d.data() } as Task)));
-      setIsInitialized(true); // Ensure initialized is true after first data load
+      setIsInitialized(true);
+      if (initializationTimeoutRef.current) clearTimeout(initializationTimeoutRef.current);
     }, (err) => {
       errorEmitter.emit('permission-error', new FirestorePermissionError({ path: tasksRef.path, operation: 'list' }));
+      setIsInitialized(true);
     });
 
     const unsubLabels = onSnapshot(labelsRef, (snapshot) => {
@@ -120,10 +118,10 @@ export function TaskProvider({ children }: { children: ReactNode }) {
       unsubLabels();
       unsubSessions();
       unsubPrefs();
+      if (initializationTimeoutRef.current) clearTimeout(initializationTimeoutRef.current);
     };
   }, [db, user, authLoading]);
 
-  // Timer Tick Effects
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (isWorkTimerActive && workTimerLeft > 0) {
@@ -169,7 +167,6 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     return currentStreak;
   }, [tasks]);
 
-  // Mutation functions
   const addTask = (taskData: Omit<Task, 'id' | 'createdAt'>) => {
     if (!db || !user) return;
     const tasksRef = collection(db, 'users', user.uid, 'tasks');
