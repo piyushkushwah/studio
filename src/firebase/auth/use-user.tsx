@@ -11,8 +11,8 @@ import { useAuth } from '../provider';
 export function useUser() {
   const auth = useAuth();
   
-  // Extremely defensive initialization for SSR and missing config cases
-  const [user, setUser] = useState<User | null>(null);
+  // Initialize state safely. auth might be null if Firebase failed to initialize.
+  const [user, setUser] = useState<User | null>(auth?.currentUser || null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -22,7 +22,7 @@ export function useUser() {
       return;
     }
 
-    // Set initial user if auth is already populated
+    // Update state to current user in case it changed before the effect ran
     setUser(auth.currentUser);
 
     const unsubscribe = onAuthStateChanged(auth, (authUser) => {
