@@ -166,11 +166,24 @@ export default function DailyTaskTrack() {
         <div className="flex flex-wrap items-center gap-3">
           <FocusPlayer />
           <PomodoroTimer />
-          <div id="tour-nav" className="flex items-center gap-2 h-12 bg-white border px-3 rounded-2xl shadow-sm">
+          <div id="tour-nav" className="flex items-center gap-1 h-12 bg-white border px-2 rounded-2xl shadow-sm">
             <LabelManager />
-            <Link href="/time-tracking"><Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-primary/5 group" title="Time Tracking"><Clock className="w-4 h-4 text-primary group-hover:scale-110 transition-transform" /></Button></Link>
-            <Link href="/analytics"><Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-primary/5 group" title="Analytics"><BarChart2 className="w-4 h-4 text-primary group-hover:scale-110 transition-transform" /></Button></Link>
-            <Button variant="ghost" size="icon" onClick={() => (window as any).restartAppTour?.()} className="h-9 w-9 rounded-xl hover:bg-primary/5 group" title="App Tour"><HelpCircle className="w-4 h-4 text-primary group-hover:scale-110 transition-transform" /></Button>
+            <Link href="/time-tracking">
+              <Button variant="ghost" className="flex flex-col items-center justify-center gap-0.5 h-auto py-1 px-3 rounded-xl hover:bg-primary/5 group" title="Time Tracking">
+                <Clock className="w-4 h-4 text-primary transition-transform group-hover:scale-110" />
+                <span className="text-[8px] font-black uppercase tracking-tighter text-primary/60">Log</span>
+              </Button>
+            </Link>
+            <Link href="/analytics">
+              <Button variant="ghost" className="flex flex-col items-center justify-center gap-0.5 h-auto py-1 px-3 rounded-xl hover:bg-primary/5 group" title="Analytics">
+                <BarChart2 className="w-4 h-4 text-primary transition-transform group-hover:scale-110" />
+                <span className="text-[8px] font-black uppercase tracking-tighter text-primary/60">Stats</span>
+              </Button>
+            </Link>
+            <Button variant="ghost" onClick={() => (window as any).restartAppTour?.()} className="flex flex-col items-center justify-center gap-0.5 h-auto py-1 px-3 rounded-xl hover:bg-primary/5 group" title="App Tour">
+              <HelpCircle className="w-4 h-4 text-primary transition-transform group-hover:scale-110" />
+              <span className="text-[8px] font-black uppercase tracking-tighter text-primary/60">Help</span>
+            </Button>
           </div>
         </div>
       </header>
