@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo, useCallback } from 'react';
@@ -12,8 +11,7 @@ import {
   setDoc, 
   deleteDoc, 
   updateDoc, 
-  query, 
-  orderBy,
+  query,
   Unsubscribe
 } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -38,7 +36,7 @@ const generateId = () => {
   if (typeof crypto !== 'undefined' && crypto.randomUUID) {
     return crypto.randomUUID();
   }
-  return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+  return Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
 };
 
 export function TaskProvider({ children }: { children: ReactNode }) {
@@ -58,7 +56,13 @@ export function TaskProvider({ children }: { children: ReactNode }) {
   
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // Firestore Sync Logic
+  // Helper to handle local persistence as fallback
+  const syncLocal = (key: string, data: any) => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(key, JSON.stringify(data));
+    }
+  };
+
   const addTask = useCallback((taskData: Omit<Task, 'id' | 'createdAt'>) => {
     const id = generateId();
     const newTask: Task = { ...taskData, id, createdAt: Date.now() };
@@ -73,9 +77,9 @@ export function TaskProvider({ children }: { children: ReactNode }) {
         }));
       });
     } else {
-      setTasks(prev => [...prev, newTask]);
+      setTasks(prev => [...prev, newTask].sort((a, b) => b.createdAt - a.createdAt));
       const stored = JSON.parse(localStorage.getItem('daily_task_track_tasks') || '[]');
-      localStorage.setItem('daily_task_track_tasks', JSON.stringify([...stored, newTask]));
+      syncLocal('daily_task_track_tasks', [...stored, newTask]);
     }
   }, [user, firestore]);
 
@@ -92,7 +96,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     } else {
       setTasks(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t));
       const stored = JSON.parse(localStorage.getItem('daily_task_track_tasks') || '[]');
-      localStorage.setItem('daily_task_track_tasks', JSON.stringify(stored.map((t: Task) => t.id === id ? { ...t, ...updates } : t)));
+      syncLocal('daily_task_track_tasks', stored.map((t: Task) => t.id === id ? { ...t, ...updates } : t));
     }
   }, [user, firestore]);
 
@@ -108,19 +112,16 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     } else {
       setTasks(prev => prev.filter(t => t.id !== id));
       const stored = JSON.parse(localStorage.getItem('daily_task_track_tasks') || '[]');
-      localStorage.setItem('daily_task_track_tasks', JSON.stringify(stored.filter((t: Task) => t.id !== id)));
+      syncLocal('daily_task_track_tasks', stored.filter((t: Task) => t.id !== id));
     }
   }, [user, firestore]);
 
   const toggleTask = useCallback((id: string) => {
-    setTasks(prev => {
-      const task = prev.find(t => t.id === id);
-      if (task) {
-        updateTask(id, { completed: !task.completed });
-      }
-      return prev;
-    });
-  }, [updateTask]);
+    const task = tasks.find(t => t.id === id);
+    if (task) {
+      updateTask(id, { completed: !task.completed });
+    }
+  }, [tasks, updateTask]);
 
   const addLabel = useCallback((name: string, color: string) => {
     const id = generateId();
@@ -138,7 +139,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     } else {
       setLabels(prev => [...prev, newLabel]);
       const stored = JSON.parse(localStorage.getItem('daily_task_track_labels') || '[]');
-      localStorage.setItem('daily_task_track_labels', JSON.stringify([...stored, newLabel]));
+      syncLocal('daily_task_track_labels', [...stored, newLabel]);
     }
   }, [user, firestore]);
 
@@ -154,7 +155,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     } else {
       setLabels(prev => prev.filter(l => l.id !== id));
       const stored = JSON.parse(localStorage.getItem('daily_task_track_labels') || '[]');
-      localStorage.setItem('daily_task_track_labels', JSON.stringify(stored.filter((l: Label) => l.id !== id)));
+      syncLocal('daily_task_track_labels', stored.filter((l: Label) => l.id !== id));
     }
   }, [user, firestore]);
 
@@ -179,9 +180,9 @@ export function TaskProvider({ children }: { children: ReactNode }) {
         }));
       });
     } else {
-      setSessions(prev => [newSession, ...prev]);
+      setSessions(prev => [newSession, ...prev].sort((a, b) => b.startTime - a.startTime));
       const stored = JSON.parse(localStorage.getItem('daily_task_track_sessions') || '[]');
-      localStorage.setItem('daily_task_track_sessions', JSON.stringify([newSession, ...stored]));
+      syncLocal('daily_task_track_sessions', [newSession, ...stored]);
     }
   }, [user, firestore]);
 
@@ -198,7 +199,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     } else {
       setSessions(prev => prev.map(s => s.id === id ? { ...s, ...updates } : s));
       const stored = JSON.parse(localStorage.getItem('daily_task_track_sessions') || '[]');
-      localStorage.setItem('daily_task_track_sessions', JSON.stringify(stored.map((s: Session) => s.id === id ? { ...s, ...updates } : s)));
+      syncLocal('daily_task_track_sessions', stored.map((s: Session) => s.id === id ? { ...s, ...updates } : s));
     }
   }, [user, firestore]);
 
@@ -214,7 +215,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     } else {
       setSessions(prev => prev.filter(s => s.id !== id));
       const stored = JSON.parse(localStorage.getItem('daily_task_track_sessions') || '[]');
-      localStorage.setItem('daily_task_track_sessions', JSON.stringify(stored.filter((s: Session) => s.id !== id)));
+      syncLocal('daily_task_track_sessions', stored.filter((s: Session) => s.id !== id));
     }
   }, [user, firestore]);
 
@@ -222,17 +223,11 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     const newGoals = { ...dailyGoals, [date]: target };
     if (user && firestore) {
       const docRef = doc(firestore, 'users', user.uid, 'preferences', 'main');
-      setDoc(docRef, { dailyGoals: newGoals }, { merge: true }).catch((err) => {
-        errorEmitter.emit('permission-error', new FirestorePermissionError({
-          path: docRef.path,
-          operation: 'write',
-          requestResourceData: { dailyGoals: newGoals }
-        }));
-      });
+      setDoc(docRef, { dailyGoals: newGoals }, { merge: true });
     } else {
       setDailyGoals(newGoals);
       const stored = JSON.parse(localStorage.getItem('daily_task_track_prefs') || '{}');
-      localStorage.setItem('daily_task_track_prefs', JSON.stringify({ ...stored, dailyGoals: newGoals }));
+      syncLocal('daily_task_track_prefs', { ...stored, dailyGoals: newGoals });
     }
   }, [user, firestore, dailyGoals]);
 
@@ -241,17 +236,11 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     const newSongs = [...customSongs, newSong];
     if (user && firestore) {
       const docRef = doc(firestore, 'users', user.uid, 'preferences', 'main');
-      setDoc(docRef, { customSongs: newSongs }, { merge: true }).catch((err) => {
-        errorEmitter.emit('permission-error', new FirestorePermissionError({
-          path: docRef.path,
-          operation: 'write',
-          requestResourceData: { customSongs: newSongs }
-        }));
-      });
+      setDoc(docRef, { customSongs: newSongs }, { merge: true });
     } else {
       setCustomSongs(newSongs);
       const stored = JSON.parse(localStorage.getItem('daily_task_track_prefs') || '{}');
-      localStorage.setItem('daily_task_track_prefs', JSON.stringify({ ...stored, customSongs: newSongs }));
+      syncLocal('daily_task_track_prefs', { ...stored, customSongs: newSongs });
     }
   }, [user, firestore, customSongs]);
 
@@ -259,16 +248,11 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     const newSongs = customSongs.filter(s => s.id !== id);
     if (user && firestore) {
       const docRef = doc(firestore, 'users', user.uid, 'preferences', 'main');
-      setDoc(docRef, { customSongs: newSongs }, { merge: true }).catch((err) => {
-        errorEmitter.emit('permission-error', new FirestorePermissionError({
-          path: docRef.path,
-          operation: 'write'
-        }));
-      });
+      setDoc(docRef, { customSongs: newSongs }, { merge: true });
     } else {
       setCustomSongs(newSongs);
       const stored = JSON.parse(localStorage.getItem('daily_task_track_prefs') || '{}');
-      localStorage.setItem('daily_task_track_prefs', JSON.stringify({ ...stored, customSongs: newSongs }));
+      syncLocal('daily_task_track_prefs', { ...stored, customSongs: newSongs });
     }
   }, [user, firestore, customSongs]);
 
@@ -308,10 +292,10 @@ export function TaskProvider({ children }: { children: ReactNode }) {
         const storedSessions = localStorage.getItem('daily_task_track_sessions');
         const storedPrefs = localStorage.getItem('daily_task_track_prefs');
 
-        if (storedTasks) setTasks(JSON.parse(storedTasks));
+        if (storedTasks) setTasks(JSON.parse(storedTasks).sort((a: any, b: any) => b.createdAt - a.createdAt));
         if (storedLabels) setLabels(JSON.parse(storedLabels));
         else setLabels(DEFAULT_LABELS);
-        if (storedSessions) setSessions(JSON.parse(storedSessions));
+        if (storedSessions) setSessions(JSON.parse(storedSessions).sort((a: any, b: any) => b.startTime - a.startTime));
         if (storedPrefs) {
           const prefs = JSON.parse(storedPrefs);
           setDailyGoals(prefs.dailyGoals || {});
@@ -327,23 +311,29 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     const userId = user.uid;
     const unsubs: Unsubscribe[] = [];
     
-    // Tasks Listener
-    const tasksQuery = query(collection(firestore, 'users', userId, 'tasks'), orderBy('createdAt', 'desc'));
-    unsubs.push(onSnapshot(tasksQuery, (snapshot) => {
-      setTasks(snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Task)));
+    // Tasks Listener (No orderby to avoid index requirement in prototype)
+    const tasksRef = collection(firestore, 'users', userId, 'tasks');
+    unsubs.push(onSnapshot(tasksRef, (snapshot) => {
+      setTasks(snapshot.docs
+        .map(doc => ({ ...doc.data(), id: doc.id } as Task))
+        .sort((a, b) => b.createdAt - a.createdAt)
+      );
     }));
 
     // Labels Listener
-    const labelsQuery = query(collection(firestore, 'users', userId, 'labels'));
-    unsubs.push(onSnapshot(labelsQuery, (snapshot) => {
+    const labelsRef = collection(firestore, 'users', userId, 'labels');
+    unsubs.push(onSnapshot(labelsRef, (snapshot) => {
       const dbLabels = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Label));
       setLabels(dbLabels.length > 0 ? dbLabels : DEFAULT_LABELS);
     }));
 
     // Sessions Listener
-    const sessionsQuery = query(collection(firestore, 'users', userId, 'sessions'), orderBy('startTime', 'desc'));
-    unsubs.push(onSnapshot(sessionsQuery, (snapshot) => {
-      setSessions(snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Session)));
+    const sessionsRef = collection(firestore, 'users', userId, 'sessions');
+    unsubs.push(onSnapshot(sessionsRef, (snapshot) => {
+      setSessions(snapshot.docs
+        .map(doc => ({ ...doc.data(), id: doc.id } as Session))
+        .sort((a, b) => b.startTime - a.startTime)
+      );
     }));
 
     // Preferences Listener
@@ -356,10 +346,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     }));
 
     setIsInitialized(true);
-
-    return () => {
-      unsubs.forEach(unsub => unsub());
-    };
+    return () => unsubs.forEach(unsub => unsub());
   }, [user, authLoading, firestore]);
 
   const streak = useMemo(() => {

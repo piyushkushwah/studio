@@ -79,17 +79,10 @@ export default function DailyTaskTrack() {
     setIsStarting(true);
     const provider = new GoogleAuthProvider();
     try {
-      // Using Redirect instead of Popup to avoid COOP issues in workstation environment
       await signInWithRedirect(auth, provider);
     } catch (error: any) {
       console.error("Auth error:", error);
-      let message = error.message || "Could not sign in with Google.";
-      
-      if (error.code === 'auth/unauthorized-domain') {
-        message = `This domain is not authorized. Please add ${window.location.hostname} to Authorized Domains in Firebase Console.`;
-      }
-      
-      toast({ variant: "destructive", title: "Sign In Failed", description: message });
+      toast({ variant: "destructive", title: "Sign In Failed", description: error.message || "Could not sign in with Google." });
       setIsStarting(false);
     }
   };
