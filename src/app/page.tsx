@@ -82,15 +82,13 @@ export default function DailyTaskTrack() {
         }
       })
       .catch((error: any) => {
-        console.error("Auth Redirect Error:", error);
+        console.error("Auth Redirect Result Error:", error);
         if (error.code === 'auth/unauthorized-domain') {
           toast({ 
             variant: "destructive", 
             title: "Authorized Domain Required", 
             description: `Please add "${window.location.hostname}" to your Firebase Console > Auth > Settings > Authorized Domains.` 
           });
-        } else if (error.code !== 'auth/popup-closed-by-user') {
-          toast({ variant: "destructive", title: "Login Error", description: error.message });
         }
         setIsStarting(false);
       });
@@ -104,14 +102,21 @@ export default function DailyTaskTrack() {
     
     setIsStarting(true);
     const provider = new GoogleAuthProvider();
-    // Setting custom parameters to force account selection if needed
     provider.setCustomParameters({ prompt: 'select_account' });
     
     try {
       await signInWithRedirect(auth, provider);
     } catch (error: any) {
-      console.error("Auth error:", error);
-      toast({ variant: "destructive", title: "Sign In Failed", description: error.message || "Could not sign in with Google." });
+      console.error("Auth Login Initiation Error:", error);
+      if (error.code === 'auth/unauthorized-domain') {
+        toast({ 
+          variant: "destructive", 
+          title: "Setup Required", 
+          description: `Add "${window.location.hostname}" to authorized domains in Firebase Console.` 
+        });
+      } else {
+        toast({ variant: "destructive", title: "Sign In Failed", description: error.message || "Could not sign in with Google." });
+      }
       setIsStarting(false);
     }
   };

@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo, useCallback } from 'react';
@@ -56,7 +57,6 @@ export function TaskProvider({ children }: { children: ReactNode }) {
   
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // Helper to handle local persistence as fallback
   const syncLocal = (key: string, data: any) => {
     if (typeof window !== 'undefined') {
       localStorage.setItem(key, JSON.stringify(data));
@@ -281,7 +281,6 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     return () => clearInterval(interval);
   }, [isBreakTimerActive, breakTimerLeft, addSession]);
 
-  // Initialization & Real-time Listeners
   useEffect(() => {
     if (authLoading || !firestore) return;
 
@@ -311,7 +310,6 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     const userId = user.uid;
     const unsubs: Unsubscribe[] = [];
     
-    // Tasks Listener (No orderby to avoid index requirement in prototype)
     const tasksRef = collection(firestore, 'users', userId, 'tasks');
     unsubs.push(onSnapshot(tasksRef, (snapshot) => {
       setTasks(snapshot.docs
@@ -320,14 +318,12 @@ export function TaskProvider({ children }: { children: ReactNode }) {
       );
     }));
 
-    // Labels Listener
     const labelsRef = collection(firestore, 'users', userId, 'labels');
     unsubs.push(onSnapshot(labelsRef, (snapshot) => {
       const dbLabels = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Label));
       setLabels(dbLabels.length > 0 ? dbLabels : DEFAULT_LABELS);
     }));
 
-    // Sessions Listener
     const sessionsRef = collection(firestore, 'users', userId, 'sessions');
     unsubs.push(onSnapshot(sessionsRef, (snapshot) => {
       setSessions(snapshot.docs
@@ -336,7 +332,6 @@ export function TaskProvider({ children }: { children: ReactNode }) {
       );
     }));
 
-    // Preferences Listener
     unsubs.push(onSnapshot(doc(firestore, 'users', userId, 'preferences', 'main'), (docSnap) => {
       if (docSnap.exists()) {
         const data = docSnap.data();

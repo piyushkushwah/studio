@@ -16,3 +16,14 @@ If you are hosting this application on a custom domain like **trackdailly.netlif
 ## Cloud Sync
 
 This app uses Firebase Firestore for data persistence. The security rules are configured to allow access to all authenticated users. Guest users will have their data persisted in `localStorage`.
+
+```rules
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}
+```
