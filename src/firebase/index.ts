@@ -8,7 +8,7 @@ import { firebaseConfig } from './config';
 
 /**
  * Initializes Firebase App and services.
- * Uses explicit config to avoid Hosting-specific auto-discovery errors.
+ * Uses explicit config to avoid Hosting-specific auto-discovery errors like 404 init.json.
  */
 export function initializeFirebase(): {
   firebaseApp: FirebaseApp | null;
@@ -16,7 +16,11 @@ export function initializeFirebase(): {
   auth: Auth | null;
 } {
   try {
-    // Check if any Firebase app has been initialized already
+    // Prevent the SDK from trying to find config on the server/hosting origin
+    if (typeof window !== 'undefined') {
+      (window as any).FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+    }
+
     const firebaseApp = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
     const firestore = getFirestore(firebaseApp);
     const auth = getAuth(firebaseApp);
