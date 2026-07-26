@@ -8,7 +8,7 @@ import { firebaseConfig } from './config';
 
 /**
  * Initializes Firebase App and services.
- * Uses explicit config and ensures singleton initialization to avoid Hosting-specific auto-discovery errors.
+ * Uses explicit config and ensures singleton initialization.
  */
 let app: FirebaseApp | null = null;
 let db: Firestore | null = null;
