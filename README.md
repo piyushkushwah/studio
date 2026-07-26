@@ -1,3 +1,4 @@
+
 # DailyTaskTrack
 
 A professional command center for productivity, featuring task management, focus tools, and real-time cloud synchronization.
@@ -10,7 +11,8 @@ If you are hosting this application on a custom domain like **trackdailly.netlif
 2. Select your project.
 3. Go to **Authentication** > **Settings** > **Authorized Domains**.
 4. Click **Add Domain** and enter `trackdailly.netlify.app`.
+5. Also add your Cloud Workstation URL if you are testing in the IDE.
 
 ## Cloud Sync
 
-This app uses Firebase Firestore for data persistence. The security rules are configured to allow access to all authenticated users.guest users will have their data persisted in `localStorage`.
+This app uses Firebase Firestore for data persistence. The security rules are configured to allow access to all authenticated users. Guest users will have their data persisted in `localStorage`.

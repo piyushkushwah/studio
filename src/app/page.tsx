@@ -1,9 +1,10 @@
+
 "use client";
 
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { useTasks } from "@/hooks/use-tasks";
 import { useAuth, useUser } from "@/firebase";
-import { signInWithRedirect, GoogleAuthProvider, signOut } from "firebase/auth";
+import { signInWithRedirect, GoogleAuthProvider, signOut, getRedirectResult } from "firebase/auth";
 import { CalendarCell } from "@/components/calendar-cell";
 import { TaskItem } from "@/components/task-item";
 import { TaskDialog } from "@/components/task-dialog";
@@ -70,6 +71,31 @@ export default function DailyTaskTrack() {
   
   const { toast } = useToast();
 
+  // Handle Redirect Result for Google Login
+  useEffect(() => {
+    if (!auth) return;
+    
+    getRedirectResult(auth)
+      .then((result) => {
+        if (result) {
+          toast({ title: "Welcome back!", description: `Logged in as ${result.user.displayName}` });
+        }
+      })
+      .catch((error: any) => {
+        console.error("Auth Redirect Error:", error);
+        if (error.code === 'auth/unauthorized-domain') {
+          toast({ 
+            variant: "destructive", 
+            title: "Authorized Domain Required", 
+            description: `Please add "${window.location.hostname}" to your Firebase Console > Auth > Settings > Authorized Domains.` 
+          });
+        } else if (error.code !== 'auth/popup-closed-by-user') {
+          toast({ variant: "destructive", title: "Login Error", description: error.message });
+        }
+        setIsStarting(false);
+      });
+  }, [auth, toast]);
+
   const handleLogin = async () => {
     if (!auth) {
       toast({ variant: "destructive", title: "Connecting...", description: "Please wait while we connect to your productivity workspace." });
@@ -78,6 +104,9 @@ export default function DailyTaskTrack() {
     
     setIsStarting(true);
     const provider = new GoogleAuthProvider();
+    // Setting custom parameters to force account selection if needed
+    provider.setCustomParameters({ prompt: 'select_account' });
+    
     try {
       await signInWithRedirect(auth, provider);
     } catch (error: any) {
