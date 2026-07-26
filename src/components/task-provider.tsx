@@ -13,8 +13,7 @@ import {
   updateDoc, 
   query, 
   orderBy,
-  Timestamp,
-  writeBatch
+  limit
 } from 'firebase/firestore';
 
 const DEFAULT_LABELS: Label[] = [
@@ -49,17 +48,17 @@ export function TaskProvider({ children }: { children: ReactNode }) {
   
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // Firestore Sync Logic
+  // Persistence Logic: Guest (localStorage) vs Authenticated (Firestore)
   useEffect(() => {
     if (authLoading || !firestore) return;
 
     if (!user) {
-      // Guest mode: load from localStorage
+      // GUEST MODE
       try {
-        const storedTasks = localStorage.getItem('guest_tasks');
-        const storedLabels = localStorage.getItem('guest_labels');
-        const storedSessions = localStorage.getItem('guest_sessions');
-        const storedPrefs = localStorage.getItem('guest_preferences');
+        const storedTasks = localStorage.getItem('daily_task_track_tasks');
+        const storedLabels = localStorage.getItem('daily_task_track_labels');
+        const storedSessions = localStorage.getItem('daily_task_track_sessions');
+        const storedPrefs = localStorage.getItem('daily_task_track_prefs');
 
         if (storedTasks) setTasks(JSON.parse(storedTasks));
         if (storedLabels) setLabels(JSON.parse(storedLabels));
@@ -71,34 +70,38 @@ export function TaskProvider({ children }: { children: ReactNode }) {
           setCustomSongs(prefs.customSongs || []);
         }
       } catch (e) {
-        console.error("Guest mode load failed", e);
+        console.error("Failed to load local storage", e);
       }
       setIsInitialized(true);
       return;
     }
 
-    // Authenticated mode: Firestore Listeners
+    // AUTHENTICATED MODE (Real-time Firestore)
     const userId = user.uid;
     
+    // 1. Tasks listener
     const tasksQuery = query(collection(firestore, 'users', userId, 'tasks'), orderBy('createdAt', 'desc'));
     const unsubTasks = onSnapshot(tasksQuery, (snapshot) => {
       setTasks(snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Task)));
     });
 
+    // 2. Labels listener
     const labelsQuery = query(collection(firestore, 'users', userId, 'labels'));
     const unsubLabels = onSnapshot(labelsQuery, (snapshot) => {
-      const data = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Label));
-      setLabels(data.length > 0 ? data : DEFAULT_LABELS);
+      const dbLabels = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Label));
+      setLabels(dbLabels.length > 0 ? dbLabels : DEFAULT_LABELS);
     });
 
+    // 3. Sessions listener (time logs)
     const sessionsQuery = query(collection(firestore, 'users', userId, 'sessions'), orderBy('startTime', 'desc'));
     const unsubSessions = onSnapshot(sessionsQuery, (snapshot) => {
       setSessions(snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Session)));
     });
 
-    const unsubPrefs = onSnapshot(doc(firestore, 'users', userId, 'preferences', 'main'), (doc) => {
-      if (doc.exists()) {
-        const data = doc.data();
+    // 4. Preferences listener (goals, songs)
+    const unsubPrefs = onSnapshot(doc(firestore, 'users', userId, 'preferences', 'main'), (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data();
         setDailyGoals(data.dailyGoals || {});
         setCustomSongs(data.customSongs || []);
       }
@@ -114,7 +117,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     };
   }, [user, authLoading, firestore]);
 
-  // Timer logic
+  // Pomodoro Timer Effects
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (isWorkTimerActive && workTimerLeft > 0) {
@@ -160,7 +163,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     return currentStreak;
   }, [tasks]);
 
-  // Data Actions
+  // CRUD ACTIONS
   const addTask = async (taskData: Omit<Task, 'id' | 'createdAt'>) => {
     const id = crypto.randomUUID();
     const newTask: Task = { ...taskData, id, createdAt: Date.now() };
@@ -168,8 +171,9 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     if (user && firestore) {
       await setDoc(doc(firestore, 'users', user.uid, 'tasks', id), newTask);
     } else {
-      setTasks(prev => [...prev, newTask]);
-      localStorage.setItem('guest_tasks', JSON.stringify([...tasks, newTask]));
+      const newTasks = [...tasks, newTask];
+      setTasks(newTasks);
+      localStorage.setItem('daily_task_track_tasks', JSON.stringify(newTasks));
     }
   };
 
@@ -179,7 +183,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     } else {
       const newTasks = tasks.map(t => t.id === id ? { ...t, ...updates } : t);
       setTasks(newTasks);
-      localStorage.setItem('guest_tasks', JSON.stringify(newTasks));
+      localStorage.setItem('daily_task_track_tasks', JSON.stringify(newTasks));
     }
   };
 
@@ -189,7 +193,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     } else {
       const newTasks = tasks.filter(t => t.id !== id);
       setTasks(newTasks);
-      localStorage.setItem('guest_tasks', JSON.stringify(newTasks));
+      localStorage.setItem('daily_task_track_tasks', JSON.stringify(newTasks));
     }
   };
 
@@ -207,7 +211,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     } else {
       const newLabels = [...labels, newLabel];
       setLabels(newLabels);
-      localStorage.setItem('guest_labels', JSON.stringify(newLabels));
+      localStorage.setItem('daily_task_track_labels', JSON.stringify(newLabels));
     }
   };
 
@@ -217,7 +221,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     } else {
       const newLabels = labels.filter(l => l.id !== id);
       setLabels(newLabels);
-      localStorage.setItem('guest_labels', JSON.stringify(newLabels));
+      localStorage.setItem('daily_task_track_labels', JSON.stringify(newLabels));
     }
   };
 
@@ -237,7 +241,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     } else {
       const newSessions = [newSession, ...sessions];
       setSessions(newSessions);
-      localStorage.setItem('guest_sessions', JSON.stringify(newSessions));
+      localStorage.setItem('daily_task_track_sessions', JSON.stringify(newSessions));
     }
   };
 
@@ -247,7 +251,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     } else {
       const newSessions = sessions.map(s => s.id === id ? { ...s, ...updates } : s);
       setSessions(newSessions);
-      localStorage.setItem('guest_sessions', JSON.stringify(newSessions));
+      localStorage.setItem('daily_task_track_sessions', JSON.stringify(newSessions));
     }
   };
 
@@ -257,7 +261,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     } else {
       const newSessions = sessions.filter(s => s.id !== id);
       setSessions(newSessions);
-      localStorage.setItem('guest_sessions', JSON.stringify(newSessions));
+      localStorage.setItem('daily_task_track_sessions', JSON.stringify(newSessions));
     }
   };
 
@@ -267,7 +271,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
       await setDoc(doc(firestore, 'users', user.uid, 'preferences', 'main'), { dailyGoals: newGoals }, { merge: true });
     } else {
       setDailyGoals(newGoals);
-      localStorage.setItem('guest_preferences', JSON.stringify({ dailyGoals: newGoals, customSongs }));
+      localStorage.setItem('daily_task_track_prefs', JSON.stringify({ dailyGoals: newGoals, customSongs }));
     }
   };
 
@@ -278,7 +282,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
       await setDoc(doc(firestore, 'users', user.uid, 'preferences', 'main'), { customSongs: newSongs }, { merge: true });
     } else {
       setCustomSongs(newSongs);
-      localStorage.setItem('guest_preferences', JSON.stringify({ dailyGoals, customSongs: newSongs }));
+      localStorage.setItem('daily_task_track_prefs', JSON.stringify({ dailyGoals, customSongs: newSongs }));
     }
   };
 
@@ -288,7 +292,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
       await setDoc(doc(firestore, 'users', user.uid, 'preferences', 'main'), { customSongs: newSongs }, { merge: true });
     } else {
       setCustomSongs(newSongs);
-      localStorage.setItem('guest_preferences', JSON.stringify({ dailyGoals, customSongs: newSongs }));
+      localStorage.setItem('daily_task_track_prefs', JSON.stringify({ dailyGoals, customSongs: newSongs }));
     }
   };
 
