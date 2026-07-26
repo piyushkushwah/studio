@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useMemo, useEffect, useCallback } from "react";
@@ -94,10 +95,14 @@ export default function DailyTaskTrack() {
       toast({ title: "Welcome!", description: `Ready to get productive, ${nameInput.trim()}?` });
     } catch (error: any) {
       console.error("Auth error:", error);
+      let message = error.message || "Could not start your session.";
+      if (error.code === 'auth/configuration-not-found') {
+        message = "Anonymous authentication is not enabled. Please enable 'Anonymous' in the Firebase Console (Authentication > Sign-in method).";
+      }
       toast({ 
         variant: "destructive", 
         title: "Setup Failed", 
-        description: error.message || "Could not start your session." 
+        description: message 
       });
     } finally {
       setIsStarting(false);

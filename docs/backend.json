@@ -60,7 +60,7 @@
     }
   },
   "auth": {
-    "providers": ["google.com"]
+    "providers": ["anonymous"]
   },
   "firestore": {
     "/users/{userId}/tasks/{taskId}": {
