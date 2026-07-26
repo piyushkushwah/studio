@@ -84,7 +84,6 @@ export default function DailyTaskTrack() {
       await signInWithPopup(auth, provider);
       toast({ title: "Welcome Back!", description: "Your productivity dashboard is ready." });
     } catch (error: any) {
-      // Gracefully handle case where user closes the popup
       if (error.code === 'auth/popup-closed-by-user') {
         return;
       }
@@ -180,6 +179,8 @@ export default function DailyTaskTrack() {
 
   const completionRate = dailyTasks.length > 0 ? (completedCount / dailyTasks.length) * 100 : 0;
 
+  // The condition for showing the sync loader: 
+  // We have a user, but the data provider hasn't finished its first sync yet.
   if (authLoading || (user && !isInitialized)) return (
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="flex flex-col items-center gap-4">
@@ -189,6 +190,7 @@ export default function DailyTaskTrack() {
     </div>
   );
 
+  // If no user is present, show the login screen.
   if (!user) return (
     <div className="min-h-screen bg-background flex items-center justify-center p-6">
       <Card className="max-w-md w-full p-8 text-center space-y-8 shadow-2xl rounded-[2.5rem] border-white/50 bg-white/80 backdrop-blur-xl">
@@ -234,6 +236,7 @@ export default function DailyTaskTrack() {
     </div>
   );
 
+  // If we have a user and data is synced, show the dashboard.
   return (
     <div className="min-h-screen bg-background p-4 md:p-8 flex flex-col items-center overflow-x-hidden">
       <AppTour />

@@ -13,7 +13,7 @@ import {
   deleteDoc, 
   onSnapshot 
 } from 'firebase/firestore';
-import { useFirestore, useAuth } from '@/firebase';
+import { useFirestore, useAuth, useUser } from '@/firebase';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 
@@ -34,8 +34,7 @@ const TaskContext = createContext<TaskContextType | undefined>(undefined);
 
 export function TaskProvider({ children }: { children: ReactNode }) {
   const db = useFirestore();
-  const auth = useAuth();
-  const [user, setUser] = useState(auth?.currentUser || null);
+  const { user, loading: authLoading } = useUser();
 
   // Global Data State
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -52,26 +51,22 @@ export function TaskProvider({ children }: { children: ReactNode }) {
   
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // Auth Observer
+  // Reset state when user logs out
   useEffect(() => {
-    if (!auth) return;
-    return auth.onAuthStateChanged((u) => {
-      setUser(u);
-      // Reset state on user change to ensure data separation
-      if (!u) {
-        setTasks([]);
-        setLabels(DEFAULT_LABELS);
-        setSessions([]);
-        setDailyGoals({});
-        setCustomSongs([]);
-      }
-    });
-  }, [auth]);
+    if (!authLoading && !user) {
+      setTasks([]);
+      setLabels(DEFAULT_LABELS);
+      setSessions([]);
+      setDailyGoals({});
+      setCustomSongs([]);
+      setIsInitialized(true);
+    }
+  }, [user, authLoading]);
 
   // Firestore Sync Effect - Scoped to user.uid
   useEffect(() => {
     if (!db || !user) {
-      setIsInitialized(true);
+      if (!authLoading) setIsInitialized(true);
       return;
     }
 
@@ -101,6 +96,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
       }
     }, (err) => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: prefsRef.path, operation: 'get' })));
 
+    // We consider it initialized as soon as listeners are set up
     setIsInitialized(true);
 
     return () => {
@@ -109,7 +105,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
       unsubSessions();
       unsubPrefs();
     };
-  }, [db, user]);
+  }, [db, user, authLoading]);
 
   // Timer Effects
   useEffect(() => {
@@ -266,7 +262,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
       setWorkTimerActive: (a) => { if(a) setBreakTimerActive(false); setWorkTimerActive(a); },
       setBreakTimerActive: (a) => { if(a) setWorkTimerActive(false); setBreakTimerActive(a); },
       resetWorkTimer, resetBreakTimer,
-      isInitialized 
+      isInitialized: isInitialized && !authLoading 
     }}>
       {children}
     </TaskContext.Provider>
