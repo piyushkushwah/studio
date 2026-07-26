@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -12,15 +11,19 @@ import { useAuth } from '../provider';
 export function useUser() {
   const auth = useAuth();
   
-  // Gracefully handle case where auth might be null during initialization or SSR
-  const [user, setUser] = useState<User | null>(auth?.currentUser || null);
+  // Extremely defensive initialization for SSR and missing config cases
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // If auth is not available, we can't listen for state changes
     if (!auth) {
       setLoading(false);
       return;
     }
+
+    // Set initial user if auth is already populated
+    setUser(auth.currentUser);
 
     const unsubscribe = onAuthStateChanged(auth, (authUser) => {
       setUser(authUser);

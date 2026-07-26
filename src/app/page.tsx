@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useMemo, useEffect, useCallback } from "react";
@@ -80,7 +79,11 @@ export default function DailyTaskTrack() {
 
   const handleStart = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!auth || !nameInput.trim()) return;
+    if (!auth) {
+      toast({ variant: "destructive", title: "Wait a moment", description: "The focus system is still warming up. Please try again in 2 seconds." });
+      return;
+    }
+    if (!nameInput.trim()) return;
     
     setIsStarting(true);
     try {
@@ -203,15 +206,17 @@ export default function DailyTaskTrack() {
               onChange={(e) => setNameInput(e.target.value)}
               className="h-14 pl-12 rounded-2xl text-lg font-medium border-primary/10 focus:border-primary focus:ring-primary/5 transition-all"
               autoFocus
-              disabled={isStarting}
+              disabled={isStarting || !auth}
             />
           </div>
           <Button 
             type="submit"
             className="w-full h-14 rounded-2xl text-lg font-bold shadow-xl shadow-primary/20 gap-3 group transition-all active:scale-[0.98]"
-            disabled={!nameInput.trim() || isStarting}
+            disabled={!nameInput.trim() || isStarting || !auth}
           >
             {isStarting ? (
+              <Loader2 className="w-6 h-6 animate-spin" />
+            ) : !auth ? (
               <Loader2 className="w-6 h-6 animate-spin" />
             ) : (
               <>
@@ -220,6 +225,7 @@ export default function DailyTaskTrack() {
               </>
             )}
           </Button>
+          {!auth && <p className="text-[10px] text-orange-600 font-bold uppercase tracking-widest">Waiting for Firebase...</p>}
         </form>
         
         <div className="pt-2">
