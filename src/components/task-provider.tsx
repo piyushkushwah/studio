@@ -1,8 +1,7 @@
-
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo, useCallback } from 'react';
-import { Task, Label, Session, TaskContextType, TimerMode, CustomSong } from '@/lib/types';
+import { Task, Label, Session, TaskContextType, CustomSong } from '@/lib/types';
 import { format, subDays, isSameDay } from 'date-fns';
 import { 
   collection, 
@@ -11,10 +10,9 @@ import {
   addDoc, 
   updateDoc, 
   deleteDoc, 
-  query, 
   onSnapshot 
 } from 'firebase/firestore';
-import { useFirestore, useAuth, useCollection, useDoc } from '@/firebase';
+import { useFirestore, useAuth } from '@/firebase';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 
@@ -38,24 +36,25 @@ export function TaskProvider({ children }: { children: ReactNode }) {
   const auth = useAuth();
   const user = auth?.currentUser;
 
-  // Global Data State (Synced with Firestore)
+  // Global Data State
   const [tasks, setTasks] = useState<Task[]>([]);
   const [labels, setLabels] = useState<Label[]>(DEFAULT_LABELS);
   const [sessions, setSessions] = useState<Session[]>([]);
   const [dailyGoals, setDailyGoals] = useState<Record<string, number>>({});
   const [customSongs, setCustomSongs] = useState<CustomSong[]>([]);
   
-  // Timer State (Context-only for persistence across navigation)
-  const [timerMode, setTimerMode] = useState<TimerMode>("work");
-  const [timerLeft, setTimerLeft] = useState(TIMER_CONFIG.work);
-  const [isTimerActive, setTimerActive] = useState(false);
+  // Timer States (Separated)
+  const [workTimerLeft, setWorkTimerLeft] = useState(TIMER_CONFIG.work);
+  const [breakTimerLeft, setBreakTimerLeft] = useState(TIMER_CONFIG.short);
+  const [isWorkTimerActive, setWorkTimerActive] = useState(false);
+  const [isBreakTimerActive, setBreakTimerActive] = useState(false);
   
   const [isInitialized, setIsInitialized] = useState(false);
 
   // Firestore Sync Effect
   useEffect(() => {
     if (!db || !user) {
-      setIsInitialized(true); // Allow local usage if no user, or just stay false
+      setIsInitialized(true);
       return;
     }
 
@@ -95,20 +94,31 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     };
   }, [db, user]);
 
-  // Timer Logic
+  // Work Timer Effect
   useEffect(() => {
     let interval: NodeJS.Timeout;
-    if (isTimerActive && timerLeft > 0) {
-      interval = setInterval(() => setTimerLeft(prev => prev - 1), 1000);
-    } else if (timerLeft === 0) {
-      setTimerActive(false);
-      const finishedMode = timerMode;
-      addSession(Math.floor(TIMER_CONFIG[finishedMode] / 60), finishedMode);
-      setTimerMode(finishedMode === "work" ? "short" : "work");
-      setTimerLeft(finishedMode === "work" ? TIMER_CONFIG.short : TIMER_CONFIG.work);
+    if (isWorkTimerActive && workTimerLeft > 0) {
+      interval = setInterval(() => setWorkTimerLeft(prev => prev - 1), 1000);
+    } else if (workTimerLeft === 0 && isWorkTimerActive) {
+      setWorkTimerActive(false);
+      addSession(Math.floor(TIMER_CONFIG.work / 60), 'work');
+      setWorkTimerLeft(TIMER_CONFIG.work);
     }
     return () => clearInterval(interval);
-  }, [isTimerActive, timerLeft, timerMode]);
+  }, [isWorkTimerActive, workTimerLeft]);
+
+  // Break Timer Effect
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isBreakTimerActive && breakTimerLeft > 0) {
+      interval = setInterval(() => setBreakTimerLeft(prev => prev - 1), 1000);
+    } else if (breakTimerLeft === 0 && isBreakTimerActive) {
+      setBreakTimerActive(false);
+      addSession(Math.floor(TIMER_CONFIG.short / 60), 'short');
+      setBreakTimerLeft(TIMER_CONFIG.short);
+    }
+    return () => clearInterval(interval);
+  }, [isBreakTimerActive, breakTimerLeft]);
 
   const streak = useMemo(() => {
     if (!tasks.length) return 0;
@@ -131,7 +141,6 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     return currentStreak;
   }, [tasks]);
 
-  // Actions
   const addTask = (taskData: Omit<Task, 'id' | 'createdAt'>) => {
     if (!db || !user) return;
     const tasksRef = collection(db, 'users', user.uid, 'tasks');
@@ -222,18 +231,25 @@ export function TaskProvider({ children }: { children: ReactNode }) {
       .catch(err => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: prefsRef.path, operation: 'update' })));
   };
 
-  const resetTimer = useCallback(() => {
-    setTimerActive(false);
-    setTimerLeft(TIMER_CONFIG[timerMode]);
-  }, [timerMode]);
+  const resetWorkTimer = useCallback(() => {
+    setWorkTimerActive(false);
+    setWorkTimerLeft(TIMER_CONFIG.work);
+  }, []);
+
+  const resetBreakTimer = useCallback(() => {
+    setBreakTimerActive(false);
+    setBreakTimerLeft(TIMER_CONFIG.short);
+  }, []);
 
   return (
     <TaskContext.Provider value={{ 
       tasks, labels, sessions, dailyGoals, customSongs, streak,
-      timerLeft, timerMode, isTimerActive,
+      workTimerLeft, breakTimerLeft, isWorkTimerActive, isBreakTimerActive,
       addTask, updateTask, deleteTask, toggleTask, addLabel, deleteLabel, 
       addSession, updateSession, deleteSession, setDailyGoal, addCustomSong, removeCustomSong,
-      setTimerActive, setTimerMode: (m) => { setTimerMode(m); setTimerLeft(TIMER_CONFIG[m]); }, resetTimer,
+      setWorkTimerActive: (a) => { if(a) setBreakTimerActive(false); setWorkTimerActive(a); },
+      setBreakTimerActive: (a) => { if(a) setWorkTimerActive(false); setBreakTimerActive(a); },
+      resetWorkTimer, resetBreakTimer,
       isInitialized 
     }}>
       {children}

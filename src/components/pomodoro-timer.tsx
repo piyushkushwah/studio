@@ -13,29 +13,21 @@ import {
 import { cn } from "@/lib/utils";
 import { useTasks } from "@/hooks/use-tasks";
 
-const MODE_CONFIG = {
-  work: {
-    label: "Focus Session",
-    seconds: 25 * 60,
-    accent: "bg-primary",
-    color: "#1e40af", // primary
-  },
-  short: {
-    label: "Short Break",
-    seconds: 5 * 60,
-    accent: "bg-accent",
-    color: "#10b981", // accent
-  },
+const TIMER_LIMITS = {
+  work: 25 * 60,
+  short: 5 * 60,
 };
 
 export function PomodoroTimer() {
   const { 
-    timerLeft, 
-    timerMode, 
-    isTimerActive, 
-    setTimerActive, 
-    setTimerMode, 
-    resetTimer 
+    workTimerLeft,
+    breakTimerLeft,
+    isWorkTimerActive,
+    isBreakTimerActive,
+    setWorkTimerActive,
+    setBreakTimerActive,
+    resetWorkTimer,
+    resetBreakTimer
   } = useTasks();
 
   const [isPipAvailable, setIsPipAvailable] = useState(false);
@@ -64,31 +56,31 @@ export function PomodoroTimer() {
     if (!ctx) return;
 
     const draw = () => {
-      const { color, label } = MODE_CONFIG[timerMode];
-      const timeStr = formatTime(timerLeft);
+      const activeTimer = isBreakTimerActive ? breakTimerLeft : workTimerLeft;
+      const activeLabel = isBreakTimerActive ? "Short Break" : "Focus Session";
+      const activeColor = isBreakTimerActive ? "#10b981" : "#1e40af";
+      const totalSeconds = isBreakTimerActive ? TIMER_LIMITS.short : TIMER_LIMITS.work;
       
-      // Clear
+      const timeStr = formatTime(activeTimer);
+      
       ctx.fillStyle = "#ffffff";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Background Circle
       ctx.beginPath();
       ctx.arc(150, 150, 120, 0, Math.PI * 2);
       ctx.strokeStyle = "#f3f4f6";
       ctx.lineWidth = 20;
       ctx.stroke();
 
-      // Progress Circle
-      const progress = (timerLeft / MODE_CONFIG[timerMode].seconds);
+      const progress = (activeTimer / totalSeconds);
       ctx.beginPath();
       ctx.arc(150, 150, 120, -Math.PI / 2, (-Math.PI / 2) + (Math.PI * 2 * progress));
-      ctx.strokeStyle = color;
+      ctx.strokeStyle = activeColor;
       ctx.lineWidth = 20;
       ctx.lineCap = "round";
       ctx.stroke();
 
-      // Text
-      ctx.fillStyle = color;
+      ctx.fillStyle = activeColor;
       ctx.font = "bold 60px Inter, sans-serif";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
@@ -96,11 +88,11 @@ export function PomodoroTimer() {
 
       ctx.font = "bold 20px Inter, sans-serif";
       ctx.fillStyle = "#6b7280";
-      ctx.fillText(label.toUpperCase(), 150, 200);
+      ctx.fillText(activeLabel.toUpperCase(), 150, 200);
     };
 
     draw();
-  }, [timerLeft, timerMode]);
+  }, [workTimerLeft, breakTimerLeft, isWorkTimerActive, isBreakTimerActive]);
 
   const togglePip = async () => {
     if (!videoRef.current || !canvasRef.current) return;
@@ -121,71 +113,51 @@ export function PomodoroTimer() {
     }
   };
 
-  const progress = ((MODE_CONFIG[timerMode].seconds - timerLeft) / MODE_CONFIG[timerMode].seconds) * 100;
-
   return (
-    <div id="tour-timer" className="relative flex items-center gap-3 bg-white border shadow-sm rounded-2xl px-4 h-12 transition-all hover:border-primary/30 group">
-      {/* Hidden elements for PiP */}
+    <div className="flex items-center gap-2">
       <canvas ref={canvasRef} width="300" height="300" className="hidden" />
       <video ref={videoRef} className="hidden" muted playsInline />
 
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={() => setTimerMode(timerMode === "work" ? "short" : "work")}
-        className={cn(
-          "h-8 w-8 rounded-xl shrink-0 transition-colors",
-          timerMode === "work" ? "text-primary bg-primary/5" : "text-accent bg-accent/5"
-        )}
-      >
-        {timerMode === "work" ? <Brain className="w-4 h-4" /> : <Coffee className="w-4 h-4" />}
-      </Button>
-
-      <div className="flex flex-col min-w-[50px]">
-        <span className="text-sm font-black tabular-nums tracking-tighter leading-none">
-          {formatTime(timerLeft)}
-        </span>
-      </div>
-
-      <div className="flex items-center gap-0.5 border-l pl-2">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setTimerActive(!isTimerActive)}
-          className={cn(
-            "h-8 w-8 rounded-xl transition-all",
-            isTimerActive ? "text-primary" : "text-muted-foreground hover:text-primary"
-          )}
-        >
-          {isTimerActive ? <Pause className="w-4 h-4 fill-current" /> : <Play className="w-4 h-4 fill-current" />}
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={resetTimer}
-          className="h-8 w-8 rounded-xl text-muted-foreground hover:text-destructive"
-        >
-          <RotateCcw className="w-3.5 h-3.5" />
-        </Button>
-        {isPipAvailable && (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={togglePip}
-            className="h-8 w-8 rounded-xl text-muted-foreground hover:text-primary"
-            title="Pop out timer"
-          >
-            <ExternalLink className="w-3.5 h-3.5" />
+      {/* Work Timer */}
+      <div className="flex items-center gap-2 bg-white border shadow-sm rounded-2xl px-3 h-12 hover:border-primary/30 transition-all group">
+        <Brain className={cn("w-4 h-4 transition-colors", isWorkTimerActive ? "text-primary" : "text-muted-foreground")} />
+        <span className="text-sm font-black tabular-nums tracking-tighter w-12 text-center">{formatTime(workTimerLeft)}</span>
+        <div className="flex items-center gap-0.5 border-l pl-2">
+          <Button variant="ghost" size="icon" onClick={() => setWorkTimerActive(!isWorkTimerActive)} className="h-8 w-8 rounded-xl">
+            {isWorkTimerActive ? <Pause className="w-3.5 h-3.5 fill-current text-primary" /> : <Play className="w-3.5 h-3.5 fill-current text-primary" />}
           </Button>
-        )}
+          <Button variant="ghost" size="icon" onClick={resetWorkTimer} className="h-8 w-8 rounded-xl text-muted-foreground hover:text-destructive">
+            <RotateCcw className="w-3 h-3" />
+          </Button>
+        </div>
       </div>
 
-      <div className="absolute bottom-0 left-4 right-4 h-[2px] bg-muted/30 rounded-full overflow-hidden">
-        <div 
-          className={cn("h-full transition-all duration-1000 ease-linear", MODE_CONFIG[timerMode].accent)} 
-          style={{ width: `${progress}%` }}
-        />
+      {/* Break Timer */}
+      <div className="flex items-center gap-2 bg-white border shadow-sm rounded-2xl px-3 h-12 hover:border-accent/30 transition-all group">
+        <Coffee className={cn("w-4 h-4 transition-colors", isBreakTimerActive ? "text-accent" : "text-muted-foreground")} />
+        <span className="text-sm font-black tabular-nums tracking-tighter w-12 text-center">{formatTime(breakTimerLeft)}</span>
+        <div className="flex items-center gap-0.5 border-l pl-2">
+          <Button variant="ghost" size="icon" onClick={() => setBreakTimerActive(!isBreakTimerActive)} className="h-8 w-8 rounded-xl">
+            {isBreakTimerActive ? <Pause className="w-3.5 h-3.5 fill-current text-accent" /> : <Play className="w-3.5 h-3.5 fill-current text-accent" />}
+          </Button>
+          <Button variant="ghost" size="icon" onClick={resetBreakTimer} className="h-8 w-8 rounded-xl text-muted-foreground hover:text-destructive">
+            <RotateCcw className="w-3 h-3" />
+          </Button>
+        </div>
       </div>
+
+      {/* PiP Controller */}
+      {isPipAvailable && (
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={togglePip}
+          className="h-12 w-12 bg-white rounded-2xl shadow-sm text-muted-foreground hover:text-primary transition-all"
+          title="Pop out active timer"
+        >
+          <ExternalLink className="w-4 h-4" />
+        </Button>
+      )}
     </div>
   );
 }

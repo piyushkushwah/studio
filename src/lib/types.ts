@@ -1,4 +1,3 @@
-
 export type Priority = 'low' | 'medium' | 'high';
 
 export interface Label {
@@ -49,10 +48,11 @@ export interface TaskContextType {
   customSongs: CustomSong[];
   streak: number;
   
-  // Timer State (Persisted in context for navigation)
-  timerLeft: number;
-  timerMode: TimerMode;
-  isTimerActive: boolean;
+  // Timer State (Separated)
+  workTimerLeft: number;
+  breakTimerLeft: number;
+  isWorkTimerActive: boolean;
+  isBreakTimerActive: boolean;
   
   // Actions
   addTask: (taskData: Omit<Task, 'id' | 'createdAt'>) => void;
@@ -69,9 +69,10 @@ export interface TaskContextType {
   removeCustomSong: (id: string) => void;
   
   // Timer Actions
-  setTimerActive: (active: boolean) => void;
-  setTimerMode: (mode: TimerMode) => void;
-  resetTimer: () => void;
+  setWorkTimerActive: (active: boolean) => void;
+  setBreakTimerActive: (active: boolean) => void;
+  resetWorkTimer: () => void;
+  resetBreakTimer: () => void;
   
   isInitialized: boolean;
 }
