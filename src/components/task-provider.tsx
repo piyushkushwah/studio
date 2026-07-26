@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo, useCallback } from 'react';
@@ -16,7 +17,7 @@ import {
   Unsubscribe
 } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 const DEFAULT_LABELS: Label[] = [
   { id: '1', name: 'work', color: 'bg-blue-600 text-white hover:bg-blue-700' },
@@ -57,13 +58,15 @@ export function TaskProvider({ children }: { children: ReactNode }) {
   
   const [isInitialized, setIsInitialized] = useState(false);
 
+  // Firestore Sync Logic
   const addTask = useCallback((taskData: Omit<Task, 'id' | 'createdAt'>) => {
     const id = generateId();
     const newTask: Task = { ...taskData, id, createdAt: Date.now() };
     
     if (user && firestore) {
       const docRef = doc(firestore, 'users', user.uid, 'tasks', id);
-      setDoc(docRef, newTask).catch(async (err) => {
+      setDoc(docRef, newTask).catch((err) => {
+        console.error("Firestore Save Error:", err);
         errorEmitter.emit('permission-error', new FirestorePermissionError({
           path: docRef.path,
           operation: 'create',
@@ -80,7 +83,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
   const updateTask = useCallback((id: string, updates: Partial<Task>) => {
     if (user && firestore) {
       const docRef = doc(firestore, 'users', user.uid, 'tasks', id);
-      updateDoc(docRef, updates).catch(async (err) => {
+      updateDoc(docRef, updates).catch((err) => {
         errorEmitter.emit('permission-error', new FirestorePermissionError({
           path: docRef.path,
           operation: 'update',
@@ -97,7 +100,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
   const deleteTask = useCallback((id: string) => {
     if (user && firestore) {
       const docRef = doc(firestore, 'users', user.uid, 'tasks', id);
-      deleteDoc(docRef).catch(async (err) => {
+      deleteDoc(docRef).catch((err) => {
         errorEmitter.emit('permission-error', new FirestorePermissionError({
           path: docRef.path,
           operation: 'delete'
@@ -121,7 +124,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     
     if (user && firestore) {
       const docRef = doc(firestore, 'users', user.uid, 'labels', id);
-      setDoc(docRef, newLabel).catch(async (err) => {
+      setDoc(docRef, newLabel).catch((err) => {
         errorEmitter.emit('permission-error', new FirestorePermissionError({
           path: docRef.path,
           operation: 'create',
@@ -138,7 +141,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
   const deleteLabel = useCallback((id: string) => {
     if (user && firestore) {
       const docRef = doc(firestore, 'users', user.uid, 'labels', id);
-      deleteDoc(docRef).catch(async (err) => {
+      deleteDoc(docRef).catch((err) => {
         errorEmitter.emit('permission-error', new FirestorePermissionError({
           path: docRef.path,
           operation: 'delete'
@@ -164,7 +167,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     
     if (user && firestore) {
       const docRef = doc(firestore, 'users', user.uid, 'sessions', id);
-      setDoc(docRef, newSession).catch(async (err) => {
+      setDoc(docRef, newSession).catch((err) => {
         errorEmitter.emit('permission-error', new FirestorePermissionError({
           path: docRef.path,
           operation: 'create',
@@ -181,7 +184,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
   const updateSession = useCallback((id: string, updates: Partial<Session>) => {
     if (user && firestore) {
       const docRef = doc(firestore, 'users', user.uid, 'sessions', id);
-      updateDoc(docRef, updates).catch(async (err) => {
+      updateDoc(docRef, updates).catch((err) => {
         errorEmitter.emit('permission-error', new FirestorePermissionError({
           path: docRef.path,
           operation: 'update',
@@ -198,7 +201,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
   const deleteSession = useCallback((id: string) => {
     if (user && firestore) {
       const docRef = doc(firestore, 'users', user.uid, 'sessions', id);
-      deleteDoc(docRef).catch(async (err) => {
+      deleteDoc(docRef).catch((err) => {
         errorEmitter.emit('permission-error', new FirestorePermissionError({
           path: docRef.path,
           operation: 'delete'
@@ -215,7 +218,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     const newGoals = { ...dailyGoals, [date]: target };
     if (user && firestore) {
       const docRef = doc(firestore, 'users', user.uid, 'preferences', 'main');
-      setDoc(docRef, { dailyGoals: newGoals }, { merge: true }).catch(async (err) => {
+      setDoc(docRef, { dailyGoals: newGoals }, { merge: true }).catch((err) => {
         errorEmitter.emit('permission-error', new FirestorePermissionError({
           path: docRef.path,
           operation: 'write',
@@ -233,7 +236,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     const newSongs = [...customSongs, newSong];
     if (user && firestore) {
       const docRef = doc(firestore, 'users', user.uid, 'preferences', 'main');
-      setDoc(docRef, { customSongs: newSongs }, { merge: true }).catch(async (err) => {
+      setDoc(docRef, { customSongs: newSongs }, { merge: true }).catch((err) => {
         errorEmitter.emit('permission-error', new FirestorePermissionError({
           path: docRef.path,
           operation: 'write',
@@ -250,7 +253,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     const newSongs = customSongs.filter(s => s.id !== id);
     if (user && firestore) {
       const docRef = doc(firestore, 'users', user.uid, 'preferences', 'main');
-      setDoc(docRef, { customSongs: newSongs }, { merge: true }).catch(async (err) => {
+      setDoc(docRef, { customSongs: newSongs }, { merge: true }).catch((err) => {
         errorEmitter.emit('permission-error', new FirestorePermissionError({
           path: docRef.path,
           operation: 'write'
@@ -262,6 +265,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     }
   }, [user, firestore, customSongs, dailyGoals]);
 
+  // Timer Effects
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (isWorkTimerActive && workTimerLeft > 0) {
@@ -286,6 +290,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     return () => clearInterval(interval);
   }, [isBreakTimerActive, breakTimerLeft, addSession]);
 
+  // Initialization & Real-time Listeners
   useEffect(() => {
     if (authLoading || !firestore) return;
 
@@ -315,6 +320,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     const userId = user.uid;
     const unsubs: Unsubscribe[] = [];
     
+    // Tasks Listener
     const tasksQuery = query(collection(firestore, 'users', userId, 'tasks'), orderBy('createdAt', 'desc'));
     unsubs.push(onSnapshot(tasksQuery, (snapshot) => {
       setTasks(snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Task)));
@@ -325,6 +331,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
       }));
     }));
 
+    // Labels Listener
     const labelsQuery = query(collection(firestore, 'users', userId, 'labels'));
     unsubs.push(onSnapshot(labelsQuery, (snapshot) => {
       const dbLabels = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Label));
@@ -336,6 +343,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
       }));
     }));
 
+    // Sessions Listener
     const sessionsQuery = query(collection(firestore, 'users', userId, 'sessions'), orderBy('startTime', 'desc'));
     unsubs.push(onSnapshot(sessionsQuery, (snapshot) => {
       setSessions(snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Session)));
@@ -346,6 +354,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
       }));
     }));
 
+    // Preferences Listener
     unsubs.push(onSnapshot(doc(firestore, 'users', userId, 'preferences', 'main'), (docSnap) => {
       if (docSnap.exists()) {
         const data = docSnap.data();

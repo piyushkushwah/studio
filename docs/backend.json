@@ -6,6 +6,7 @@
       "description": "A productivity task with due date and priority",
       "type": "object",
       "properties": {
+        "id": { "type": "string" },
         "description": { "type": "string" },
         "notes": { "type": "string" },
         "dueDate": { "type": "string", "format": "date" },
@@ -21,6 +22,7 @@
       "description": "Custom category labels for tasks",
       "type": "object",
       "properties": {
+        "id": { "type": "string" },
         "name": { "type": "string" },
         "color": { "type": "string" }
       },
@@ -31,6 +33,7 @@
       "description": "A recorded Pomodoro or focus session",
       "type": "object",
       "properties": {
+        "id": { "type": "string" },
         "startTime": { "type": "number" },
         "durationMinutes": { "type": "number" },
         "type": { "type": "string", "enum": ["work", "short", "manual"] },
@@ -44,7 +47,10 @@
       "description": "User specific settings including custom songs",
       "type": "object",
       "properties": {
-        "dailyGoals": { "type": "object", "additionalProperties": { "type": "number" } },
+        "dailyGoals": { 
+          "type": "object", 
+          "additionalProperties": { "type": "number" } 
+        },
         "customSongs": { 
           "type": "array", 
           "items": {
