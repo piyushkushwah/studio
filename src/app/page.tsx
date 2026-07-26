@@ -4,7 +4,7 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { useTasks } from "@/hooks/use-tasks";
 import { useAuth, useUser } from "@/firebase";
-import { signInWithPopup, GoogleAuthProvider, signOut, getRedirectResult } from "firebase/auth";
+import { signInWithPopup, GoogleAuthProvider, signOut } from "firebase/auth";
 import { CalendarCell } from "@/components/calendar-cell";
 import { TaskItem } from "@/components/task-item";
 import { TaskDialog } from "@/components/task-dialog";
@@ -46,7 +46,8 @@ import {
   Star,
   LogOut,
   Layout,
-  Loader2
+  Loader2,
+  AlertTriangle
 } from "lucide-react";
 import { Task, Priority } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -68,29 +69,9 @@ export default function DailyTaskTrack() {
   const [greeting, setGreeting] = useState("Hello");
   const [quote, setQuote] = useState<string | null>(null);
   const [isAuthProcessing, setIsAuthProcessing] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
   
   const { toast } = useToast();
-
-  // Handle redirect result for browsers that fall back to redirect from popup
-  useEffect(() => {
-    if (!auth) return;
-    
-    getRedirectResult(auth)
-      .then((result) => {
-        if (result) {
-          toast({ title: "Welcome back!", description: `Logged in as ${result.user.displayName}` });
-        }
-      })
-      .catch((error: any) => {
-        if (error.code === 'auth/unauthorized-domain') {
-          toast({ 
-            variant: "destructive", 
-            title: "Authorized Domain Required", 
-            description: `Add "${window.location.hostname}" to Firebase Console > Auth > Settings > Authorized Domains.` 
-          });
-        }
-      });
-  }, [auth, toast]);
 
   const handleLogin = async () => {
     if (!auth) {
@@ -99,27 +80,33 @@ export default function DailyTaskTrack() {
     }
     
     setIsAuthProcessing(true);
+    setAuthError(null);
     const provider = new GoogleAuthProvider();
     provider.setCustomParameters({ prompt: 'select_account' });
     
     try {
-      // signInWithPopup is more stable in many development and web environments
       await signInWithPopup(auth, provider);
-      toast({ title: "Success", description: "Logged in successfully." });
+      toast({ title: "Welcome!", description: "Logged in successfully." });
     } catch (error: any) {
+      console.error("Login Error:", error);
+      let message = error.message || "Could not sign in.";
+      
       if (error.code === 'auth/popup-closed-by-user') {
-        toast({ title: "Sign In Canceled", description: "The login window was closed before completion." });
+        message = "The login window was closed before completion. If this keeps happening, ensure your domain is whitelisted in Firebase Console.";
       } else if (error.code === 'auth/unauthorized-domain') {
-        toast({ 
-          variant: "destructive", 
-          title: "Setup Required", 
-          description: `The domain "${window.location.hostname}" must be whitelisted in your Firebase Console.` 
-        });
+        const domain = typeof window !== 'undefined' ? window.location.hostname : 'your domain';
+        message = `This domain (${domain}) is not authorized for Google Sign-in. Add it to Firebase Console > Authentication > Settings > Authorized Domains.`;
+        setAuthError(domain);
       } else if (error.code === 'auth/popup-blocked') {
-        toast({ variant: "destructive", title: "Popup Blocked", description: "Please allow popups for this site to sign in." });
-      } else {
-        toast({ variant: "destructive", title: "Sign In Failed", description: error.message || "Could not sign in." });
+        message = "Popup blocked by browser. Please allow popups for this site.";
       }
+
+      toast({ 
+        variant: "destructive", 
+        title: "Sign In Failed", 
+        description: message,
+        duration: 8000
+      });
     } finally {
       setIsAuthProcessing(false);
     }
@@ -198,21 +185,22 @@ export default function DailyTaskTrack() {
 
   const completionRate = dailyTasks.length > 0 ? (completedCount / dailyTasks.length) * 100 : 0;
 
-  // Render loading state if we are still determining auth or synchronizing data
-  if (authLoading || isAuthProcessing || (user && !isInitialized)) {
+  if (authLoading || (isAuthProcessing && !authError) || (user && !isInitialized)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="w-10 h-10 animate-spin text-primary" />
-          <p className="text-muted-foreground font-medium animate-pulse">
-            {authLoading || isAuthProcessing ? "Authenticating..." : "Synchronizing workspace..."}
-          </p>
+        <div className="flex flex-col items-center gap-4 text-center px-4">
+          <Loader2 className="w-12 h-12 animate-spin text-primary" />
+          <div className="space-y-1">
+            <p className="text-lg font-bold text-primary">
+              {authLoading || isAuthProcessing ? "Authenticating..." : "Building your workspace..."}
+            </p>
+            <p className="text-sm text-muted-foreground">Connecting to secure cloud storage...</p>
+          </div>
         </div>
       </div>
     );
   }
 
-  // If we are finished loading and have no user, show the login page
   if (!user) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-6">
@@ -222,7 +210,7 @@ export default function DailyTaskTrack() {
           </div>
           <div className="space-y-3">
             <h2 className="text-4xl font-black text-primary tracking-tight">DailyTaskTrack</h2>
-            <p className="text-muted-foreground font-medium px-4">Your Professional Productivity Command Center.</p>
+            <p className="text-muted-foreground font-medium px-4">Professional Productivity Command Center.</p>
           </div>
           
           <div className="space-y-4">
@@ -245,6 +233,19 @@ export default function DailyTaskTrack() {
                 </>
               )}
             </Button>
+
+            {authError && (
+              <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-2xl text-left space-y-2 animate-in slide-in-from-top-4">
+                <div className="flex items-center gap-2 text-destructive font-bold text-sm">
+                  <AlertTriangle className="w-4 h-4" />
+                  Whitelisting Required
+                </div>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  The domain <strong>{authError}</strong> is not authorized. Go to Firebase Console &gt; Authentication &gt; Settings and add it to the &quot;Authorized Domains&quot; list.
+                </p>
+              </div>
+            )}
+
             <div className="flex items-center gap-2 text-muted-foreground/30 py-2">
               <div className="h-px bg-current flex-1" />
               <span className="text-[10px] font-black uppercase tracking-widest">Secure Cloud Sync</span>
@@ -253,14 +254,13 @@ export default function DailyTaskTrack() {
           </div>
           
           <div className="pt-2">
-            <p className="text-[10px] text-muted-foreground uppercase font-black tracking-[0.2em]">Google Auth • Real-time Backup</p>
+            <p className="text-[10px] text-muted-foreground uppercase font-black tracking-[0.2em]">Google Authentication • Real-time Sync</p>
           </div>
         </Card>
       </div>
     );
   }
 
-  // Dashboard View
   return (
     <div className="min-h-screen bg-background p-4 md:p-8 flex flex-col items-center overflow-x-hidden animate-in fade-in duration-700">
       <AppTour />

@@ -256,7 +256,6 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     }
   }, [user, firestore, customSongs]);
 
-  // Timer Effects
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (isWorkTimerActive && workTimerLeft > 0) {
@@ -310,10 +309,9 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     const userId = user.uid;
     const unsubs: Unsubscribe[] = [];
     
-    // Fail-safe initialization timer: ensures the UI loads even if snapshots are slow
     const initTimer = setTimeout(() => {
-      if (!isInitialized) setIsInitialized(true);
-    }, 5000);
+      setIsInitialized(true);
+    }, 3000);
 
     const tasksRef = collection(firestore, 'users', userId, 'tasks');
     unsubs.push(onSnapshot(tasksRef, (snapshot) => {
@@ -355,7 +353,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
       unsubs.forEach(unsub => unsub());
       clearTimeout(initTimer);
     };
-  }, [user, authLoading, firestore, isInitialized]);
+  }, [user, authLoading, firestore]);
 
   const streak = useMemo(() => {
     if (!tasks.length) return 0;
@@ -397,7 +395,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
       setWorkTimerActive: (a) => { if(a) setBreakTimerActive(false); setWorkTimerActive(a); },
       setBreakTimerActive: (a) => { if(a) setWorkTimerActive(false); setBreakTimerActive(a); },
       resetWorkTimer, resetBreakTimer,
-      isInitialized: isInitialized && !authLoading 
+      isInitialized
     }}>
       {children}
     </TaskContext.Provider>
