@@ -21,7 +21,7 @@ export function useUser() {
       return;
     }
 
-    // Set initial loading state to true as we wait for onAuthStateChanged
+    // Set initial loading state to true as we wait for the first auth event
     setLoading(true);
 
     const unsubscribe = onAuthStateChanged(auth, (authUser) => {
