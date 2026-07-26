@@ -35,7 +35,7 @@ const TaskContext = createContext<TaskContextType | undefined>(undefined);
 export function TaskProvider({ children }: { children: ReactNode }) {
   const db = useFirestore();
   const auth = useAuth();
-  const user = auth?.currentUser;
+  const [user, setUser] = useState(auth?.currentUser || null);
 
   // Global Data State
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -44,7 +44,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
   const [dailyGoals, setDailyGoals] = useState<Record<string, number>>({});
   const [customSongs, setCustomSongs] = useState<CustomSong[]>([]);
   
-  // Timer States (Separated)
+  // Timer States
   const [workTimerLeft, setWorkTimerLeft] = useState(TIMER_CONFIG.work);
   const [breakTimerLeft, setBreakTimerLeft] = useState(TIMER_CONFIG.short);
   const [isWorkTimerActive, setWorkTimerActive] = useState(false);
@@ -52,7 +52,23 @@ export function TaskProvider({ children }: { children: ReactNode }) {
   
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // Firestore Sync Effect
+  // Auth Observer
+  useEffect(() => {
+    if (!auth) return;
+    return auth.onAuthStateChanged((u) => {
+      setUser(u);
+      // Reset state on user change to ensure data separation
+      if (!u) {
+        setTasks([]);
+        setLabels(DEFAULT_LABELS);
+        setSessions([]);
+        setDailyGoals({});
+        setCustomSongs([]);
+      }
+    });
+  }, [auth]);
+
+  // Firestore Sync Effect - Scoped to user.uid
   useEffect(() => {
     if (!db || !user) {
       setIsInitialized(true);
@@ -95,7 +111,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     };
   }, [db, user]);
 
-  // Work Timer Effect
+  // Timer Effects
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (isWorkTimerActive && workTimerLeft > 0) {
@@ -108,7 +124,6 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     return () => clearInterval(interval);
   }, [isWorkTimerActive, workTimerLeft]);
 
-  // Break Timer Effect
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (isBreakTimerActive && breakTimerLeft > 0) {

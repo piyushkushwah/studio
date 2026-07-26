@@ -3,6 +3,8 @@
 
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { useTasks } from "@/hooks/use-tasks";
+import { useAuth } from "@/firebase";
+import { signInWithPopup, GoogleAuthProvider, signOut } from "firebase/auth";
 import { CalendarCell } from "@/components/calendar-cell";
 import { TaskItem } from "@/components/task-item";
 import { TaskDialog } from "@/components/task-dialog";
@@ -12,9 +14,10 @@ import { FocusPlayer } from "@/components/focus-player";
 import { AppTour } from "@/components/app-tour";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Card } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
   format, 
   addMonths, 
@@ -32,7 +35,6 @@ import {
   ChevronRight, 
   Plus, 
   Calendar as CalendarIcon, 
-  CheckCircle2, 
   BarChart2,
   Search,
   FilterX,
@@ -43,7 +45,10 @@ import {
   HelpCircle,
   Trophy,
   Flame,
-  Star
+  Star,
+  LogIn,
+  LogOut,
+  Layout
 } from "lucide-react";
 import { Task, Priority } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -52,7 +57,10 @@ import { getRandomQuote } from "@/lib/quotes";
 import { useToast } from "@/hooks/use-toast";
 
 export default function DailyTaskTrack() {
+  const auth = useAuth();
+  const user = auth?.currentUser;
   const { tasks, addTask, updateTask, deleteTask, toggleTask, labels, isInitialized, dailyGoals, setDailyGoal, streak } = useTasks();
+  
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [isTaskDialogOpen, setIsTaskDialogOpen] = useState(false);
@@ -62,6 +70,20 @@ export default function DailyTaskTrack() {
   const [greeting, setGreeting] = useState("Hello");
   const [quote, setQuote] = useState<string | null>(null);
   const { toast } = useToast();
+
+  const handleLogin = async () => {
+    if (!auth) return;
+    try {
+      await signInWithPopup(auth, new GoogleAuthProvider());
+    } catch (error) {
+      toast({ variant: "destructive", title: "Login Failed", description: "Could not sign in with Google." });
+    }
+  };
+
+  const handleLogout = async () => {
+    if (!auth) return;
+    await signOut(auth);
+  };
 
   const fetchNewQuote = useCallback(async () => {
     const newQuote = await getRandomQuote();
@@ -109,14 +131,14 @@ export default function DailyTaskTrack() {
   const goalMet = dailyGoalValue > 0 && completedCount >= dailyGoalValue;
 
   useEffect(() => {
-    if (goalMet && isInitialized) {
-      const lastCelebrated = localStorage.getItem(`celebrated_${selectedDateStr}`);
+    if (goalMet && isInitialized && user) {
+      const lastCelebrated = localStorage.getItem(`celebrated_${selectedDateStr}_${user.uid}`);
       if (!lastCelebrated) {
         toast({ title: "Goal Reached! 🎉", description: `You've completed your goal of ${dailyGoalValue} tasks for today.` });
-        localStorage.setItem(`celebrated_${selectedDateStr}`, "true");
+        localStorage.setItem(`celebrated_${selectedDateStr}_${user.uid}`, "true");
       }
     }
-  }, [goalMet, selectedDateStr, dailyGoalValue, toast, isInitialized]);
+  }, [goalMet, selectedDateStr, dailyGoalValue, toast, isInitialized, user]);
 
   const handleTaskSubmit = (taskData: { description: string; notes?: string; dueDate: string; label?: string; priority?: Priority }) => {
     if (editingTask) updateTask(editingTask.id, taskData);
@@ -139,6 +161,25 @@ export default function DailyTaskTrack() {
     </div>
   );
 
+  if (!user) return (
+    <div className="min-h-screen bg-background flex items-center justify-center p-6">
+      <Card className="max-w-md w-full p-8 text-center space-y-6 shadow-2xl rounded-[2rem] border-white/50">
+        <div className="bg-primary/10 w-20 h-20 rounded-3xl flex items-center justify-center mx-auto text-primary">
+          <Layout className="w-10 h-10" />
+        </div>
+        <div>
+          <h2 className="text-3xl font-black text-primary tracking-tight">DailyTaskTrack</h2>
+          <p className="text-muted-foreground mt-2 font-medium">Your focused command center for productivity.</p>
+        </div>
+        <Button onClick={handleLogin} className="w-full h-14 rounded-2xl text-lg font-bold shadow-xl shadow-primary/20 gap-3">
+          <LogIn className="w-5 h-5" />
+          Sign in with Google
+        </Button>
+        <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Secure Cloud Sync Included</p>
+      </Card>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-background p-4 md:p-8 flex flex-col items-center overflow-x-hidden">
       <AppTour />
@@ -150,7 +191,7 @@ export default function DailyTaskTrack() {
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <h1 className="text-2xl md:text-3xl font-black tracking-tight text-primary leading-tight">{greeting}</h1>
+              <h1 className="text-2xl md:text-3xl font-black tracking-tight text-primary leading-tight">{greeting}, {user.displayName?.split(' ')[0]}</h1>
               {streak > 0 && (
                 <div className="flex items-center gap-1 bg-orange-100 text-orange-600 px-2 py-0.5 rounded-full text-xs font-bold border border-orange-200 shrink-0">
                   <Flame className="w-3 h-3 fill-current" />
@@ -181,11 +222,15 @@ export default function DailyTaskTrack() {
                 <span className="text-[8px] font-black uppercase tracking-tighter text-primary/60">Stats</span>
               </Button>
             </Link>
-            <Button variant="ghost" onClick={() => (window as any).restartAppTour?.()} className="flex flex-col items-center justify-center gap-0.5 h-auto py-1 px-3 rounded-xl hover:bg-primary/5 group" title="App Tour">
-              <HelpCircle className="w-4 h-4 text-primary transition-transform group-hover:scale-110" />
-              <span className="text-[8px] font-black uppercase tracking-tighter text-primary/60">Help</span>
+            <Button variant="ghost" onClick={handleLogout} className="flex flex-col items-center justify-center gap-0.5 h-auto py-1 px-3 rounded-xl hover:bg-destructive/5 group" title="Sign Out">
+              <LogOut className="w-4 h-4 text-muted-foreground group-hover:text-destructive transition-transform group-hover:scale-110" />
+              <span className="text-[8px] font-black uppercase tracking-tighter text-muted-foreground/60">Exit</span>
             </Button>
           </div>
+          <Avatar className="h-12 w-12 border-2 border-white shadow-sm ring-2 ring-primary/10">
+            <AvatarImage src={user.photoURL || undefined} />
+            <AvatarFallback className="bg-primary/5 text-primary font-black">{user.displayName?.charAt(0)}</AvatarFallback>
+          </Avatar>
         </div>
       </header>
 
@@ -206,7 +251,7 @@ export default function DailyTaskTrack() {
           </Card>
         </div>
 
-        <div id="tour-tasks" className="lg:col-span-5 flex flex-col w-full lg:sticky lg:top-8 h-full lg:h-[calc(100vh-12rem)]">
+        <div id="tour-tasks" className="lg:col-span-5 flex flex-col w-full lg:sticky lg:top-8 h-[calc(100vh-14rem)]">
           <Card className={cn("p-6 md:p-8 shadow-2xl transition-all duration-500 h-full flex flex-col bg-white border-white/50 rounded-[2rem] overflow-hidden", goalMet ? "shadow-accent/10 border-accent/20 ring-1 ring-accent/10" : "shadow-primary/5")}>
             <div className="flex items-center justify-between mb-6 shrink-0">
               <div className="flex items-center gap-4">
@@ -243,7 +288,7 @@ export default function DailyTaskTrack() {
               </div>
             </div>
 
-            <ScrollArea className="flex-1 -mx-2 px-2 overflow-y-auto">
+            <ScrollArea className="flex-1 -mx-2 px-2">
               <div className="space-y-3 pb-4">
                 {dailyTasks.length === 0 ? (
                   <div className="py-12 text-center flex flex-col items-center gap-4">
