@@ -84,6 +84,11 @@ export default function DailyTaskTrack() {
       await signInWithPopup(auth, provider);
       toast({ title: "Welcome Back!", description: "Your productivity dashboard is ready." });
     } catch (error: any) {
+      // Gracefully handle case where user closes the popup
+      if (error.code === 'auth/popup-closed-by-user') {
+        return;
+      }
+
       console.error("Auth error:", error);
       let message = error.message || "Could not sign in with Google.";
       
