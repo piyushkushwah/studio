@@ -11,9 +11,11 @@ import {
   addDoc, 
   updateDoc, 
   deleteDoc, 
-  onSnapshot 
+  onSnapshot,
+  query,
+  orderBy
 } from 'firebase/firestore';
-import { useFirestore, useAuth, useUser } from '@/firebase';
+import { useFirestore, useUser } from '@/firebase';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 
@@ -51,42 +53,49 @@ export function TaskProvider({ children }: { children: ReactNode }) {
   
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // Reset state when user logs out
+  // Firestore Sync Effect
   useEffect(() => {
-    if (!authLoading && !user) {
+    // If auth is still loading, wait.
+    if (authLoading) return;
+
+    // If no user is logged in, reset and mark as initialized (login screen will show)
+    if (!user) {
       setTasks([]);
       setLabels(DEFAULT_LABELS);
       setSessions([]);
-      setDailyGoals({});
+      setDailyGoals([]);
       setCustomSongs([]);
       setIsInitialized(true);
-    }
-  }, [user, authLoading]);
-
-  // Firestore Sync Effect - Scoped to user.uid
-  useEffect(() => {
-    if (!db || !user) {
-      if (!authLoading) setIsInitialized(true);
       return;
     }
+
+    // User exists, setup listeners
+    if (!db) return;
 
     const tasksRef = collection(db, 'users', user.uid, 'tasks');
     const labelsRef = collection(db, 'users', user.uid, 'labels');
     const sessionsRef = collection(db, 'users', user.uid, 'sessions');
+    const sessionsQuery = query(sessionsRef, orderBy('startTime', 'desc'));
     const prefsRef = doc(db, 'users', user.uid, 'preferences', 'main');
 
     const unsubTasks = onSnapshot(tasksRef, (snapshot) => {
       setTasks(snapshot.docs.map(d => ({ id: d.id, ...d.data() } as Task)));
-    }, (err) => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: tasksRef.path, operation: 'list' })));
+    }, (err) => {
+      errorEmitter.emit('permission-error', new FirestorePermissionError({ path: tasksRef.path, operation: 'list' }));
+    });
 
     const unsubLabels = onSnapshot(labelsRef, (snapshot) => {
       const dbLabels = snapshot.docs.map(d => ({ id: d.id, ...d.data() } as Label));
       setLabels(dbLabels.length > 0 ? dbLabels : DEFAULT_LABELS);
-    }, (err) => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: labelsRef.path, operation: 'list' })));
+    }, (err) => {
+      errorEmitter.emit('permission-error', new FirestorePermissionError({ path: labelsRef.path, operation: 'list' }));
+    });
 
-    const unsubSessions = onSnapshot(sessionsRef, (snapshot) => {
-      setSessions(snapshot.docs.map(d => ({ id: d.id, ...d.data() } as Session)).sort((a,b) => b.startTime - a.startTime));
-    }, (err) => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: sessionsRef.path, operation: 'list' })));
+    const unsubSessions = onSnapshot(sessionsQuery, (snapshot) => {
+      setSessions(snapshot.docs.map(d => ({ id: d.id, ...d.data() } as Session)));
+    }, (err) => {
+      errorEmitter.emit('permission-error', new FirestorePermissionError({ path: sessionsRef.path, operation: 'list' }));
+    });
 
     const unsubPrefs = onSnapshot(prefsRef, (snapshot) => {
       if (snapshot.exists()) {
@@ -94,9 +103,10 @@ export function TaskProvider({ children }: { children: ReactNode }) {
         setDailyGoals(data.dailyGoals || {});
         setCustomSongs(data.customSongs || []);
       }
-    }, (err) => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: prefsRef.path, operation: 'get' })));
+    }, (err) => {
+      errorEmitter.emit('permission-error', new FirestorePermissionError({ path: prefsRef.path, operation: 'get' }));
+    });
 
-    // We consider it initialized as soon as listeners are set up
     setIsInitialized(true);
 
     return () => {
@@ -107,7 +117,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     };
   }, [db, user, authLoading]);
 
-  // Timer Effects
+  // Timer Tick Effects
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (isWorkTimerActive && workTimerLeft > 0) {
@@ -153,6 +163,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     return currentStreak;
   }, [tasks]);
 
+  // Mutation functions
   const addTask = (taskData: Omit<Task, 'id' | 'createdAt'>) => {
     if (!db || !user) return;
     const tasksRef = collection(db, 'users', user.uid, 'tasks');
