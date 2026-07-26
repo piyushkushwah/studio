@@ -97,11 +97,11 @@ export default function DailyTaskTrack() {
       console.error("Auth error:", error);
       let message = error.message || "Could not start your session.";
       if (error.code === 'auth/configuration-not-found') {
-        message = "Anonymous authentication is not enabled. Please enable 'Anonymous' in the Firebase Console (Authentication > Sign-in method).";
+        message = "Anonymous authentication is not enabled. In the Firebase Console, go to Authentication > Sign-in method > Enable Anonymous.";
       }
       toast({ 
         variant: "destructive", 
-        title: "Setup Failed", 
+        title: "Configuration Needed", 
         description: message 
       });
     } finally {
