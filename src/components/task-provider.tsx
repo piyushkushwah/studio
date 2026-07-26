@@ -4,20 +4,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo, useCallback, useRef } from 'react';
 import { Task, Label, Session, TaskContextType, CustomSong } from '@/lib/types';
 import { format, subDays, isSameDay } from 'date-fns';
-import { 
-  collection, 
-  doc, 
-  setDoc, 
-  addDoc, 
-  updateDoc, 
-  deleteDoc, 
-  onSnapshot,
-  query,
-  orderBy
-} from 'firebase/firestore';
-import { useFirestore, useUser } from '@/firebase';
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
+import { useUser } from '@/firebase';
 
 const DEFAULT_LABELS: Label[] = [
   { id: '1', name: 'work', color: 'bg-blue-600 text-white hover:bg-blue-700' },
@@ -35,7 +22,6 @@ const TIMER_CONFIG = {
 const TaskContext = createContext<TaskContextType | undefined>(undefined);
 
 export function TaskProvider({ children }: { children: ReactNode }) {
-  const db = useFirestore();
   const { user, loading: authLoading } = useUser();
 
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -50,79 +36,48 @@ export function TaskProvider({ children }: { children: ReactNode }) {
   const [isBreakTimerActive, setBreakTimerActive] = useState(false);
   
   const [isInitialized, setIsInitialized] = useState(false);
-  const initializationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Load from localStorage
   useEffect(() => {
     if (authLoading) return;
 
-    if (!user) {
-      setTasks([]);
-      setLabels(DEFAULT_LABELS);
-      setSessions([]);
-      setDailyGoals({});
-      setCustomSongs([]);
-      setIsInitialized(true);
-      return;
-    }
+    const storagePrefix = user ? `user_${user.uid}_` : 'guest_';
+    
+    try {
+      const storedTasks = localStorage.getItem(`${storagePrefix}tasks`);
+      const storedLabels = localStorage.getItem(`${storagePrefix}labels`);
+      const storedSessions = localStorage.getItem(`${storagePrefix}sessions`);
+      const storedPrefs = localStorage.getItem(`${storagePrefix}preferences`);
 
-    if (!db) {
-      setIsInitialized(true);
-      return;
-    }
-
-    initializationTimeoutRef.current = setTimeout(() => {
-      setIsInitialized(true);
-    }, 8000);
-
-    const tasksRef = collection(db, 'users', user.uid, 'tasks');
-    const labelsRef = collection(db, 'users', user.uid, 'labels');
-    const sessionsRef = collection(db, 'users', user.uid, 'sessions');
-    const sessionsQuery = query(sessionsRef, orderBy('startTime', 'desc'));
-    const prefsRef = doc(db, 'users', user.uid, 'preferences', 'main');
-
-    const unsubTasks = onSnapshot(tasksRef, (snapshot) => {
-      setTasks(snapshot.docs.map(d => ({ id: d.id, ...d.data() } as Task)));
-      setIsInitialized(true);
-      if (initializationTimeoutRef.current) {
-        clearTimeout(initializationTimeoutRef.current);
-        initializationTimeoutRef.current = null;
+      if (storedTasks) setTasks(JSON.parse(storedTasks));
+      if (storedLabels) setLabels(JSON.parse(storedLabels));
+      else setLabels(DEFAULT_LABELS);
+      
+      if (storedSessions) setSessions(JSON.parse(storedSessions));
+      
+      if (storedPrefs) {
+        const prefs = JSON.parse(storedPrefs);
+        setDailyGoals(prefs.dailyGoals || {});
+        setCustomSongs(prefs.customSongs || []);
       }
-    }, async (err) => {
-      errorEmitter.emit('permission-error', new FirestorePermissionError({ path: tasksRef.path, operation: 'list' }));
-      setIsInitialized(true);
-    });
+    } catch (e) {
+      console.error("Failed to load data from localStorage", e);
+    }
+    
+    setIsInitialized(true);
+  }, [user, authLoading]);
 
-    const unsubLabels = onSnapshot(labelsRef, (snapshot) => {
-      const dbLabels = snapshot.docs.map(d => ({ id: d.id, ...d.data() } as Label));
-      setLabels(dbLabels.length > 0 ? dbLabels : DEFAULT_LABELS);
-    }, async (err) => {
-      errorEmitter.emit('permission-error', new FirestorePermissionError({ path: labelsRef.path, operation: 'list' }));
-    });
+  // Save to localStorage
+  useEffect(() => {
+    if (!isInitialized) return;
 
-    const unsubSessions = onSnapshot(sessionsQuery, (snapshot) => {
-      setSessions(snapshot.docs.map(d => ({ id: d.id, ...d.data() } as Session)));
-    }, async (err) => {
-      errorEmitter.emit('permission-error', new FirestorePermissionError({ path: sessionsRef.path, operation: 'list' }));
-    });
-
-    const unsubPrefs = onSnapshot(prefsRef, (snapshot) => {
-      if (snapshot.exists()) {
-        const data = snapshot.data();
-        setDailyGoals(data.dailyGoals || {});
-        setCustomSongs(data.customSongs || []);
-      }
-    }, async (err) => {
-      errorEmitter.emit('permission-error', new FirestorePermissionError({ path: prefsRef.path, operation: 'get' }));
-    });
-
-    return () => {
-      unsubTasks();
-      unsubLabels();
-      unsubSessions();
-      unsubPrefs();
-      if (initializationTimeoutRef.current) clearTimeout(initializationTimeoutRef.current);
-    };
-  }, [db, user, authLoading]);
+    const storagePrefix = user ? `user_${user.uid}_` : 'guest_';
+    
+    localStorage.setItem(`${storagePrefix}tasks`, JSON.stringify(tasks));
+    localStorage.setItem(`${storagePrefix}labels`, JSON.stringify(labels));
+    localStorage.setItem(`${storagePrefix}sessions`, JSON.stringify(sessions));
+    localStorage.setItem(`${storagePrefix}preferences`, JSON.stringify({ dailyGoals, customSongs }));
+  }, [tasks, labels, sessions, dailyGoals, customSongs, isInitialized, user]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -170,161 +125,70 @@ export function TaskProvider({ children }: { children: ReactNode }) {
   }, [tasks]);
 
   const addTask = (taskData: Omit<Task, 'id' | 'createdAt'>) => {
-    if (!db || !user) return;
-    const tasksRef = collection(db, 'users', user.uid, 'tasks');
-    const finalData = { ...taskData, createdAt: Date.now() };
-    addDoc(tasksRef, finalData)
-      .catch(async (err) => {
-        errorEmitter.emit('permission-error', new FirestorePermissionError({ 
-          path: tasksRef.path, 
-          operation: 'create', 
-          requestResourceData: finalData 
-        }));
-      });
+    const newTask: Task = {
+      ...taskData,
+      id: crypto.randomUUID(),
+      createdAt: Date.now()
+    };
+    setTasks(prev => [...prev, newTask]);
   };
 
   const updateTask = (id: string, updates: Partial<Task>) => {
-    if (!db || !user) return;
-    const taskRef = doc(db, 'users', user.uid, 'tasks', id);
-    updateDoc(taskRef, updates)
-      .catch(async (err) => {
-        errorEmitter.emit('permission-error', new FirestorePermissionError({ 
-          path: taskRef.path, 
-          operation: 'update', 
-          requestResourceData: updates 
-        }));
-      });
+    setTasks(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t));
   };
 
   const deleteTask = (id: string) => {
-    if (!db || !user) return;
-    const taskRef = doc(db, 'users', user.uid, 'tasks', id);
-    deleteDoc(taskRef)
-      .catch(async (err) => {
-        errorEmitter.emit('permission-error', new FirestorePermissionError({ 
-          path: taskRef.path, 
-          operation: 'delete' 
-        }));
-      });
+    setTasks(prev => prev.filter(t => t.id !== id));
   };
 
   const toggleTask = (id: string) => {
-    const task = tasks.find(t => t.id === id);
-    if (task) updateTask(id, { completed: !task.completed });
+    setTasks(prev => prev.map(t => t.id === id ? { ...t, completed: !t.completed } : t));
   };
 
   const addLabel = (name: string, color: string) => {
-    if (!db || !user) return;
-    const labelsRef = collection(db, 'users', user.uid, 'labels');
-    const labelData = { name: name.toLowerCase().trim(), color };
-    addDoc(labelsRef, labelData)
-      .catch(async (err) => {
-        errorEmitter.emit('permission-error', new FirestorePermissionError({ 
-          path: labelsRef.path, 
-          operation: 'create',
-          requestResourceData: labelData
-        }));
-      });
+    const newLabel: Label = {
+      id: crypto.randomUUID(),
+      name: name.toLowerCase().trim(),
+      color
+    };
+    setLabels(prev => [...prev, newLabel]);
   };
 
   const deleteLabel = (id: string) => {
-    if (!db || !user) return;
-    const labelRef = doc(db, 'users', user.uid, 'labels', id);
-    deleteDoc(labelRef)
-      .catch(async (err) => {
-        errorEmitter.emit('permission-error', new FirestorePermissionError({ 
-          path: labelRef.path, 
-          operation: 'delete' 
-        }));
-      });
+    setLabels(prev => prev.filter(l => l.id !== id));
   };
 
   const addSession = (durationMinutes: number, type: 'work' | 'short' | 'manual', note?: string, date?: string) => {
-    if (!db || !user) return;
-    const sessionsRef = collection(db, 'users', user.uid, 'sessions');
-    const data = {
+    const newSession: Session = {
+      id: crypto.randomUUID(),
       startTime: Date.now(),
       durationMinutes,
       type,
       date: date || format(new Date(), 'yyyy-MM-dd'),
       note: note || "",
     };
-    addDoc(sessionsRef, data)
-      .catch(async (err) => {
-        errorEmitter.emit('permission-error', new FirestorePermissionError({ 
-          path: sessionsRef.path, 
-          operation: 'create',
-          requestResourceData: data
-        }));
-      });
+    setSessions(prev => [newSession, ...prev]);
   };
 
   const updateSession = (id: string, updates: Partial<Session>) => {
-    if (!db || !user) return;
-    const sessionRef = doc(db, 'users', user.uid, 'sessions', id);
-    updateDoc(sessionRef, updates)
-      .catch(async (err) => {
-        errorEmitter.emit('permission-error', new FirestorePermissionError({ 
-          path: sessionRef.path, 
-          operation: 'update',
-          requestResourceData: updates
-        }));
-      });
+    setSessions(prev => prev.map(s => s.id === id ? { ...s, ...updates } : s));
   };
 
   const deleteSession = (id: string) => {
-    if (!db || !user) return;
-    const sessionRef = doc(db, 'users', user.uid, 'sessions', id);
-    deleteDoc(sessionRef)
-      .catch(async (err) => {
-        errorEmitter.emit('permission-error', new FirestorePermissionError({ 
-          path: sessionRef.path, 
-          operation: 'delete' 
-        }));
-      });
+    setSessions(prev => prev.filter(s => s.id !== id));
   };
 
   const setDailyGoal = (date: string, target: number) => {
-    if (!db || !user) return;
-    const prefsRef = doc(db, 'users', user.uid, 'preferences', 'main');
-    const goalsUpdate = { dailyGoals: { ...dailyGoals, [date]: target } };
-    setDoc(prefsRef, goalsUpdate, { merge: true })
-      .catch(async (err) => {
-        errorEmitter.emit('permission-error', new FirestorePermissionError({ 
-          path: prefsRef.path, 
-          operation: 'write',
-          requestResourceData: goalsUpdate
-        }));
-      });
+    setDailyGoals(prev => ({ ...prev, [date]: target }));
   };
 
   const addCustomSong = (label: string, url: string) => {
-    if (!db || !user) return;
-    const prefsRef = doc(db, 'users', user.uid, 'preferences', 'main');
-    const newSong = { id: crypto.randomUUID(), label, url };
-    const songUpdate = { customSongs: [...customSongs, newSong] };
-    setDoc(prefsRef, songUpdate, { merge: true })
-      .catch(async (err) => {
-        errorEmitter.emit('permission-error', new FirestorePermissionError({ 
-          path: prefsRef.path, 
-          operation: 'write',
-          requestResourceData: songUpdate
-        }));
-      });
+    const newSong: CustomSong = { id: crypto.randomUUID(), label, url };
+    setCustomSongs(prev => [...prev, newSong]);
   };
 
   const removeCustomSong = (id: string) => {
-    if (!db || !user) return;
-    const prefsRef = doc(db, 'users', user.uid, 'preferences', 'main');
-    const songUpdate = { customSongs: customSongs.filter(s => s.id !== id) };
-    setDoc(prefsRef, songUpdate, { merge: true })
-      .catch(async (err) => {
-        errorEmitter.emit('permission-error', new FirestorePermissionError({ 
-          path: prefsRef.path, 
-          operation: 'write',
-          requestResourceData: songUpdate
-        }));
-      });
+    setCustomSongs(prev => prev.filter(s => s.id !== id));
   };
 
   const resetWorkTimer = useCallback(() => {
