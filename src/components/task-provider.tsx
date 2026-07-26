@@ -31,6 +31,14 @@ const TIMER_CONFIG = {
 
 const TaskContext = createContext<TaskContextType | undefined>(undefined);
 
+// Helper for generating safe IDs
+const generateId = () => {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+};
+
 export function TaskProvider({ children }: { children: ReactNode }) {
   const { user, loading: authLoading } = useUser();
   const firestore = useFirestore();
@@ -47,6 +55,208 @@ export function TaskProvider({ children }: { children: ReactNode }) {
   const [isBreakTimerActive, setBreakTimerActive] = useState(false);
   
   const [isInitialized, setIsInitialized] = useState(false);
+
+  // CRUD ACTIONS
+  const addTask = useCallback(async (taskData: Omit<Task, 'id' | 'createdAt'>) => {
+    const id = generateId();
+    const newTask: Task = { ...taskData, id, createdAt: Date.now() };
+    
+    if (user && firestore) {
+      try {
+        await setDoc(doc(firestore, 'users', user.uid, 'tasks', id), newTask);
+      } catch (err) {
+        console.error("Failed to add task to Firestore", err);
+      }
+    } else {
+      const newTasks = [...tasks, newTask];
+      setTasks(newTasks);
+      localStorage.setItem('daily_task_track_tasks', JSON.stringify(newTasks));
+    }
+  }, [user, firestore, tasks]);
+
+  const updateTask = useCallback(async (id: string, updates: Partial<Task>) => {
+    if (user && firestore) {
+      try {
+        await updateDoc(doc(firestore, 'users', user.uid, 'tasks', id), updates);
+      } catch (err) {
+        console.error("Failed to update task in Firestore", err);
+      }
+    } else {
+      const newTasks = tasks.map(t => t.id === id ? { ...t, ...updates } : t);
+      setTasks(newTasks);
+      localStorage.setItem('daily_task_track_tasks', JSON.stringify(newTasks));
+    }
+  }, [user, firestore, tasks]);
+
+  const deleteTask = useCallback(async (id: string) => {
+    if (user && firestore) {
+      try {
+        await deleteDoc(doc(firestore, 'users', user.uid, 'tasks', id));
+      } catch (err) {
+        console.error("Failed to delete task from Firestore", err);
+      }
+    } else {
+      const newTasks = tasks.filter(t => t.id !== id);
+      setTasks(newTasks);
+      localStorage.setItem('daily_task_track_tasks', JSON.stringify(newTasks));
+    }
+  }, [user, firestore, tasks]);
+
+  const toggleTask = useCallback((id: string) => {
+    const task = tasks.find(t => t.id === id);
+    if (task) updateTask(id, { completed: !task.completed });
+  }, [tasks, updateTask]);
+
+  const addLabel = useCallback(async (name: string, color: string) => {
+    const id = generateId();
+    const newLabel: Label = { id, name: name.toLowerCase().trim(), color };
+    
+    if (user && firestore) {
+      try {
+        await setDoc(doc(firestore, 'users', user.uid, 'labels', id), newLabel);
+      } catch (err) {
+        console.error("Failed to add label to Firestore", err);
+      }
+    } else {
+      const newLabels = [...labels, newLabel];
+      setLabels(newLabels);
+      localStorage.setItem('daily_task_track_labels', JSON.stringify(newLabels));
+    }
+  }, [user, firestore, labels]);
+
+  const deleteLabel = useCallback(async (id: string) => {
+    if (user && firestore) {
+      try {
+        await deleteDoc(doc(firestore, 'users', user.uid, 'labels', id));
+      } catch (err) {
+        console.error("Failed to delete label from Firestore", err);
+      }
+    } else {
+      const newLabels = labels.filter(l => l.id !== id);
+      setLabels(newLabels);
+      localStorage.setItem('daily_task_track_labels', JSON.stringify(newLabels));
+    }
+  }, [user, firestore, labels]);
+
+  const addSession = useCallback(async (durationMinutes: number, type: 'work' | 'short' | 'manual', note?: string, date?: string) => {
+    const id = generateId();
+    const newSession: Session = {
+      id,
+      startTime: Date.now(),
+      durationMinutes,
+      type,
+      date: date || format(new Date(), 'yyyy-MM-dd'),
+      note: note || "",
+    };
+    
+    if (user && firestore) {
+      try {
+        await setDoc(doc(firestore, 'users', user.uid, 'sessions', id), newSession);
+      } catch (err) {
+        console.error("Failed to save session to Firestore", err);
+      }
+    } else {
+      const newSessions = [newSession, ...sessions];
+      setSessions(newSessions);
+      localStorage.setItem('daily_task_track_sessions', JSON.stringify(newSessions));
+    }
+  }, [user, firestore, sessions]);
+
+  const updateSession = useCallback(async (id: string, updates: Partial<Session>) => {
+    if (user && firestore) {
+      try {
+        await updateDoc(doc(firestore, 'users', user.uid, 'sessions', id), updates);
+      } catch (err) {
+        console.error("Failed to update session in Firestore", err);
+      }
+    } else {
+      const newSessions = sessions.map(s => s.id === id ? { ...s, ...updates } : s);
+      setSessions(newSessions);
+      localStorage.setItem('daily_task_track_sessions', JSON.stringify(newSessions));
+    }
+  }, [user, firestore, sessions]);
+
+  const deleteSession = useCallback(async (id: string) => {
+    if (user && firestore) {
+      try {
+        await deleteDoc(doc(firestore, 'users', user.uid, 'sessions', id));
+      } catch (err) {
+        console.error("Failed to delete session from Firestore", err);
+      }
+    } else {
+      const newSessions = sessions.filter(s => s.id !== id);
+      setSessions(newSessions);
+      localStorage.setItem('daily_task_track_sessions', JSON.stringify(newSessions));
+    }
+  }, [user, firestore, sessions]);
+
+  const setDailyGoal = useCallback(async (date: string, target: number) => {
+    const newGoals = { ...dailyGoals, [date]: target };
+    if (user && firestore) {
+      try {
+        await setDoc(doc(firestore, 'users', user.uid, 'preferences', 'main'), { dailyGoals: newGoals }, { merge: true });
+      } catch (err) {
+        console.error("Failed to update goal in Firestore", err);
+      }
+    } else {
+      setDailyGoals(newGoals);
+      localStorage.setItem('daily_task_track_prefs', JSON.stringify({ dailyGoals: newGoals, customSongs }));
+    }
+  }, [user, firestore, dailyGoals, customSongs]);
+
+  const addCustomSong = useCallback(async (label: string, url: string) => {
+    const newSong: CustomSong = { id: generateId(), label, url };
+    const newSongs = [...customSongs, newSong];
+    if (user && firestore) {
+      try {
+        await setDoc(doc(firestore, 'users', user.uid, 'preferences', 'main'), { customSongs: newSongs }, { merge: true });
+      } catch (err) {
+        console.error("Failed to add custom song in Firestore", err);
+      }
+    } else {
+      setCustomSongs(newSongs);
+      localStorage.setItem('daily_task_track_prefs', JSON.stringify({ dailyGoals, customSongs: newSongs }));
+    }
+  }, [user, firestore, customSongs, dailyGoals]);
+
+  const removeCustomSong = useCallback(async (id: string) => {
+    const newSongs = customSongs.filter(s => s.id !== id);
+    if (user && firestore) {
+      try {
+        await setDoc(doc(firestore, 'users', user.uid, 'preferences', 'main'), { customSongs: newSongs }, { merge: true });
+      } catch (err) {
+        console.error("Failed to remove song in Firestore", err);
+      }
+    } else {
+      setCustomSongs(newSongs);
+      localStorage.setItem('daily_task_track_prefs', JSON.stringify({ dailyGoals, customSongs: newSongs }));
+    }
+  }, [user, firestore, customSongs, dailyGoals]);
+
+  // Pomodoro Timer Effects
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isWorkTimerActive && workTimerLeft > 0) {
+      interval = setInterval(() => setWorkTimerLeft(prev => prev - 1), 1000);
+    } else if (workTimerLeft === 0 && isWorkTimerActive) {
+      setWorkTimerActive(false);
+      addSession(Math.floor(TIMER_CONFIG.work / 60), 'work');
+      setWorkTimerLeft(TIMER_CONFIG.work);
+    }
+    return () => clearInterval(interval);
+  }, [isWorkTimerActive, workTimerLeft, addSession]);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isBreakTimerActive && breakTimerLeft > 0) {
+      interval = setInterval(() => setBreakTimerLeft(prev => prev - 1), 1000);
+    } else if (breakTimerLeft === 0 && isBreakTimerActive) {
+      setBreakTimerActive(false);
+      addSession(Math.floor(TIMER_CONFIG.short / 60), 'short');
+      setBreakTimerLeft(TIMER_CONFIG.short);
+    }
+    return () => clearInterval(interval);
+  }, [isBreakTimerActive, breakTimerLeft, addSession]);
 
   // Persistence Logic: Guest (localStorage) vs Authenticated (Firestore)
   useEffect(() => {
@@ -83,20 +293,20 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     const tasksQuery = query(collection(firestore, 'users', userId, 'tasks'), orderBy('createdAt', 'desc'));
     const unsubTasks = onSnapshot(tasksQuery, (snapshot) => {
       setTasks(snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Task)));
-    });
+    }, (error) => console.error("Firestore Tasks Listener Error:", error));
 
     // 2. Labels listener
     const labelsQuery = query(collection(firestore, 'users', userId, 'labels'));
     const unsubLabels = onSnapshot(labelsQuery, (snapshot) => {
       const dbLabels = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Label));
       setLabels(dbLabels.length > 0 ? dbLabels : DEFAULT_LABELS);
-    });
+    }, (error) => console.error("Firestore Labels Listener Error:", error));
 
     // 3. Sessions listener (time logs)
     const sessionsQuery = query(collection(firestore, 'users', userId, 'sessions'), orderBy('startTime', 'desc'));
     const unsubSessions = onSnapshot(sessionsQuery, (snapshot) => {
       setSessions(snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Session)));
-    });
+    }, (error) => console.error("Firestore Sessions Listener Error:", error));
 
     // 4. Preferences listener (goals, songs)
     const unsubPrefs = onSnapshot(doc(firestore, 'users', userId, 'preferences', 'main'), (docSnap) => {
@@ -105,7 +315,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
         setDailyGoals(data.dailyGoals || {});
         setCustomSongs(data.customSongs || []);
       }
-    });
+    }, (error) => console.error("Firestore Preferences Listener Error:", error));
 
     setIsInitialized(true);
 
@@ -116,31 +326,6 @@ export function TaskProvider({ children }: { children: ReactNode }) {
       unsubPrefs();
     };
   }, [user, authLoading, firestore]);
-
-  // Pomodoro Timer Effects
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (isWorkTimerActive && workTimerLeft > 0) {
-      interval = setInterval(() => setWorkTimerLeft(prev => prev - 1), 1000);
-    } else if (workTimerLeft === 0 && isWorkTimerActive) {
-      setWorkTimerActive(false);
-      addSession(Math.floor(TIMER_CONFIG.work / 60), 'work');
-      setWorkTimerLeft(TIMER_CONFIG.work);
-    }
-    return () => clearInterval(interval);
-  }, [isWorkTimerActive, workTimerLeft]);
-
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (isBreakTimerActive && breakTimerLeft > 0) {
-      interval = setInterval(() => setBreakTimerLeft(prev => prev - 1), 1000);
-    } else if (breakTimerLeft === 0 && isBreakTimerActive) {
-      setBreakTimerActive(false);
-      addSession(Math.floor(TIMER_CONFIG.short / 60), 'short');
-      setBreakTimerLeft(TIMER_CONFIG.short);
-    }
-    return () => clearInterval(interval);
-  }, [isBreakTimerActive, breakTimerLeft]);
 
   const streak = useMemo(() => {
     if (!tasks.length) return 0;
@@ -162,139 +347,6 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     }
     return currentStreak;
   }, [tasks]);
-
-  // CRUD ACTIONS
-  const addTask = async (taskData: Omit<Task, 'id' | 'createdAt'>) => {
-    const id = crypto.randomUUID();
-    const newTask: Task = { ...taskData, id, createdAt: Date.now() };
-    
-    if (user && firestore) {
-      await setDoc(doc(firestore, 'users', user.uid, 'tasks', id), newTask);
-    } else {
-      const newTasks = [...tasks, newTask];
-      setTasks(newTasks);
-      localStorage.setItem('daily_task_track_tasks', JSON.stringify(newTasks));
-    }
-  };
-
-  const updateTask = async (id: string, updates: Partial<Task>) => {
-    if (user && firestore) {
-      await updateDoc(doc(firestore, 'users', user.uid, 'tasks', id), updates);
-    } else {
-      const newTasks = tasks.map(t => t.id === id ? { ...t, ...updates } : t);
-      setTasks(newTasks);
-      localStorage.setItem('daily_task_track_tasks', JSON.stringify(newTasks));
-    }
-  };
-
-  const deleteTask = async (id: string) => {
-    if (user && firestore) {
-      await deleteDoc(doc(firestore, 'users', user.uid, 'tasks', id));
-    } else {
-      const newTasks = tasks.filter(t => t.id !== id);
-      setTasks(newTasks);
-      localStorage.setItem('daily_task_track_tasks', JSON.stringify(newTasks));
-    }
-  };
-
-  const toggleTask = (id: string) => {
-    const task = tasks.find(t => t.id === id);
-    if (task) updateTask(id, { completed: !task.completed });
-  };
-
-  const addLabel = async (name: string, color: string) => {
-    const id = crypto.randomUUID();
-    const newLabel: Label = { id, name: name.toLowerCase().trim(), color };
-    
-    if (user && firestore) {
-      await setDoc(doc(firestore, 'users', user.uid, 'labels', id), newLabel);
-    } else {
-      const newLabels = [...labels, newLabel];
-      setLabels(newLabels);
-      localStorage.setItem('daily_task_track_labels', JSON.stringify(newLabels));
-    }
-  };
-
-  const deleteLabel = async (id: string) => {
-    if (user && firestore) {
-      await deleteDoc(doc(firestore, 'users', user.uid, 'labels', id));
-    } else {
-      const newLabels = labels.filter(l => l.id !== id);
-      setLabels(newLabels);
-      localStorage.setItem('daily_task_track_labels', JSON.stringify(newLabels));
-    }
-  };
-
-  const addSession = async (durationMinutes: number, type: 'work' | 'short' | 'manual', note?: string, date?: string) => {
-    const id = crypto.randomUUID();
-    const newSession: Session = {
-      id,
-      startTime: Date.now(),
-      durationMinutes,
-      type,
-      date: date || format(new Date(), 'yyyy-MM-dd'),
-      note: note || "",
-    };
-    
-    if (user && firestore) {
-      await setDoc(doc(firestore, 'users', user.uid, 'sessions', id), newSession);
-    } else {
-      const newSessions = [newSession, ...sessions];
-      setSessions(newSessions);
-      localStorage.setItem('daily_task_track_sessions', JSON.stringify(newSessions));
-    }
-  };
-
-  const updateSession = async (id: string, updates: Partial<Session>) => {
-    if (user && firestore) {
-      await updateDoc(doc(firestore, 'users', user.uid, 'sessions', id), updates);
-    } else {
-      const newSessions = sessions.map(s => s.id === id ? { ...s, ...updates } : s);
-      setSessions(newSessions);
-      localStorage.setItem('daily_task_track_sessions', JSON.stringify(newSessions));
-    }
-  };
-
-  const deleteSession = async (id: string) => {
-    if (user && firestore) {
-      await deleteDoc(doc(firestore, 'users', user.uid, 'sessions', id));
-    } else {
-      const newSessions = sessions.filter(s => s.id !== id);
-      setSessions(newSessions);
-      localStorage.setItem('daily_task_track_sessions', JSON.stringify(newSessions));
-    }
-  };
-
-  const setDailyGoal = async (date: string, target: number) => {
-    const newGoals = { ...dailyGoals, [date]: target };
-    if (user && firestore) {
-      await setDoc(doc(firestore, 'users', user.uid, 'preferences', 'main'), { dailyGoals: newGoals }, { merge: true });
-    } else {
-      setDailyGoals(newGoals);
-      localStorage.setItem('daily_task_track_prefs', JSON.stringify({ dailyGoals: newGoals, customSongs }));
-    }
-  };
-
-  const addCustomSong = async (label: string, url: string) => {
-    const newSong: CustomSong = { id: crypto.randomUUID(), label, url };
-    const newSongs = [...customSongs, newSong];
-    if (user && firestore) {
-      await setDoc(doc(firestore, 'users', user.uid, 'preferences', 'main'), { customSongs: newSongs }, { merge: true });
-    } else {
-      setCustomSongs(newSongs);
-      localStorage.setItem('daily_task_track_prefs', JSON.stringify({ dailyGoals, customSongs: newSongs }));
-    }
-  };
-
-  const removeCustomSong = async (id: string) => {
-    const newSongs = customSongs.filter(s => s.id !== id);
-    if (user && firestore) {
-      await setDoc(doc(firestore, 'users', user.uid, 'preferences', 'main'), { customSongs: newSongs }, { merge: true });
-    } else {
-      setCustomSongs(newSongs);
-      localStorage.setItem('daily_task_track_prefs', JSON.stringify({ dailyGoals, customSongs: newSongs }));
-    }
-  };
 
   const resetWorkTimer = useCallback(() => {
     setWorkTimerActive(false);
