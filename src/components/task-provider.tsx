@@ -15,6 +15,8 @@ import {
   orderBy,
   limit
 } from 'firebase/firestore';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 
 const DEFAULT_LABELS: Label[] = [
   { id: '1', name: 'work', color: 'bg-blue-600 text-white hover:bg-blue-700' },
@@ -57,16 +59,19 @@ export function TaskProvider({ children }: { children: ReactNode }) {
   const [isInitialized, setIsInitialized] = useState(false);
 
   // CRUD ACTIONS
-  const addTask = useCallback(async (taskData: Omit<Task, 'id' | 'createdAt'>) => {
+  const addTask = useCallback((taskData: Omit<Task, 'id' | 'createdAt'>) => {
     const id = generateId();
     const newTask: Task = { ...taskData, id, createdAt: Date.now() };
     
     if (user && firestore) {
-      try {
-        await setDoc(doc(firestore, 'users', user.uid, 'tasks', id), newTask);
-      } catch (err) {
-        console.error("Failed to add task to Firestore", err);
-      }
+      const docRef = doc(firestore, 'users', user.uid, 'tasks', id);
+      setDoc(docRef, newTask).catch(async (err) => {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+          path: docRef.path,
+          operation: 'create',
+          requestResourceData: newTask
+        }));
+      });
     } else {
       const newTasks = [...tasks, newTask];
       setTasks(newTasks);
@@ -74,13 +79,16 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     }
   }, [user, firestore, tasks]);
 
-  const updateTask = useCallback(async (id: string, updates: Partial<Task>) => {
+  const updateTask = useCallback((id: string, updates: Partial<Task>) => {
     if (user && firestore) {
-      try {
-        await updateDoc(doc(firestore, 'users', user.uid, 'tasks', id), updates);
-      } catch (err) {
-        console.error("Failed to update task in Firestore", err);
-      }
+      const docRef = doc(firestore, 'users', user.uid, 'tasks', id);
+      updateDoc(docRef, updates).catch(async (err) => {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+          path: docRef.path,
+          operation: 'update',
+          requestResourceData: updates
+        }));
+      });
     } else {
       const newTasks = tasks.map(t => t.id === id ? { ...t, ...updates } : t);
       setTasks(newTasks);
@@ -88,13 +96,15 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     }
   }, [user, firestore, tasks]);
 
-  const deleteTask = useCallback(async (id: string) => {
+  const deleteTask = useCallback((id: string) => {
     if (user && firestore) {
-      try {
-        await deleteDoc(doc(firestore, 'users', user.uid, 'tasks', id));
-      } catch (err) {
-        console.error("Failed to delete task from Firestore", err);
-      }
+      const docRef = doc(firestore, 'users', user.uid, 'tasks', id);
+      deleteDoc(docRef).catch(async (err) => {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+          path: docRef.path,
+          operation: 'delete'
+        }));
+      });
     } else {
       const newTasks = tasks.filter(t => t.id !== id);
       setTasks(newTasks);
@@ -107,16 +117,19 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     if (task) updateTask(id, { completed: !task.completed });
   }, [tasks, updateTask]);
 
-  const addLabel = useCallback(async (name: string, color: string) => {
+  const addLabel = useCallback((name: string, color: string) => {
     const id = generateId();
     const newLabel: Label = { id, name: name.toLowerCase().trim(), color };
     
     if (user && firestore) {
-      try {
-        await setDoc(doc(firestore, 'users', user.uid, 'labels', id), newLabel);
-      } catch (err) {
-        console.error("Failed to add label to Firestore", err);
-      }
+      const docRef = doc(firestore, 'users', user.uid, 'labels', id);
+      setDoc(docRef, newLabel).catch(async (err) => {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+          path: docRef.path,
+          operation: 'create',
+          requestResourceData: newLabel
+        }));
+      });
     } else {
       const newLabels = [...labels, newLabel];
       setLabels(newLabels);
@@ -124,13 +137,15 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     }
   }, [user, firestore, labels]);
 
-  const deleteLabel = useCallback(async (id: string) => {
+  const deleteLabel = useCallback((id: string) => {
     if (user && firestore) {
-      try {
-        await deleteDoc(doc(firestore, 'users', user.uid, 'labels', id));
-      } catch (err) {
-        console.error("Failed to delete label from Firestore", err);
-      }
+      const docRef = doc(firestore, 'users', user.uid, 'labels', id);
+      deleteDoc(docRef).catch(async (err) => {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+          path: docRef.path,
+          operation: 'delete'
+        }));
+      });
     } else {
       const newLabels = labels.filter(l => l.id !== id);
       setLabels(newLabels);
@@ -138,7 +153,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     }
   }, [user, firestore, labels]);
 
-  const addSession = useCallback(async (durationMinutes: number, type: 'work' | 'short' | 'manual', note?: string, date?: string) => {
+  const addSession = useCallback((durationMinutes: number, type: 'work' | 'short' | 'manual', note?: string, date?: string) => {
     const id = generateId();
     const newSession: Session = {
       id,
@@ -150,11 +165,14 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     };
     
     if (user && firestore) {
-      try {
-        await setDoc(doc(firestore, 'users', user.uid, 'sessions', id), newSession);
-      } catch (err) {
-        console.error("Failed to save session to Firestore", err);
-      }
+      const docRef = doc(firestore, 'users', user.uid, 'sessions', id);
+      setDoc(docRef, newSession).catch(async (err) => {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+          path: docRef.path,
+          operation: 'create',
+          requestResourceData: newSession
+        }));
+      });
     } else {
       const newSessions = [newSession, ...sessions];
       setSessions(newSessions);
@@ -162,13 +180,16 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     }
   }, [user, firestore, sessions]);
 
-  const updateSession = useCallback(async (id: string, updates: Partial<Session>) => {
+  const updateSession = useCallback((id: string, updates: Partial<Session>) => {
     if (user && firestore) {
-      try {
-        await updateDoc(doc(firestore, 'users', user.uid, 'sessions', id), updates);
-      } catch (err) {
-        console.error("Failed to update session in Firestore", err);
-      }
+      const docRef = doc(firestore, 'users', user.uid, 'sessions', id);
+      updateDoc(docRef, updates).catch(async (err) => {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+          path: docRef.path,
+          operation: 'update',
+          requestResourceData: updates
+        }));
+      });
     } else {
       const newSessions = sessions.map(s => s.id === id ? { ...s, ...updates } : s);
       setSessions(newSessions);
@@ -176,13 +197,15 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     }
   }, [user, firestore, sessions]);
 
-  const deleteSession = useCallback(async (id: string) => {
+  const deleteSession = useCallback((id: string) => {
     if (user && firestore) {
-      try {
-        await deleteDoc(doc(firestore, 'users', user.uid, 'sessions', id));
-      } catch (err) {
-        console.error("Failed to delete session from Firestore", err);
-      }
+      const docRef = doc(firestore, 'users', user.uid, 'sessions', id);
+      deleteDoc(docRef).catch(async (err) => {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+          path: docRef.path,
+          operation: 'delete'
+        }));
+      });
     } else {
       const newSessions = sessions.filter(s => s.id !== id);
       setSessions(newSessions);
@@ -190,43 +213,51 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     }
   }, [user, firestore, sessions]);
 
-  const setDailyGoal = useCallback(async (date: string, target: number) => {
+  const setDailyGoal = useCallback((date: string, target: number) => {
     const newGoals = { ...dailyGoals, [date]: target };
     if (user && firestore) {
-      try {
-        await setDoc(doc(firestore, 'users', user.uid, 'preferences', 'main'), { dailyGoals: newGoals }, { merge: true });
-      } catch (err) {
-        console.error("Failed to update goal in Firestore", err);
-      }
+      const docRef = doc(firestore, 'users', user.uid, 'preferences', 'main');
+      setDoc(docRef, { dailyGoals: newGoals }, { merge: true }).catch(async (err) => {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+          path: docRef.path,
+          operation: 'write',
+          requestResourceData: { dailyGoals: newGoals }
+        }));
+      });
     } else {
       setDailyGoals(newGoals);
       localStorage.setItem('daily_task_track_prefs', JSON.stringify({ dailyGoals: newGoals, customSongs }));
     }
   }, [user, firestore, dailyGoals, customSongs]);
 
-  const addCustomSong = useCallback(async (label: string, url: string) => {
+  const addCustomSong = useCallback((label: string, url: string) => {
     const newSong: CustomSong = { id: generateId(), label, url };
     const newSongs = [...customSongs, newSong];
     if (user && firestore) {
-      try {
-        await setDoc(doc(firestore, 'users', user.uid, 'preferences', 'main'), { customSongs: newSongs }, { merge: true });
-      } catch (err) {
-        console.error("Failed to add custom song in Firestore", err);
-      }
+      const docRef = doc(firestore, 'users', user.uid, 'preferences', 'main');
+      setDoc(docRef, { customSongs: newSongs }, { merge: true }).catch(async (err) => {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+          path: docRef.path,
+          operation: 'write',
+          requestResourceData: { customSongs: newSongs }
+        }));
+      });
     } else {
       setCustomSongs(newSongs);
       localStorage.setItem('daily_task_track_prefs', JSON.stringify({ dailyGoals, customSongs: newSongs }));
     }
   }, [user, firestore, customSongs, dailyGoals]);
 
-  const removeCustomSong = useCallback(async (id: string) => {
+  const removeCustomSong = useCallback((id: string) => {
     const newSongs = customSongs.filter(s => s.id !== id);
     if (user && firestore) {
-      try {
-        await setDoc(doc(firestore, 'users', user.uid, 'preferences', 'main'), { customSongs: newSongs }, { merge: true });
-      } catch (err) {
-        console.error("Failed to remove song in Firestore", err);
-      }
+      const docRef = doc(firestore, 'users', user.uid, 'preferences', 'main');
+      setDoc(docRef, { customSongs: newSongs }, { merge: true }).catch(async (err) => {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+          path: docRef.path,
+          operation: 'write'
+        }));
+      });
     } else {
       setCustomSongs(newSongs);
       localStorage.setItem('daily_task_track_prefs', JSON.stringify({ dailyGoals, customSongs: newSongs }));
@@ -293,20 +324,35 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     const tasksQuery = query(collection(firestore, 'users', userId, 'tasks'), orderBy('createdAt', 'desc'));
     const unsubTasks = onSnapshot(tasksQuery, (snapshot) => {
       setTasks(snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Task)));
-    }, (error) => console.error("Firestore Tasks Listener Error:", error));
+    }, (error) => {
+      errorEmitter.emit('permission-error', new FirestorePermissionError({
+        path: `users/${userId}/tasks`,
+        operation: 'list'
+      }));
+    });
 
     // 2. Labels listener
     const labelsQuery = query(collection(firestore, 'users', userId, 'labels'));
     const unsubLabels = onSnapshot(labelsQuery, (snapshot) => {
       const dbLabels = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Label));
       setLabels(dbLabels.length > 0 ? dbLabels : DEFAULT_LABELS);
-    }, (error) => console.error("Firestore Labels Listener Error:", error));
+    }, (error) => {
+      errorEmitter.emit('permission-error', new FirestorePermissionError({
+        path: `users/${userId}/labels`,
+        operation: 'list'
+      }));
+    });
 
     // 3. Sessions listener (time logs)
     const sessionsQuery = query(collection(firestore, 'users', userId, 'sessions'), orderBy('startTime', 'desc'));
     const unsubSessions = onSnapshot(sessionsQuery, (snapshot) => {
       setSessions(snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Session)));
-    }, (error) => console.error("Firestore Sessions Listener Error:", error));
+    }, (error) => {
+      errorEmitter.emit('permission-error', new FirestorePermissionError({
+        path: `users/${userId}/sessions`,
+        operation: 'list'
+      }));
+    });
 
     // 4. Preferences listener (goals, songs)
     const unsubPrefs = onSnapshot(doc(firestore, 'users', userId, 'preferences', 'main'), (docSnap) => {
@@ -315,7 +361,12 @@ export function TaskProvider({ children }: { children: ReactNode }) {
         setDailyGoals(data.dailyGoals || {});
         setCustomSongs(data.customSongs || []);
       }
-    }, (error) => console.error("Firestore Preferences Listener Error:", error));
+    }, (error) => {
+      errorEmitter.emit('permission-error', new FirestorePermissionError({
+        path: `users/${userId}/preferences/main`,
+        operation: 'get'
+      }));
+    });
 
     setIsInitialized(true);
 
