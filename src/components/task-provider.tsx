@@ -58,19 +58,26 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     // If auth is still loading, wait.
     if (authLoading) return;
 
+    // Reset initialization state on user change to ensure clean sync
+    setIsInitialized(false);
+
     // If no user is logged in, reset and mark as initialized (login screen will show)
     if (!user) {
       setTasks([]);
       setLabels(DEFAULT_LABELS);
       setSessions([]);
-      setDailyGoals([]);
+      setDailyGoals({});
       setCustomSongs([]);
       setIsInitialized(true);
       return;
     }
 
     // User exists, setup listeners
-    if (!db) return;
+    if (!db) {
+      // If Firestore is missing, we can't sync, but we should let the UI know we're "ready" (with empty data)
+      setIsInitialized(true);
+      return;
+    }
 
     const tasksRef = collection(db, 'users', user.uid, 'tasks');
     const labelsRef = collection(db, 'users', user.uid, 'labels');
@@ -80,6 +87,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
 
     const unsubTasks = onSnapshot(tasksRef, (snapshot) => {
       setTasks(snapshot.docs.map(d => ({ id: d.id, ...d.data() } as Task)));
+      setIsInitialized(true); // Ensure initialized is true after first data load
     }, (err) => {
       errorEmitter.emit('permission-error', new FirestorePermissionError({ path: tasksRef.path, operation: 'list' }));
     });
@@ -106,8 +114,6 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     }, (err) => {
       errorEmitter.emit('permission-error', new FirestorePermissionError({ path: prefsRef.path, operation: 'get' }));
     });
-
-    setIsInitialized(true);
 
     return () => {
       unsubTasks();

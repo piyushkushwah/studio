@@ -263,10 +263,7 @@ export default function DailyTaskTrack() {
           <FocusPlayer />
           <PomodoroTimer />
           <div id="tour-nav" className="flex items-center gap-1 h-12 bg-white border px-2 rounded-2xl shadow-sm">
-            <div className="flex flex-col items-center px-1">
-              <LabelManager />
-              <span className="text-[8px] font-black uppercase tracking-tighter text-muted-foreground/60 -mt-1">Labels</span>
-            </div>
+            <LabelManager />
             <Link href="/time-tracking">
               <Button variant="ghost" className="flex flex-col items-center justify-center gap-0 h-auto py-1 px-3 rounded-xl hover:bg-primary/5 group" title="Time Tracking">
                 <Clock className="w-4 h-4 text-primary transition-transform group-hover:scale-110" />
