@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useTasks } from "@/hooks/use-tasks";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,18 +34,15 @@ export function LabelManager() {
   const [selectedColor, setSelectedColor] = useState(COLOR_PRESETS[0].value);
   const [isOpen, setIsOpen] = useState(false);
 
-  const handleAdd = (e: React.FormEvent) => {
+  const handleAdd = useCallback((e: React.FormEvent) => {
     e.preventDefault();
-    if (!newName.trim()) return;
-    
-    // Avoid duplicates
-    if (labels.some(l => l.name.toLowerCase() === newName.toLowerCase().trim())) {
-      return;
-    }
+    const trimmed = newName.trim();
+    if (!trimmed) return;
+    if (labels.some(l => l.name.toLowerCase() === trimmed.toLowerCase())) return;
 
-    addLabel(newName, selectedColor);
+    addLabel(trimmed, selectedColor);
     setNewName("");
-  };
+  }, [newName, labels, selectedColor, addLabel]);
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>

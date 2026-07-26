@@ -1,3 +1,4 @@
+
 export type Priority = 'low' | 'medium' | 'high';
 
 export interface Label {
@@ -31,12 +32,29 @@ export interface DailyGoal {
   targetTasks: number;
 }
 
+export interface CustomSong {
+  id: string;
+  label: string;
+  url: string;
+}
+
+export type TimerMode = "work" | "short";
+
 export interface TaskContextType {
+  // Data
   tasks: Task[];
   labels: Label[];
   sessions: Session[];
   dailyGoals: Record<string, number>;
+  customSongs: CustomSong[];
   streak: number;
+  
+  // Timer State (Persisted in context for navigation)
+  timerLeft: number;
+  timerMode: TimerMode;
+  isTimerActive: boolean;
+  
+  // Actions
   addTask: (taskData: Omit<Task, 'id' | 'createdAt'>) => void;
   updateTask: (id: string, updates: Partial<Task>) => void;
   deleteTask: (id: string) => void;
@@ -47,5 +65,13 @@ export interface TaskContextType {
   updateSession: (id: string, updates: Partial<Session>) => void;
   deleteSession: (id: string) => void;
   setDailyGoal: (date: string, target: number) => void;
+  addCustomSong: (label: string, url: string) => void;
+  removeCustomSong: (id: string) => void;
+  
+  // Timer Actions
+  setTimerActive: (active: boolean) => void;
+  setTimerMode: (mode: TimerMode) => void;
+  resetTimer: () => void;
+  
   isInitialized: boolean;
 }

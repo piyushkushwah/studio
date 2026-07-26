@@ -1,0 +1,83 @@
+
+{
+  "entities": {
+    "Task": {
+      "title": "Task",
+      "description": "A productivity task with due date and priority",
+      "type": "object",
+      "properties": {
+        "description": { "type": "string" },
+        "notes": { "type": "string" },
+        "dueDate": { "type": "string", "format": "date" },
+        "completed": { "type": "boolean" },
+        "createdAt": { "type": "number" },
+        "label": { "type": "string" },
+        "priority": { "type": "string", "enum": ["low", "medium", "high"] }
+      },
+      "required": ["description", "dueDate", "completed", "createdAt"]
+    },
+    "Label": {
+      "title": "Label",
+      "description": "Custom category labels for tasks",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "color": { "type": "string" }
+      },
+      "required": ["name", "color"]
+    },
+    "Session": {
+      "title": "Focus Session",
+      "description": "A recorded Pomodoro or focus session",
+      "type": "object",
+      "properties": {
+        "startTime": { "type": "number" },
+        "durationMinutes": { "type": "number" },
+        "type": { "type": "string", "enum": ["work", "short", "manual"] },
+        "date": { "type": "string", "format": "date" },
+        "note": { "type": "string" }
+      },
+      "required": ["startTime", "durationMinutes", "type", "date"]
+    },
+    "UserPreference": {
+      "title": "User Preference",
+      "description": "User specific settings including custom songs",
+      "type": "object",
+      "properties": {
+        "dailyGoals": { "type": "object", "additionalProperties": { "type": "number" } },
+        "customSongs": { 
+          "type": "array", 
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" },
+              "label": { "type": "string" },
+              "url": { "type": "string" }
+            }
+          }
+        }
+      }
+    }
+  },
+  "auth": {
+    "providers": ["google.com"]
+  },
+  "firestore": {
+    "/users/{userId}/tasks/{taskId}": {
+      "schema": "#/entities/Task",
+      "description": "Individual tasks for the user"
+    },
+    "/users/{userId}/labels/{labelId}": {
+      "schema": "#/entities/Label",
+      "description": "Custom task labels defined by the user"
+    },
+    "/users/{userId}/sessions/{sessionId}": {
+      "schema": "#/entities/Session",
+      "description": "Recorded productivity sessions"
+    },
+    "/users/{userId}/preferences/main": {
+      "schema": "#/entities/UserPreference",
+      "description": "User specific global settings"
+    }
+  }
+}

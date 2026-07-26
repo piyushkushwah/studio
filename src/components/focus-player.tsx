@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
@@ -8,6 +9,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Slider } from "@/components/ui/slider";
+import { Input } from "@/components/ui/input";
 import { 
   Music, 
   Volume2, 
@@ -18,13 +20,16 @@ import {
   AlertCircle,
   Loader2,
   Sparkles,
-  Square
+  Square,
+  Plus,
+  Trash2,
+  ScrollArea
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import { useTasks } from "@/hooks/use-tasks";
 
-// Verified high-quality tracks for deep focus
-const SOUNDS = [
+const DEFAULT_SOUNDS = [
   { 
     id: "jazzy-lofi", 
     label: "KaizanBlu Lofi", 
@@ -40,33 +45,39 @@ const SOUNDS = [
 ];
 
 export function FocusPlayer() {
+  const { customSongs, addCustomSong, removeCustomSong } = useTasks();
   const [activeSoundId, setActiveSoundId] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [hasError, setHasError] = useState(false);
   const [volume, setVolume] = useState([40]);
+  
+  // New Song Form State
+  const [newSongLabel, setNewSongLabel] = useState("");
+  const [newSongUrl, setNewSongUrl] = useState("");
+  const [showAddForm, setShowAddForm] = useState(false);
+
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const { toast } = useToast();
 
-  // Sync volume
+  const allSounds = useMemo(() => [
+    ...DEFAULT_SOUNDS,
+    ...customSongs.map(s => ({ ...s, icon: Music }))
+  ], [customSongs]);
+
   useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.volume = volume[0] / 100;
-    }
+    if (audioRef.current) audioRef.current.volume = volume[0] / 100;
   }, [volume]);
 
-  // Handle Source Changes
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
-
     if (!activeSoundId) {
       audio.pause();
       setIsPlaying(false);
       return;
     }
-
-    const sound = SOUNDS.find(s => s.id === activeSoundId);
+    const sound = allSounds.find(s => s.id === activeSoundId);
     if (sound && audio.src !== sound.url) {
       setIsLoading(true);
       setHasError(false);
@@ -74,27 +85,18 @@ export function FocusPlayer() {
       audio.src = sound.url;
       audio.load();
     }
-  }, [activeSoundId]);
+  }, [activeSoundId, allSounds]);
 
-  // Sync Playback State
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio || !activeSoundId || isLoading) return;
-
     if (isPlaying) {
       audio.play().catch((err) => {
-        if (err.name !== 'AbortError') {
-          console.error("Playback failed:", err);
-          setIsPlaying(false);
-        }
+        if (err.name !== 'AbortError') setIsPlaying(false);
       });
     } else {
       audio.pause();
     }
-
-    return () => {
-      audio.pause();
-    };
   }, [isPlaying, activeSoundId, isLoading]);
 
   const toggleSound = (soundId: string) => {
@@ -106,23 +108,16 @@ export function FocusPlayer() {
     }
   };
 
-  const handleAudioError = (e: any) => {
-    console.error("Audio Load Error:", e);
-    setHasError(true);
-    setIsPlaying(false);
-    setIsLoading(false);
-    toast({
-      variant: "destructive",
-      title: "Stream Unavailable",
-      description: "We couldn't reach the focus track. Please try again or check your connection.",
-    });
+  const handleAddSong = () => {
+    if (!newSongLabel || !newSongUrl) return;
+    addCustomSong(newSongLabel, newSongUrl);
+    setNewSongLabel("");
+    setNewSongUrl("");
+    setShowAddForm(false);
+    toast({ title: "Song Added", description: "Your custom track is now in the library." });
   };
 
-  const handleCanPlay = () => {
-    setIsLoading(false);
-  };
-
-  const activeSoundLabel = SOUNDS.find(s => s.id === activeSoundId)?.label || "Off";
+  const activeSoundLabel = allSounds.find(s => s.id === activeSoundId)?.label || "Off";
 
   return (
     <div className="flex items-center gap-2">
@@ -131,91 +126,72 @@ export function FocusPlayer() {
         loop 
         preload="auto"
         crossOrigin="anonymous"
-        onError={handleAudioError}
-        onCanPlay={handleCanPlay}
+        onError={() => setHasError(true)}
+        onCanPlay={() => setIsLoading(false)}
       />
       
       <Popover>
         <PopoverTrigger asChild>
           <div className="flex items-center gap-1 bg-white border shadow-sm rounded-2xl px-2 h-12 hover:border-primary/30 transition-all cursor-pointer group">
             <Button
-              variant="ghost"
-              size="icon"
-              className={cn(
-                "h-9 w-9 rounded-xl transition-colors",
-                isPlaying ? "text-primary bg-primary/5" : "text-muted-foreground",
-                hasError && "text-destructive"
-              )}
+              variant="ghost" size="icon"
+              className={cn("h-9 w-9 rounded-xl", isPlaying && "text-primary bg-primary/5", hasError && "text-destructive")}
             >
-              {isLoading ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : hasError ? (
-                <AlertCircle className="w-4 h-4" />
-              ) : (
-                <Music className={cn("w-4 h-4", isPlaying && "animate-pulse")} />
-              )}
+              {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Music className={cn("w-4 h-4", isPlaying && "animate-pulse")} />}
             </Button>
             <div className="hidden md:flex flex-col pr-2">
-              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground leading-none mb-0.5">Focus Music</span>
-              <span className="text-xs font-bold truncate max-w-[70px]">
-                {activeSoundId ? activeSoundLabel : "Off"}
-              </span>
+              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground leading-none mb-0.5">Focus Radio</span>
+              <span className="text-xs font-bold truncate max-w-[70px]">{activeSoundId ? activeSoundLabel : "Off"}</span>
             </div>
           </div>
         </PopoverTrigger>
-        <PopoverContent className="w-72 p-4 rounded-[1.5rem] shadow-2xl border-primary/10">
+        <PopoverContent className="w-80 p-4 rounded-[1.5rem] shadow-2xl border-primary/10">
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h4 className="font-black text-primary text-sm uppercase tracking-widest">Focus Radio</h4>
-              <div className="flex items-center gap-1">
-                {activeSoundId && (
-                  <>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="h-8 w-8 rounded-full"
-                      onClick={() => setIsPlaying(!isPlaying)}
-                    >
-                      {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="h-8 w-8 rounded-full text-muted-foreground hover:text-destructive"
-                      onClick={() => setActiveSoundId(null)}
-                    >
-                      <Square className="w-3 h-3 fill-current" />
-                    </Button>
-                  </>
-                )}
-              </div>
+              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={() => setShowAddForm(!showAddForm)}>
+                <Plus className="w-4 h-4" />
+              </Button>
             </div>
 
-            <div className="grid grid-cols-2 gap-2">
-              {SOUNDS.map((sound) => {
+            {showAddForm && (
+              <div className="bg-muted/30 p-3 rounded-xl space-y-2 border border-dashed">
+                <Input placeholder="Track Name" value={newSongLabel} onChange={e => setNewSongLabel(e.target.value)} className="h-8 text-xs" />
+                <Input placeholder="MP3 URL" value={newSongUrl} onChange={e => setNewSongUrl(e.target.value)} className="h-8 text-xs" />
+                <div className="flex gap-2">
+                  <Button size="sm" className="flex-1 h-8 text-[10px] uppercase font-bold" onClick={handleAddSong}>Save</Button>
+                  <Button size="sm" variant="ghost" className="h-8 text-[10px] uppercase font-bold" onClick={() => setShowAddForm(false)}>Cancel</Button>
+                </div>
+              </div>
+            )}
+
+            <div className="grid grid-cols-2 gap-2 max-h-[180px] overflow-y-auto pr-1">
+              {allSounds.map((sound) => {
                 const Icon = sound.icon;
                 const isActive = activeSoundId === sound.id;
+                const isCustom = !DEFAULT_SOUNDS.some(d => d.id === sound.id);
                 return (
-                  <Button
-                    key={sound.id}
-                    variant={isActive ? "default" : "outline"}
-                    className={cn(
-                      "h-16 flex flex-col gap-1 rounded-xl transition-all border-primary/5 p-2 overflow-hidden",
-                      isActive && isPlaying && !hasError ? "ring-2 ring-primary ring-offset-2 shadow-inner" : "",
-                      isActive && hasError ? "border-destructive text-destructive" : ""
-                    )}
-                    onClick={() => toggleSound(sound.id)}
-                    disabled={isLoading && !isActive}
-                  >
-                    {isLoading && isActive ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
+                  <div key={sound.id} className="relative group/item">
+                    <Button
+                      variant={isActive ? "default" : "outline"}
+                      className={cn(
+                        "h-16 w-full flex flex-col gap-1 rounded-xl transition-all p-2",
+                        isActive && isPlaying ? "ring-2 ring-primary ring-offset-2" : ""
+                      )}
+                      onClick={() => toggleSound(sound.id)}
+                    >
                       <Icon className="w-4 h-4" />
+                      <span className="text-[10px] font-bold uppercase tracking-tighter truncate w-full">{sound.label}</span>
+                    </Button>
+                    {isCustom && (
+                      <button 
+                        className="absolute -top-1 -right-1 bg-destructive text-white rounded-full p-0.5 opacity-0 group-hover/item:opacity-100 transition-opacity"
+                        onClick={(e) => { e.stopPropagation(); removeCustomSong(sound.id); }}
+                      >
+                        <Trash2 className="w-2.5 h-2.5" />
+                      </button>
                     )}
-                    <span className="text-[10px] font-bold uppercase tracking-tighter text-center whitespace-nowrap overflow-hidden text-ellipsis w-full">
-                      {sound.label}
-                    </span>
-                  </Button>
+                  </div>
                 );
               })}
             </div>
@@ -227,21 +203,9 @@ export function FocusPlayer() {
               </div>
               <div className="flex items-center gap-3">
                 {volume[0] === 0 ? <VolumeX className="w-4 h-4 text-muted-foreground" /> : <Volume2 className="w-4 h-4 text-primary" />}
-                <Slider
-                  value={volume}
-                  onValueChange={setVolume}
-                  max={100}
-                  step={1}
-                  className="flex-1"
-                />
+                <Slider value={volume} onValueChange={setVolume} max={100} step={1} className="flex-1" />
               </div>
             </div>
-            
-            {hasError && (
-              <p className="text-[10px] text-destructive font-bold text-center animate-pulse leading-tight">
-                Connection issue with this track.<br/>Try again.
-              </p>
-            )}
           </div>
         </PopoverContent>
       </Popover>

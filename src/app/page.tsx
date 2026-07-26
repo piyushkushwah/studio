@@ -75,9 +75,7 @@ export default function DailyTaskTrack() {
     else setGreeting("Good Evening");
     
     fetchNewQuote();
-
     const intervalId = setInterval(fetchNewQuote, 60000);
-
     return () => clearInterval(intervalId);
   }, [fetchNewQuote]);
 
@@ -91,19 +89,13 @@ export default function DailyTaskTrack() {
   
   const dailyTasks = useMemo(() => {
     let filtered = tasks.filter((t) => t.dueDate === selectedDateStr);
-    
     if (searchQuery) {
-      filtered = filtered.filter(t => 
-        t.description.toLowerCase().includes(searchQuery.toLowerCase())
-      );
+      filtered = filtered.filter(t => t.description.toLowerCase().includes(searchQuery.toLowerCase()));
     }
-    
     if (activeLabelFilter) {
       filtered = filtered.filter(t => t.label === activeLabelFilter);
     }
-
     const priorityWeight = { high: 3, medium: 2, low: 1 };
-    
     return filtered.sort((a, b) => {
       if (a.completed !== b.completed) return a.completed ? 1 : -1;
       const weightA = priorityWeight[a.priority || 'medium'];
@@ -120,42 +112,23 @@ export default function DailyTaskTrack() {
     if (goalMet && isInitialized) {
       const lastCelebrated = localStorage.getItem(`celebrated_${selectedDateStr}`);
       if (!lastCelebrated) {
-        toast({
-          title: "Goal Reached! 🎉",
-          description: `You've completed your goal of ${dailyGoalValue} tasks for today. Keep it up!`,
-        });
+        toast({ title: "Goal Reached! 🎉", description: `You've completed your goal of ${dailyGoalValue} tasks for today.` });
         localStorage.setItem(`celebrated_${selectedDateStr}`, "true");
       }
     }
   }, [goalMet, selectedDateStr, dailyGoalValue, toast, isInitialized]);
 
-  const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
-  const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
-
   const handleTaskSubmit = (taskData: { description: string; notes?: string; dueDate: string; label?: string; priority?: Priority }) => {
-    if (editingTask) {
-      updateTask(editingTask.id, taskData);
-    } else {
-      addTask({
-        ...taskData,
-        completed: false,
-      });
-    }
+    if (editingTask) updateTask(editingTask.id, taskData);
+    else addTask({ ...taskData, completed: false });
     setEditingTask(null);
-  };
-
-  const handleEdit = (task: Task) => {
-    setEditingTask(task);
-    setIsTaskDialogOpen(true);
   };
 
   const clearCompleted = () => {
     dailyTasks.filter(t => t.completed).forEach(t => deleteTask(t.id));
   };
 
-  const completionRate = dailyTasks.length > 0 
-    ? (completedCount / dailyTasks.length) * 100 
-    : 0;
+  const completionRate = dailyTasks.length > 0 ? (completedCount / dailyTasks.length) * 100 : 0;
 
   if (!isInitialized) return null;
 
@@ -180,16 +153,7 @@ export default function DailyTaskTrack() {
             </div>
             <div className="flex items-start gap-2 mt-1 max-w-md h-8">
               <Quote className="w-3 h-3 text-accent mt-1 shrink-0" />
-              {quote ? (
-                <p className="text-xs italic text-muted-foreground font-medium line-clamp-2 transition-opacity duration-500">
-                  {quote}
-                </p>
-              ) : (
-                <div className="space-y-1.5 py-1 w-full">
-                  <Skeleton className="h-2 w-full max-w-[280px]" />
-                  <Skeleton className="h-2 w-[180px]" />
-                </div>
-              )}
+              {quote ? <p className="text-xs italic text-muted-foreground font-medium line-clamp-2">{quote}</p> : <div className="space-y-1.5 py-1 w-full"><Skeleton className="h-2 w-full max-w-[280px]" /><Skeleton className="h-2 w-[180px]" /></div>}
             </div>
           </div>
         </div>
@@ -198,251 +162,94 @@ export default function DailyTaskTrack() {
           <PomodoroTimer />
           <div id="tour-nav" className="flex items-center gap-2 h-12 bg-white border px-3 rounded-2xl shadow-sm">
             <LabelManager />
-            <Link href="/time-tracking">
-              <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-primary/5 group" title="Time Tracking">
-                <Clock className="w-4 h-4 text-primary group-hover:scale-110 transition-transform" />
-              </Button>
-            </Link>
-            <Link href="/analytics">
-              <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-primary/5 group" title="Analytics">
-                <BarChart2 className="w-4 h-4 text-primary group-hover:scale-110 transition-transform" />
-              </Button>
-            </Link>
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={() => (window as any).restartAppTour?.()}
-              className="h-9 w-9 rounded-xl hover:bg-primary/5 group" 
-              title="App Tour"
-            >
-              <HelpCircle className="w-4 h-4 text-primary group-hover:scale-110 transition-transform" />
-            </Button>
+            <Link href="/time-tracking"><Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-primary/5 group" title="Time Tracking"><Clock className="w-4 h-4 text-primary group-hover:scale-110 transition-transform" /></Button></Link>
+            <Link href="/analytics"><Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-primary/5 group" title="Analytics"><BarChart2 className="w-4 h-4 text-primary group-hover:scale-110 transition-transform" /></Button></Link>
+            <Button variant="ghost" size="icon" onClick={() => (window as any).restartAppTour?.()} className="h-9 w-9 rounded-xl hover:bg-primary/5 group" title="App Tour"><HelpCircle className="w-4 h-4 text-primary group-hover:scale-110 transition-transform" /></Button>
           </div>
         </div>
       </header>
 
-      <main className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+      <main className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-12 gap-10 items-start flex-1 min-h-0">
         <div id="tour-calendar" className="lg:col-span-7 flex flex-col gap-8 w-full">
           <Card className="p-6 md:p-10 shadow-2xl shadow-primary/5 bg-white border-white/50 rounded-[2rem]">
             <div className="flex items-center justify-between mb-8 md:mb-10">
-              <h2 className="text-2xl md:text-3xl font-black text-primary tracking-tight">
-                {format(currentMonth, "MMMM yyyy")}
-              </h2>
+              <h2 className="text-2xl md:text-3xl font-black text-primary tracking-tight">{format(currentMonth, "MMMM yyyy")}</h2>
               <div className="flex gap-2">
-                <Button variant="outline" size="icon" onClick={prevMonth} className="h-10 w-10 bg-white shadow-sm hover:border-primary/30 rounded-xl">
-                  <ChevronLeft className="w-5 h-5" />
-                </Button>
-                <Button variant="outline" size="icon" onClick={nextMonth} className="h-10 w-10 bg-white shadow-sm hover:border-primary/30 rounded-xl">
-                  <ChevronRight className="w-5 h-5" />
-                </Button>
+                <Button variant="outline" size="icon" onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="h-10 w-10 bg-white shadow-sm rounded-xl"><ChevronLeft className="w-5 h-5" /></Button>
+                <Button variant="outline" size="icon" onClick={() => setCurrentMonth(addMonths(currentMonth, 1))} className="h-10 w-10 bg-white shadow-sm rounded-xl"><ChevronRight className="w-5 h-5" /></Button>
               </div>
             </div>
-
             <div className="calendar-grid">
-              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-                <div key={day} className="text-center text-[11px] font-black text-muted-foreground/50 py-3 uppercase tracking-[0.2em]">
-                  {day}
-                </div>
-              ))}
-              {days.map((day) => (
-                <CalendarCell
-                  key={day.toISOString()}
-                  date={day}
-                  currentMonth={currentMonth}
-                  isSelected={isSameDay(day, selectedDate)}
-                  tasks={tasks}
-                  onClick={() => setSelectedDate(day)}
-                />
-              ))}
+              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (<div key={day} className="text-center text-[11px] font-black text-muted-foreground/50 py-3 uppercase tracking-[0.2em]">{day}</div>))}
+              {days.map((day) => (<CalendarCell key={day.toISOString()} date={day} currentMonth={currentMonth} isSelected={isSameDay(day, selectedDate)} tasks={tasks} onClick={() => setSelectedDate(day)} />))}
             </div>
           </Card>
         </div>
 
-        <div id="tour-tasks" className="lg:col-span-5 flex flex-col gap-8 w-full">
-          <Card className={cn(
-            "p-8 md:p-10 shadow-2xl transition-all duration-500 max-h-[800px] flex flex-col bg-white border-white/50 rounded-[2rem]",
-            goalMet ? "shadow-accent/10 border-accent/20 ring-1 ring-accent/10" : "shadow-primary/5"
-          )}>
-            <div className="flex items-center justify-between mb-8">
+        <div id="tour-tasks" className="lg:col-span-5 flex flex-col gap-8 w-full h-full lg:max-h-[800px]">
+          <Card className={cn("p-8 md:p-10 shadow-2xl transition-all duration-500 h-full flex flex-col bg-white border-white/50 rounded-[2rem]", goalMet ? "shadow-accent/10 border-accent/20 ring-1 ring-accent/10" : "shadow-primary/5")}>
+            <div className="flex items-center justify-between mb-8 shrink-0">
               <div className="flex items-center gap-4">
                 <div className="relative flex items-center justify-center shrink-0">
                   <svg className="w-14 h-14 transform -rotate-90">
-                    <circle
-                      cx="28"
-                      cy="28"
-                      r="24"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                      fill="transparent"
-                      className="text-muted/40"
-                    />
-                    <circle
-                      cx="28"
-                      cy="28"
-                      r="24"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                      fill="transparent"
-                      strokeDasharray={151}
-                      strokeDashoffset={151 - (151 * completionRate) / 100}
-                      className={cn(
-                        "transition-all duration-1000 ease-in-out",
-                        goalMet ? "text-accent" : "text-primary"
-                      )}
-                    />
+                    <circle cx="28" cy="28" r="24" stroke="currentColor" strokeWidth="4" fill="transparent" className="text-muted/40" />
+                    <circle cx="28" cy="28" r="24" stroke="currentColor" strokeWidth="4" fill="transparent" strokeDasharray={151} strokeDashoffset={151 - (151 * completionRate) / 100} className={cn("transition-all duration-1000 ease-in-out", goalMet ? "text-accent" : "text-primary")} />
                   </svg>
-                  <span className={cn(
-                    "absolute text-[11px] font-black",
-                    goalMet ? "text-accent" : "text-primary"
-                  )}>
-                    {goalMet ? <Star className="w-3 h-3 fill-current" /> : `${Math.round(completionRate)}%`}
-                  </span>
+                  <span className={cn("absolute text-[11px] font-black", goalMet ? "text-accent" : "text-primary")}>{goalMet ? <Star className="w-3 h-3 fill-current" /> : `${Math.round(completionRate)}%`}</span>
                 </div>
                 <div className="flex flex-col text-primary">
                   <h3 className="text-2xl md:text-3xl font-black tracking-tight">{format(selectedDate, "EEEE")}</h3>
                   <p className="text-sm text-muted-foreground font-bold uppercase tracking-widest">{format(selectedDate, "do MMMM")}</p>
                 </div>
               </div>
-              <Button 
-                id="tour-add-task"
-                onClick={() => {
-                  setEditingTask(null);
-                  setIsTaskDialogOpen(true);
-                }} 
-                size="icon" 
-                className="rounded-2xl h-14 w-14 shadow-xl shadow-primary/20 transition-all hover:scale-105 active:scale-95 shrink-0"
-              >
-                <Plus className="w-7 h-7" />
-              </Button>
+              <Button id="tour-add-task" onClick={() => { setEditingTask(null); setIsTaskDialogOpen(true); }} size="icon" className="rounded-2xl h-14 w-14 shadow-xl shadow-primary/20 shrink-0"><Plus className="w-7 h-7" /></Button>
             </div>
 
-            <div className="space-y-5 mb-8">
-              <div className={cn(
-                "flex items-center gap-4 p-4 rounded-2xl border transition-colors",
-                goalMet ? "bg-accent/5 border-accent/20" : "bg-primary/5 border-primary/10"
-              )}>
-                <div className={cn(
-                  "p-2 rounded-lg shadow-sm transition-colors",
-                  goalMet ? "bg-accent text-white" : "bg-white text-primary"
-                )}>
-                  <Trophy className="w-4 h-4" />
-                </div>
+            <div className="space-y-5 mb-8 shrink-0">
+              <div className={cn("flex items-center gap-4 p-4 rounded-2xl border transition-colors", goalMet ? "bg-accent/5 border-accent/20" : "bg-primary/5 border-primary/10")}>
+                <div className={cn("p-2 rounded-lg shadow-sm transition-colors", goalMet ? "bg-accent text-white" : "bg-white text-primary")}><Trophy className="w-4 h-4" /></div>
                 <div className="flex-1">
-                  <p className={cn(
-                    "text-[10px] font-black uppercase tracking-widest",
-                    goalMet ? "text-accent" : "text-primary/60"
-                  )}>Daily Focus Goal</p>
+                  <p className={cn("text-[10px] font-black uppercase tracking-widest", goalMet ? "text-accent" : "text-primary/60")}>Daily Focus Goal</p>
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-bold">{completedCount} / {dailyGoalValue || 0} tasks</span>
-                    <Input 
-                      type="number" 
-                      min="0" 
-                      max="20"
-                      value={dailyGoalValue}
-                      onChange={(e) => setDailyGoal(selectedDateStr, parseInt(e.target.value) || 0)}
-                      className="w-16 h-8 text-xs font-bold text-center border-none bg-white shadow-sm rounded-lg"
-                    />
+                    <Input type="number" min="0" max="20" value={dailyGoalValue} onChange={(e) => setDailyGoal(selectedDateStr, parseInt(e.target.value) || 0)} className="w-16 h-8 text-xs font-bold text-center border-none bg-white shadow-sm rounded-lg" />
                   </div>
                 </div>
               </div>
-
-              <div className="relative group">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
-                <Input 
-                  placeholder="Find a task..." 
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-11 h-12 bg-muted/20 border-transparent focus-visible:ring-2 focus-visible:ring-primary/10 rounded-xl"
-                />
-              </div>
-              
+              <div className="relative group"><Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary" /><Input placeholder="Find a task..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-11 h-12 bg-muted/20 border-transparent rounded-xl" /></div>
               <div className="flex flex-wrap gap-2">
-                <Button 
-                  variant={activeLabelFilter === null ? "default" : "outline"} 
-                  size="sm" 
-                  onClick={() => setActiveLabelFilter(null)}
-                  className="h-8 px-4 text-[10px] font-black uppercase tracking-widest rounded-xl"
-                >
-                  All
-                </Button>
-                {labels.map(l => (
-                  <Button
-                    key={l.id}
-                    variant={activeLabelFilter === l.name ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setActiveLabelFilter(l.name === activeLabelFilter ? null : l.name)}
-                    className={cn(
-                      "h-8 px-4 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-sm",
-                      activeLabelFilter === l.name ? l.color : "hover:border-primary/30"
-                    )}
-                  >
-                    {l.name}
-                  </Button>
-                ))}
+                <Button variant={activeLabelFilter === null ? "default" : "outline"} size="sm" onClick={() => setActiveLabelFilter(null)} className="h-8 px-4 text-[10px] font-black uppercase tracking-widest rounded-xl">All</Button>
+                {labels.map(l => (<Button key={l.id} variant={activeLabelFilter === l.name ? "default" : "outline"} size="sm" onClick={() => setActiveLabelFilter(l.name === activeLabelFilter ? null : l.name)} className={cn("h-8 px-4 text-[10px] font-black uppercase tracking-widest rounded-xl", activeLabelFilter === l.name ? l.color : "hover:border-primary/30")}>{l.name}</Button>))}
               </div>
             </div>
 
-            <ScrollArea className="flex-1 -mx-2 px-2">
+            <ScrollArea className="flex-1 min-h-0 -mx-2 px-2">
               <div className="space-y-4 pb-4">
                 {dailyTasks.length === 0 ? (
                   <div className="py-16 text-center flex flex-col items-center gap-5">
-                    <div className="w-16 h-16 bg-muted/30 rounded-full flex items-center justify-center text-muted-foreground/20">
-                      {searchQuery || activeLabelFilter ? <FilterX className="w-8 h-8" /> : <Target className="w-8 h-8" />}
-                    </div>
-                    <div>
-                      <p className="text-base text-muted-foreground font-bold">
-                        {searchQuery || activeLabelFilter ? "No matches found." : "No tasks scheduled."}
-                      </p>
-                    </div>
+                    <div className="w-16 h-16 bg-muted/30 rounded-full flex items-center justify-center text-muted-foreground/20">{searchQuery || activeLabelFilter ? <FilterX className="w-8 h-8" /> : <Target className="w-8 h-8" />}</div>
+                    <p className="text-base text-muted-foreground font-bold">{searchQuery || activeLabelFilter ? "No matches found." : "No tasks scheduled."}</p>
                   </div>
                 ) : (
-                  dailyTasks.map((task) => (
-                    <TaskItem
-                      key={task.id}
-                      task={task}
-                      onToggle={toggleTask}
-                      onDelete={deleteTask}
-                      onEdit={handleEdit}
-                    />
-                  ))
+                  dailyTasks.map((task) => (<TaskItem key={task.id} task={task} onToggle={toggleTask} onDelete={deleteTask} onEdit={(t) => { setEditingTask(t); setIsTaskDialogOpen(true); }} />))
                 )}
               </div>
             </ScrollArea>
 
             {dailyTasks.length > 0 && (
-              <div className="mt-4 pt-6 border-t flex flex-col sm:flex-row sm:items-center justify-between gap-5">
+              <div className="mt-4 pt-6 border-t flex flex-col sm:flex-row sm:items-center justify-between gap-5 shrink-0">
                 <div className="flex items-center gap-3">
-                  <div className="bg-accent/10 p-2 rounded-lg">
-                    <CheckCircle2 className="w-5 h-5 text-accent" />
-                  </div>
-                  <span className="text-sm font-black text-primary tracking-tight">
-                    {completedCount} OF {dailyTasks.length} COMPLETED
-                  </span>
+                  <div className="bg-accent/10 p-2 rounded-lg"><CheckCircle2 className="w-5 h-5 text-accent" /></div>
+                  <span className="text-sm font-black text-primary tracking-tight">{completedCount} OF {dailyTasks.length} COMPLETED</span>
                 </div>
-                {dailyTasks.some(t => t.completed) && (
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={clearCompleted}
-                    className="text-muted-foreground hover:text-destructive hover:bg-destructive/5 font-bold h-10 px-4 rounded-xl"
-                  >
-                    <Trash2 className="w-4 h-4 mr-2" />
-                    Clear Finished
-                  </Button>
-                )}
+                {dailyTasks.some(t => t.completed) && (<Button variant="ghost" size="sm" onClick={clearCompleted} className="text-muted-foreground hover:text-destructive hover:bg-destructive/5 font-bold h-10 px-4 rounded-xl"><Trash2 className="w-4 h-4 mr-2" />Clear Finished</Button>)}
               </div>
             )}
           </Card>
         </div>
       </main>
 
-      <TaskDialog
-        open={isTaskDialogOpen}
-        onOpenChange={setIsTaskDialogOpen}
-        onSubmit={handleTaskSubmit}
-        initialTask={editingTask}
-        defaultDate={selectedDateStr}
-      />
+      <TaskDialog open={isTaskDialogOpen} onOpenChange={setIsTaskDialogOpen} onSubmit={handleTaskSubmit} initialTask={editingTask} defaultDate={selectedDateStr} />
     </div>
   );
 }

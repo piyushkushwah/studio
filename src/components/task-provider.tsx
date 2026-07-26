@@ -1,8 +1,22 @@
+
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo } from 'react';
-import { Task, Label, Session, TaskContextType } from '@/lib/types';
-import { format, subDays, isSameDay, parseISO } from 'date-fns';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo, useCallback } from 'react';
+import { Task, Label, Session, TaskContextType, TimerMode, CustomSong } from '@/lib/types';
+import { format, subDays, isSameDay } from 'date-fns';
+import { 
+  collection, 
+  doc, 
+  setDoc, 
+  addDoc, 
+  updateDoc, 
+  deleteDoc, 
+  query, 
+  onSnapshot 
+} from 'firebase/firestore';
+import { useFirestore, useAuth, useCollection, useDoc } from '@/firebase';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 const DEFAULT_LABELS: Label[] = [
   { id: '1', name: 'work', color: 'bg-blue-600 text-white hover:bg-blue-700' },
@@ -12,81 +26,101 @@ const DEFAULT_LABELS: Label[] = [
   { id: '5', name: 'other', color: 'bg-slate-600 text-white hover:bg-slate-700' },
 ];
 
+const TIMER_CONFIG = {
+  work: 25 * 60,
+  short: 5 * 60,
+};
+
 const TaskContext = createContext<TaskContextType | undefined>(undefined);
 
 export function TaskProvider({ children }: { children: ReactNode }) {
+  const db = useFirestore();
+  const auth = useAuth();
+  const user = auth?.currentUser;
+
+  // Global Data State (Synced with Firestore)
   const [tasks, setTasks] = useState<Task[]>([]);
   const [labels, setLabels] = useState<Label[]>(DEFAULT_LABELS);
   const [sessions, setSessions] = useState<Session[]>([]);
   const [dailyGoals, setDailyGoals] = useState<Record<string, number>>({});
+  const [customSongs, setCustomSongs] = useState<CustomSong[]>([]);
+  
+  // Timer State (Context-only for persistence across navigation)
+  const [timerMode, setTimerMode] = useState<TimerMode>("work");
+  const [timerLeft, setTimerLeft] = useState(TIMER_CONFIG.work);
+  const [isTimerActive, setTimerActive] = useState(false);
+  
   const [isInitialized, setIsInitialized] = useState(false);
 
+  // Firestore Sync Effect
   useEffect(() => {
-    const savedTasks = localStorage.getItem('daily_task_track_tasks');
-    const savedLabels = localStorage.getItem('daily_task_track_labels');
-    const savedSessions = localStorage.getItem('daily_task_track_sessions');
-    const savedGoals = localStorage.getItem('daily_task_track_goals');
-    
-    if (savedTasks) {
-      try {
-        setTasks(JSON.parse(savedTasks));
-      } catch (e) {
-        console.error("Failed to parse tasks", e);
-      }
-    }
-    
-    if (savedLabels) {
-      try {
-        setLabels(JSON.parse(savedLabels));
-      } catch (e) {
-        console.error("Failed to parse labels", e);
-      }
+    if (!db || !user) {
+      setIsInitialized(true); // Allow local usage if no user, or just stay false
+      return;
     }
 
-    if (savedSessions) {
-      try {
-        setSessions(JSON.parse(savedSessions));
-      } catch (e) {
-        console.error("Failed to parse sessions", e);
-      }
-    }
+    const tasksRef = collection(db, 'users', user.uid, 'tasks');
+    const labelsRef = collection(db, 'users', user.uid, 'labels');
+    const sessionsRef = collection(db, 'users', user.uid, 'sessions');
+    const prefsRef = doc(db, 'users', user.uid, 'preferences', 'main');
 
-    if (savedGoals) {
-      try {
-        setDailyGoals(JSON.parse(savedGoals));
-      } catch (e) {
-        console.error("Failed to parse goals", e);
+    const unsubTasks = onSnapshot(tasksRef, (snapshot) => {
+      setTasks(snapshot.docs.map(d => ({ id: d.id, ...d.data() } as Task)));
+    }, (err) => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: tasksRef.path, operation: 'list' })));
+
+    const unsubLabels = onSnapshot(labelsRef, (snapshot) => {
+      const dbLabels = snapshot.docs.map(d => ({ id: d.id, ...d.data() } as Label));
+      setLabels(dbLabels.length > 0 ? dbLabels : DEFAULT_LABELS);
+    }, (err) => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: labelsRef.path, operation: 'list' })));
+
+    const unsubSessions = onSnapshot(sessionsRef, (snapshot) => {
+      setSessions(snapshot.docs.map(d => ({ id: d.id, ...d.data() } as Session)).sort((a,b) => b.startTime - a.startTime));
+    }, (err) => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: sessionsRef.path, operation: 'list' })));
+
+    const unsubPrefs = onSnapshot(prefsRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.data();
+        setDailyGoals(data.dailyGoals || {});
+        setCustomSongs(data.customSongs || []);
       }
-    }
-    
+    }, (err) => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: prefsRef.path, operation: 'get' })));
+
     setIsInitialized(true);
-  }, []);
 
+    return () => {
+      unsubTasks();
+      unsubLabels();
+      unsubSessions();
+      unsubPrefs();
+    };
+  }, [db, user]);
+
+  // Timer Logic
   useEffect(() => {
-    if (isInitialized) {
-      localStorage.setItem('daily_task_track_tasks', JSON.stringify(tasks));
-      localStorage.setItem('daily_task_track_labels', JSON.stringify(labels));
-      localStorage.setItem('daily_task_track_sessions', JSON.stringify(sessions));
-      localStorage.setItem('daily_task_track_goals', JSON.stringify(dailyGoals));
+    let interval: NodeJS.Timeout;
+    if (isTimerActive && timerLeft > 0) {
+      interval = setInterval(() => setTimerLeft(prev => prev - 1), 1000);
+    } else if (timerLeft === 0) {
+      setTimerActive(false);
+      const finishedMode = timerMode;
+      addSession(Math.floor(TIMER_CONFIG[finishedMode] / 60), finishedMode);
+      setTimerMode(finishedMode === "work" ? "short" : "work");
+      setTimerLeft(finishedMode === "work" ? TIMER_CONFIG.short : TIMER_CONFIG.work);
     }
-  }, [tasks, labels, sessions, dailyGoals, isInitialized]);
+    return () => clearInterval(interval);
+  }, [isTimerActive, timerLeft, timerMode]);
 
   const streak = useMemo(() => {
     if (!tasks.length) return 0;
-    
     let currentStreak = 0;
     let checkDate = new Date();
-    
-    // Check if tasks were completed today or yesterday to continue streak
     while (true) {
       const dateStr = format(checkDate, 'yyyy-MM-dd');
       const completedOnDate = tasks.some(t => t.dueDate === dateStr && t.completed);
-      
       if (completedOnDate) {
         currentStreak++;
         checkDate = subDays(checkDate, 1);
       } else {
-        // If no tasks completed today, check if yesterday had completions
         if (isSameDay(checkDate, new Date())) {
           checkDate = subDays(checkDate, 1);
           continue;
@@ -97,92 +131,109 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     return currentStreak;
   }, [tasks]);
 
+  // Actions
   const addTask = (taskData: Omit<Task, 'id' | 'createdAt'>) => {
-    const newTask: Task = {
-      ...taskData,
-      id: crypto.randomUUID(),
-      createdAt: Date.now(),
-      label: taskData.label || 'other',
-    };
-    setTasks((prev) => [...prev, newTask]);
+    if (!db || !user) return;
+    const tasksRef = collection(db, 'users', user.uid, 'tasks');
+    addDoc(tasksRef, { ...taskData, createdAt: Date.now() })
+      .catch(err => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: tasksRef.path, operation: 'create', requestResourceData: taskData })));
   };
 
   const updateTask = (id: string, updates: Partial<Task>) => {
-    setTasks((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, ...updates } : t))
-    );
+    if (!db || !user) return;
+    const taskRef = doc(db, 'users', user.uid, 'tasks', id);
+    updateDoc(taskRef, updates)
+      .catch(err => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: taskRef.path, operation: 'update', requestResourceData: updates })));
   };
 
   const deleteTask = (id: string) => {
-    setTasks((prev) => prev.filter((t) => t.id !== id));
+    if (!db || !user) return;
+    const taskRef = doc(db, 'users', user.uid, 'tasks', id);
+    deleteDoc(taskRef)
+      .catch(err => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: taskRef.path, operation: 'delete' })));
   };
 
   const toggleTask = (id: string) => {
-    setTasks((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t))
-    );
+    const task = tasks.find(t => t.id === id);
+    if (task) updateTask(id, { completed: !task.completed });
   };
 
   const addLabel = (name: string, color: string) => {
-    const newLabel: Label = {
-      id: crypto.randomUUID(),
-      name: name.toLowerCase().trim(),
-      color: color,
-    };
-    setLabels((prev) => [...prev, newLabel]);
+    if (!db || !user) return;
+    const labelsRef = collection(db, 'users', user.uid, 'labels');
+    addDoc(labelsRef, { name: name.toLowerCase().trim(), color })
+      .catch(err => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: labelsRef.path, operation: 'create' })));
   };
 
   const deleteLabel = (id: string) => {
-    setLabels((prev) => prev.filter((l) => l.id !== id));
+    if (!db || !user) return;
+    const labelRef = doc(db, 'users', user.uid, 'labels', id);
+    deleteDoc(labelRef)
+      .catch(err => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: labelRef.path, operation: 'delete' })));
   };
 
   const addSession = (durationMinutes: number, type: 'work' | 'short' | 'manual', note?: string, date?: string) => {
-    const sessionDate = date || format(new Date(), 'yyyy-MM-dd');
-    const newSession: Session = {
-      id: crypto.randomUUID(),
+    if (!db || !user) return;
+    const sessionsRef = collection(db, 'users', user.uid, 'sessions');
+    const data = {
       startTime: Date.now(),
       durationMinutes,
       type,
-      date: sessionDate,
-      note: note,
+      date: date || format(new Date(), 'yyyy-MM-dd'),
+      note: note || "",
     };
-    setSessions(prev => [newSession, ...prev]);
+    addDoc(sessionsRef, data)
+      .catch(err => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: sessionsRef.path, operation: 'create' })));
   };
 
   const updateSession = (id: string, updates: Partial<Session>) => {
-    setSessions(prev => 
-      prev.map(s => s.id === id ? { ...s, ...updates } : s)
-    );
+    if (!db || !user) return;
+    const sessionRef = doc(db, 'users', user.uid, 'sessions', id);
+    updateDoc(sessionRef, updates)
+      .catch(err => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: sessionRef.path, operation: 'update' })));
   };
 
   const deleteSession = (id: string) => {
-    setSessions(prev => prev.filter(s => s.id !== id));
+    if (!db || !user) return;
+    const sessionRef = doc(db, 'users', user.uid, 'sessions', id);
+    deleteDoc(sessionRef)
+      .catch(err => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: sessionRef.path, operation: 'delete' })));
   };
 
   const setDailyGoal = (date: string, target: number) => {
-    setDailyGoals(prev => ({
-      ...prev,
-      [date]: target
-    }));
+    if (!db || !user) return;
+    const prefsRef = doc(db, 'users', user.uid, 'preferences', 'main');
+    setDoc(prefsRef, { dailyGoals: { ...dailyGoals, [date]: target } }, { merge: true })
+      .catch(err => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: prefsRef.path, operation: 'update' })));
   };
+
+  const addCustomSong = (label: string, url: string) => {
+    if (!db || !user) return;
+    const prefsRef = doc(db, 'users', user.uid, 'preferences', 'main');
+    const newSong = { id: crypto.randomUUID(), label, url };
+    setDoc(prefsRef, { customSongs: [...customSongs, newSong] }, { merge: true })
+      .catch(err => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: prefsRef.path, operation: 'update' })));
+  };
+
+  const removeCustomSong = (id: string) => {
+    if (!db || !user) return;
+    const prefsRef = doc(db, 'users', user.uid, 'preferences', 'main');
+    setDoc(prefsRef, { customSongs: customSongs.filter(s => s.id !== id) }, { merge: true })
+      .catch(err => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: prefsRef.path, operation: 'update' })));
+  };
+
+  const resetTimer = useCallback(() => {
+    setTimerActive(false);
+    setTimerLeft(TIMER_CONFIG[timerMode]);
+  }, [timerMode]);
 
   return (
     <TaskContext.Provider value={{ 
-      tasks, 
-      labels, 
-      sessions,
-      dailyGoals,
-      streak,
-      addTask, 
-      updateTask, 
-      deleteTask, 
-      toggleTask, 
-      addLabel, 
-      deleteLabel, 
-      addSession,
-      updateSession,
-      deleteSession,
-      setDailyGoal,
+      tasks, labels, sessions, dailyGoals, customSongs, streak,
+      timerLeft, timerMode, isTimerActive,
+      addTask, updateTask, deleteTask, toggleTask, addLabel, deleteLabel, 
+      addSession, updateSession, deleteSession, setDailyGoal, addCustomSong, removeCustomSong,
+      setTimerActive, setTimerMode: (m) => { setTimerMode(m); setTimerLeft(TIMER_CONFIG[m]); }, resetTimer,
       isInitialized 
     }}>
       {children}
@@ -192,8 +243,6 @@ export function TaskProvider({ children }: { children: ReactNode }) {
 
 export function useTaskContext() {
   const context = useContext(TaskContext);
-  if (context === undefined) {
-    throw new Error('useTaskContext must be used within a TaskProvider');
-  }
+  if (context === undefined) throw new Error('useTaskContext must be used within a TaskProvider');
   return context;
 }
