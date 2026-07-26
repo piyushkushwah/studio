@@ -67,31 +67,33 @@ export default function DailyTaskTrack() {
   const [activeLabelFilter, setActiveLabelFilter] = useState<string | null>(null);
   const [greeting, setGreeting] = useState("Hello");
   const [quote, setQuote] = useState<string | null>(null);
-  const [isStarting, setIsStarting] = useState(false);
+  const [isAuthProcessing, setIsAuthProcessing] = useState(true);
   
   const { toast } = useToast();
 
   // Handle Redirect Result for Google Login
   useEffect(() => {
-    if (!auth) return;
+    if (!auth) {
+      setIsAuthProcessing(false);
+      return;
+    }
     
-    // Check if we are returning from a redirect
-    setIsStarting(true);
+    // We only want to check redirect result once on mount
     getRedirectResult(auth)
       .then((result) => {
         if (result) {
           toast({ title: "Welcome back!", description: `Logged in as ${result.user.displayName}` });
         }
-        setIsStarting(false);
+        setIsAuthProcessing(false);
       })
       .catch((error: any) => {
         console.error("Auth Redirect Error:", error);
-        setIsStarting(false);
+        setIsAuthProcessing(false);
         if (error.code === 'auth/unauthorized-domain') {
           toast({ 
             variant: "destructive", 
-            title: "Setup Required", 
-            description: `Add "${window.location.hostname}" to authorized domains in Firebase Console > Auth > Settings.` 
+            title: "Authorized Domain Required", 
+            description: `Add "${window.location.hostname}" to your Firebase Console > Auth > Settings > Authorized Domains.` 
           });
         }
       });
@@ -99,11 +101,11 @@ export default function DailyTaskTrack() {
 
   const handleLogin = async () => {
     if (!auth) {
-      toast({ variant: "destructive", title: "Connecting...", description: "Please wait while we connect to your productivity workspace." });
+      toast({ variant: "destructive", title: "Error", description: "Firebase Auth not initialized." });
       return;
     }
     
-    setIsStarting(true);
+    setIsAuthProcessing(true);
     const provider = new GoogleAuthProvider();
     provider.setCustomParameters({ prompt: 'select_account' });
     
@@ -111,15 +113,15 @@ export default function DailyTaskTrack() {
       await signInWithRedirect(auth, provider);
     } catch (error: any) {
       console.error("Auth Login Initiation Error:", error);
-      setIsStarting(false);
+      setIsAuthProcessing(false);
       if (error.code === 'auth/unauthorized-domain') {
         toast({ 
           variant: "destructive", 
-          title: "Authorized Domain Required", 
-          description: `Add "${window.location.hostname}" to your Firebase Console authorized domains list.` 
+          title: "Setup Required", 
+          description: `You must add "${window.location.hostname}" to authorized domains in Firebase Console.` 
         });
       } else {
-        toast({ variant: "destructive", title: "Sign In Failed", description: error.message || "Could not sign in with Google." });
+        toast({ variant: "destructive", title: "Sign In Failed", description: error.message || "Could not sign in." });
       }
     }
   };
@@ -196,14 +198,14 @@ export default function DailyTaskTrack() {
 
   const completionRate = dailyTasks.length > 0 ? (completedCount / dailyTasks.length) * 100 : 0;
 
-  // Show loading while checking auth OR while waiting for Firestore sync
-  if (authLoading || isStarting || (user && !isInitialized)) {
+  // Loading screen while auth is resolving or while firestore is syncing for the first time
+  if (authLoading || isAuthProcessing || (user && !isInitialized)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="w-10 h-10 animate-spin text-primary" />
           <p className="text-muted-foreground font-medium animate-pulse">
-            {isStarting ? "Authenticating..." : "Syncing your focus data..."}
+            {isAuthProcessing ? "Connecting to Workspace..." : "Syncing Focus Data..."}
           </p>
         </div>
       </div>
@@ -219,16 +221,16 @@ export default function DailyTaskTrack() {
           </div>
           <div className="space-y-3">
             <h2 className="text-4xl font-black text-primary tracking-tight">DailyTaskTrack</h2>
-            <p className="text-muted-foreground font-medium px-4">The command center for your high-performance day.</p>
+            <p className="text-muted-foreground font-medium px-4">Professional Productivity Command Center.</p>
           </div>
           
           <div className="space-y-4">
             <Button 
               onClick={handleLogin}
               className="w-full h-16 rounded-2xl text-lg font-bold shadow-xl shadow-primary/20 gap-3 group transition-all active:scale-[0.98]"
-              disabled={isStarting || !auth}
+              disabled={isAuthProcessing || !auth}
             >
-              {isStarting ? (
+              {isAuthProcessing ? (
                 <Loader2 className="w-6 h-6 animate-spin" />
               ) : (
                 <>
@@ -250,7 +252,7 @@ export default function DailyTaskTrack() {
           </div>
           
           <div className="pt-2">
-            <p className="text-[10px] text-muted-foreground uppercase font-black tracking-[0.2em]">Instant Setup • Professional Tools</p>
+            <p className="text-[10px] text-muted-foreground uppercase font-black tracking-[0.2em]">Secure Authentication • Multi-Device Sync</p>
           </div>
         </Card>
       </div>
@@ -370,7 +372,7 @@ export default function DailyTaskTrack() {
                 {dailyTasks.length === 0 ? (
                   <div className="py-12 text-center flex flex-col items-center gap-4">
                     <div className="w-12 h-12 bg-muted/30 rounded-full flex items-center justify-center text-muted-foreground/20">{searchQuery || activeLabelFilter ? <FilterX className="w-6 h-6" /> : <Target className="w-6 h-6" />}</div>
-                    <p className="text-xs text-muted-foreground font-bold">{searchQuery || activeLabelFilter ? "No matches." : "No tasks."}</p>
+                    <p className="text-xs text-muted-foreground font-bold">{searchQuery || activeLabelFilter ? "No matches found." : "No tasks scheduled."}</p>
                   </div>
                 ) : (
                   dailyTasks.map((task) => (<TaskItem key={task.id} task={task} onToggle={toggleTask} onDelete={deleteTask} onEdit={(t) => { setEditingTask(t); setIsTaskDialogOpen(true); }} />))

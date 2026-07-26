@@ -21,13 +21,14 @@ export function useUser() {
       return;
     }
 
-    // Set initial state from currentUser if available
-    if (auth.currentUser) {
-      setUser(auth.currentUser);
-    }
+    // Set initial loading state to true as we wait for onAuthStateChanged
+    setLoading(true);
 
     const unsubscribe = onAuthStateChanged(auth, (authUser) => {
       setUser(authUser);
+      setLoading(false);
+    }, (error) => {
+      console.error("Auth state observer error:", error);
       setLoading(false);
     });
 
