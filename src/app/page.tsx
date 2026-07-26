@@ -92,10 +92,10 @@ export default function DailyTaskTrack() {
       let message = error.message || "Could not sign in.";
       
       if (error.code === 'auth/popup-closed-by-user') {
-        message = "The login window was closed before completion. If this keeps happening, ensure your domain is whitelisted in Firebase Console.";
+        message = "The login window was closed before completion. Please try again.";
       } else if (error.code === 'auth/unauthorized-domain') {
         const domain = typeof window !== 'undefined' ? window.location.hostname : 'your domain';
-        message = `This domain (${domain}) is not authorized for Google Sign-in. Add it to Firebase Console > Authentication > Settings > Authorized Domains.`;
+        message = `This domain (${domain}) is not authorized for Google Sign-in.`;
         setAuthError(domain);
       } else if (error.code === 'auth/popup-blocked') {
         message = "Popup blocked by browser. Please allow popups for this site.";
