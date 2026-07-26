@@ -3,8 +3,8 @@
 
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { useTasks } from "@/hooks/use-tasks";
-import { useAuth } from "@/firebase";
-import { signInWithPopup, GoogleAuthProvider, signOut } from "firebase/auth";
+import { useAuth, useUser } from "@/firebase";
+import { signInAnonymously, updateProfile, signOut } from "firebase/auth";
 import { CalendarCell } from "@/components/calendar-cell";
 import { TaskItem } from "@/components/task-item";
 import { TaskDialog } from "@/components/task-dialog";
@@ -46,9 +46,11 @@ import {
   Trophy,
   Flame,
   Star,
-  LogIn,
+  UserCircle,
   LogOut,
-  Layout
+  Layout,
+  ArrowRight,
+  Loader2
 } from "lucide-react";
 import { Task, Priority } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -58,7 +60,7 @@ import { useToast } from "@/hooks/use-toast";
 
 export default function DailyTaskTrack() {
   const auth = useAuth();
-  const user = auth?.currentUser;
+  const { user, loading: authLoading } = useUser();
   const { tasks, addTask, updateTask, deleteTask, toggleTask, labels, isInitialized, dailyGoals, setDailyGoal, streak } = useTasks();
   
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -69,20 +71,40 @@ export default function DailyTaskTrack() {
   const [activeLabelFilter, setActiveLabelFilter] = useState<string | null>(null);
   const [greeting, setGreeting] = useState("Hello");
   const [quote, setQuote] = useState<string | null>(null);
+  
+  // Name Entry State
+  const [nameInput, setNameInput] = useState("");
+  const [isStarting, setIsStarting] = useState(false);
+  
   const { toast } = useToast();
 
-  const handleLogin = async () => {
-    if (!auth) return;
+  const handleStart = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!auth || !nameInput.trim()) return;
+    
+    setIsStarting(true);
     try {
-      await signInWithPopup(auth, new GoogleAuthProvider());
-    } catch (error) {
-      toast({ variant: "destructive", title: "Login Failed", description: "Could not sign in with Google." });
+      const userCredential = await signInAnonymously(auth);
+      await updateProfile(userCredential.user, { 
+        displayName: nameInput.trim() 
+      });
+      toast({ title: "Welcome!", description: `Ready to get productive, ${nameInput.trim()}?` });
+    } catch (error: any) {
+      console.error("Auth error:", error);
+      toast({ 
+        variant: "destructive", 
+        title: "Setup Failed", 
+        description: error.message || "Could not start your session." 
+      });
+    } finally {
+      setIsStarting(false);
     }
   };
 
   const handleLogout = async () => {
     if (!auth) return;
     await signOut(auth);
+    setNameInput("");
   };
 
   const fetchNewQuote = useCallback(async () => {
@@ -152,7 +174,7 @@ export default function DailyTaskTrack() {
 
   const completionRate = dailyTasks.length > 0 ? (completedCount / dailyTasks.length) * 100 : 0;
 
-  if (!isInitialized) return (
+  if (!isInitialized || authLoading) return (
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="flex flex-col items-center gap-2">
         <Skeleton className="w-12 h-12 rounded-2xl" />
@@ -161,21 +183,48 @@ export default function DailyTaskTrack() {
     </div>
   );
 
-  if (!user) return (
+  if (!user || !user.displayName) return (
     <div className="min-h-screen bg-background flex items-center justify-center p-6">
-      <Card className="max-w-md w-full p-8 text-center space-y-6 shadow-2xl rounded-[2rem] border-white/50">
-        <div className="bg-primary/10 w-20 h-20 rounded-3xl flex items-center justify-center mx-auto text-primary">
-          <Layout className="w-10 h-10" />
+      <Card className="max-w-md w-full p-8 text-center space-y-6 shadow-2xl rounded-[2.5rem] border-white/50 bg-white/80 backdrop-blur-xl">
+        <div className="bg-primary/10 w-24 h-24 rounded-[2rem] flex items-center justify-center mx-auto text-primary animate-in zoom-in-50 duration-500">
+          <Layout className="w-12 h-12" />
         </div>
-        <div>
+        <div className="space-y-2">
           <h2 className="text-3xl font-black text-primary tracking-tight">DailyTaskTrack</h2>
-          <p className="text-muted-foreground mt-2 font-medium">Your focused command center for productivity.</p>
+          <p className="text-muted-foreground font-medium">Ready to focus? Enter your name to begin.</p>
         </div>
-        <Button onClick={handleLogin} className="w-full h-14 rounded-2xl text-lg font-bold shadow-xl shadow-primary/20 gap-3">
-          <LogIn className="w-5 h-5" />
-          Sign in with Google
-        </Button>
-        <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Secure Cloud Sync Included</p>
+        
+        <form onSubmit={handleStart} className="space-y-4">
+          <div className="relative">
+            <UserCircle className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+            <Input 
+              placeholder="Your Name" 
+              value={nameInput}
+              onChange={(e) => setNameInput(e.target.value)}
+              className="h-14 pl-12 rounded-2xl text-lg font-medium border-primary/10 focus:border-primary focus:ring-primary/5 transition-all"
+              autoFocus
+              disabled={isStarting}
+            />
+          </div>
+          <Button 
+            type="submit"
+            className="w-full h-14 rounded-2xl text-lg font-bold shadow-xl shadow-primary/20 gap-3 group transition-all active:scale-[0.98]"
+            disabled={!nameInput.trim() || isStarting}
+          >
+            {isStarting ? (
+              <Loader2 className="w-6 h-6 animate-spin" />
+            ) : (
+              <>
+                Let's Go
+                <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
+              </>
+            )}
+          </Button>
+        </form>
+        
+        <div className="pt-2">
+          <p className="text-[10px] text-muted-foreground uppercase font-black tracking-[0.2em]">Instant Access • Cloud Sync Enabled</p>
+        </div>
       </Card>
     </div>
   );
@@ -234,9 +283,9 @@ export default function DailyTaskTrack() {
         </div>
       </header>
 
-      <main className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-12 gap-10 items-start flex-1 min-h-0">
+      <main className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-12 gap-10 items-stretch flex-1 min-h-0">
         <div id="tour-calendar" className="lg:col-span-7 flex flex-col gap-8 w-full">
-          <Card className="p-6 md:p-10 shadow-2xl shadow-primary/5 bg-white border-white/50 rounded-[2rem]">
+          <Card className="p-6 md:p-10 shadow-2xl shadow-primary/5 bg-white border-white/50 rounded-[2rem] h-full">
             <div className="flex items-center justify-between mb-8 md:mb-10">
               <h2 className="text-2xl md:text-3xl font-black text-primary tracking-tight">{format(currentMonth, "MMMM yyyy")}</h2>
               <div className="flex gap-2">
@@ -251,8 +300,8 @@ export default function DailyTaskTrack() {
           </Card>
         </div>
 
-        <div id="tour-tasks" className="lg:col-span-5 flex flex-col w-full lg:sticky lg:top-8 h-[calc(100vh-14rem)]">
-          <Card className={cn("p-6 md:p-8 shadow-2xl transition-all duration-500 h-full flex flex-col bg-white border-white/50 rounded-[2rem] overflow-hidden", goalMet ? "shadow-accent/10 border-accent/20 ring-1 ring-accent/10" : "shadow-primary/5")}>
+        <div id="tour-tasks" className="lg:col-span-5 flex flex-col w-full h-[600px] lg:h-[calc(100vh-14rem)] lg:sticky lg:top-8 min-h-0">
+          <Card className={cn("p-6 md:p-8 shadow-2xl transition-all duration-500 flex flex-col bg-white border-white/50 rounded-[2rem] overflow-hidden h-full", goalMet ? "shadow-accent/10 border-accent/20 ring-1 ring-accent/10" : "shadow-primary/5")}>
             <div className="flex items-center justify-between mb-6 shrink-0">
               <div className="flex items-center gap-4">
                 <div className="relative flex items-center justify-center shrink-0">
@@ -288,7 +337,7 @@ export default function DailyTaskTrack() {
               </div>
             </div>
 
-            <ScrollArea className="flex-1 -mx-2 px-2">
+            <ScrollArea className="flex-1 -mx-2 px-2 min-h-0">
               <div className="space-y-3 pb-4">
                 {dailyTasks.length === 0 ? (
                   <div className="py-12 text-center flex flex-col items-center gap-4">
