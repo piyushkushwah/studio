@@ -71,6 +71,7 @@ export default function DailyTaskTrack() {
   
   const { toast } = useToast();
 
+  // Handle redirect result for browsers that fall back to redirect from popup
   useEffect(() => {
     if (!auth) return;
     
@@ -102,6 +103,7 @@ export default function DailyTaskTrack() {
     provider.setCustomParameters({ prompt: 'select_account' });
     
     try {
+      // signInWithPopup is more stable in many development and web environments
       await signInWithPopup(auth, provider);
       toast({ title: "Success", description: "Logged in successfully." });
     } catch (error: any) {
@@ -196,6 +198,7 @@ export default function DailyTaskTrack() {
 
   const completionRate = dailyTasks.length > 0 ? (completedCount / dailyTasks.length) * 100 : 0;
 
+  // Render loading state if we are still determining auth or synchronizing data
   if (authLoading || isAuthProcessing || (user && !isInitialized)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -209,6 +212,7 @@ export default function DailyTaskTrack() {
     );
   }
 
+  // If we are finished loading and have no user, show the login page
   if (!user) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-6">
@@ -256,6 +260,7 @@ export default function DailyTaskTrack() {
     );
   }
 
+  // Dashboard View
   return (
     <div className="min-h-screen bg-background p-4 md:p-8 flex flex-col items-center overflow-x-hidden animate-in fade-in duration-700">
       <AppTour />

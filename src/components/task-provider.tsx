@@ -310,7 +310,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     const userId = user.uid;
     const unsubs: Unsubscribe[] = [];
     
-    // Fail-safe initialization timer
+    // Fail-safe initialization timer: ensures the UI loads even if snapshots are slow
     const initTimer = setTimeout(() => {
       if (!isInitialized) setIsInitialized(true);
     }, 5000);
@@ -324,7 +324,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
       setIsInitialized(true);
       clearTimeout(initTimer);
     }, (err) => {
-      console.error("Firestore sync error:", err);
+      console.error("Firestore sync error (tasks):", err);
       setIsInitialized(true); 
       clearTimeout(initTimer);
     }));

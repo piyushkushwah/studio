@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useMemo, useState } from "react";
@@ -91,6 +92,7 @@ export default function TimeTrackingPage() {
         type: formData.type
       });
     } else {
+      // This correctly stores the manual time log into the database via TaskProvider
       addSession(duration, formData.type, formData.note, formData.date);
     }
     setIsDialogOpen(false);
@@ -119,7 +121,7 @@ export default function TimeTrackingPage() {
           <div className="bg-primary text-white p-2 rounded-lg shrink-0">
             <Clock className="w-5 h-5" />
           </div>
-          <h1 className="text-lg md:text-xl font-bold text-primary truncate">Time Tracking</h1>
+          <h1 className="text-lg md:text-xl font-bold text-primary truncate">Manual & Automatic Time Logs</h1>
         </div>
         <Button onClick={() => handleOpenDialog()} className="rounded-xl gap-2 shadow-lg shadow-primary/20">
           <Plus className="w-4 h-4" />
@@ -168,7 +170,7 @@ export default function TimeTrackingPage() {
           <CardHeader>
             <div className="flex items-center gap-3">
               <History className="w-5 h-5 text-primary" />
-              <CardTitle className="text-lg">Activity Log</CardTitle>
+              <CardTitle className="text-lg">Activity Log (Synced to Database)</CardTitle>
             </div>
             <CardDescription>A chronological record of your productivity and rest sessions</CardDescription>
           </CardHeader>
@@ -249,7 +251,7 @@ export default function TimeTrackingPage() {
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>{editingSession ? "Edit Session" : "Log Manual Time"}</DialogTitle>
-            <DialogDescription>Record your deep work or break sessions manually.</DialogDescription>
+            <DialogDescription>Record your deep work or break sessions manually. All data is saved to your cloud database.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="grid gap-2">
