@@ -13,7 +13,7 @@ import {
   updateDoc, 
   query, 
   orderBy,
-  limit
+  Unsubscribe
 } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
@@ -33,7 +33,6 @@ const TIMER_CONFIG = {
 
 const TaskContext = createContext<TaskContextType | undefined>(undefined);
 
-// Helper for generating safe IDs
 const generateId = () => {
   if (typeof crypto !== 'undefined' && crypto.randomUUID) {
     return crypto.randomUUID();
@@ -58,7 +57,6 @@ export function TaskProvider({ children }: { children: ReactNode }) {
   
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // CRUD ACTIONS
   const addTask = useCallback((taskData: Omit<Task, 'id' | 'createdAt'>) => {
     const id = generateId();
     const newTask: Task = { ...taskData, id, createdAt: Date.now() };
@@ -264,7 +262,6 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     }
   }, [user, firestore, customSongs, dailyGoals]);
 
-  // Pomodoro Timer Effects
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (isWorkTimerActive && workTimerLeft > 0) {
@@ -289,12 +286,10 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     return () => clearInterval(interval);
   }, [isBreakTimerActive, breakTimerLeft, addSession]);
 
-  // Persistence Logic: Guest (localStorage) vs Authenticated (Firestore)
   useEffect(() => {
     if (authLoading || !firestore) return;
 
     if (!user) {
-      // GUEST MODE
       try {
         const storedTasks = localStorage.getItem('daily_task_track_tasks');
         const storedLabels = localStorage.getItem('daily_task_track_labels');
@@ -317,23 +312,21 @@ export function TaskProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    // AUTHENTICATED MODE (Real-time Firestore)
     const userId = user.uid;
+    const unsubs: Unsubscribe[] = [];
     
-    // 1. Tasks listener
     const tasksQuery = query(collection(firestore, 'users', userId, 'tasks'), orderBy('createdAt', 'desc'));
-    const unsubTasks = onSnapshot(tasksQuery, (snapshot) => {
+    unsubs.push(onSnapshot(tasksQuery, (snapshot) => {
       setTasks(snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Task)));
     }, (error) => {
       errorEmitter.emit('permission-error', new FirestorePermissionError({
         path: `users/${userId}/tasks`,
         operation: 'list'
       }));
-    });
+    }));
 
-    // 2. Labels listener
     const labelsQuery = query(collection(firestore, 'users', userId, 'labels'));
-    const unsubLabels = onSnapshot(labelsQuery, (snapshot) => {
+    unsubs.push(onSnapshot(labelsQuery, (snapshot) => {
       const dbLabels = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Label));
       setLabels(dbLabels.length > 0 ? dbLabels : DEFAULT_LABELS);
     }, (error) => {
@@ -341,21 +334,19 @@ export function TaskProvider({ children }: { children: ReactNode }) {
         path: `users/${userId}/labels`,
         operation: 'list'
       }));
-    });
+    }));
 
-    // 3. Sessions listener (time logs)
     const sessionsQuery = query(collection(firestore, 'users', userId, 'sessions'), orderBy('startTime', 'desc'));
-    const unsubSessions = onSnapshot(sessionsQuery, (snapshot) => {
+    unsubs.push(onSnapshot(sessionsQuery, (snapshot) => {
       setSessions(snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Session)));
     }, (error) => {
       errorEmitter.emit('permission-error', new FirestorePermissionError({
         path: `users/${userId}/sessions`,
         operation: 'list'
       }));
-    });
+    }));
 
-    // 4. Preferences listener (goals, songs)
-    const unsubPrefs = onSnapshot(doc(firestore, 'users', userId, 'preferences', 'main'), (docSnap) => {
+    unsubs.push(onSnapshot(doc(firestore, 'users', userId, 'preferences', 'main'), (docSnap) => {
       if (docSnap.exists()) {
         const data = docSnap.data();
         setDailyGoals(data.dailyGoals || {});
@@ -366,15 +357,12 @@ export function TaskProvider({ children }: { children: ReactNode }) {
         path: `users/${userId}/preferences/main`,
         operation: 'get'
       }));
-    });
+    }));
 
     setIsInitialized(true);
 
     return () => {
-      unsubTasks();
-      unsubLabels();
-      unsubSessions();
-      unsubPrefs();
+      unsubs.forEach(unsub => unsub());
     };
   }, [user, authLoading, firestore]);
 
