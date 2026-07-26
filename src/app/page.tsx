@@ -86,9 +86,13 @@ export default function DailyTaskTrack() {
     } catch (error: any) {
       console.error("Auth error:", error);
       let message = error.message || "Could not sign in with Google.";
+      
       if (error.code === 'auth/configuration-not-found') {
         message = "Google Authentication is not enabled. In the Firebase Console, go to Authentication > Sign-in method > Enable Google.";
+      } else if (error.code === 'auth/unauthorized-domain') {
+        message = `This domain (${window.location.hostname}) is not authorized. In the Firebase Console, go to Authentication > Settings > Authorized domains and add it to the list.`;
       }
+      
       toast({ 
         variant: "destructive", 
         title: "Sign In Failed", 
@@ -363,4 +367,3 @@ export default function DailyTaskTrack() {
     </div>
   );
 }
-
