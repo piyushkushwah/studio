@@ -1,10 +1,21 @@
-
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo, useCallback, useRef } from 'react';
-import { Task, Label, Session, TaskContextType, CustomSong } from '@/lib/types';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo, useCallback } from 'react';
+import { Task, Label, Session, TaskContextType, CustomSong, Priority } from '@/lib/types';
 import { format, subDays, isSameDay } from 'date-fns';
-import { useUser } from '@/firebase';
+import { useUser, useFirestore } from '@/firebase';
+import { 
+  collection, 
+  doc, 
+  onSnapshot, 
+  setDoc, 
+  deleteDoc, 
+  updateDoc, 
+  query, 
+  orderBy,
+  Timestamp,
+  writeBatch
+} from 'firebase/firestore';
 
 const DEFAULT_LABELS: Label[] = [
   { id: '1', name: 'work', color: 'bg-blue-600 text-white hover:bg-blue-700' },
@@ -23,6 +34,7 @@ const TaskContext = createContext<TaskContextType | undefined>(undefined);
 
 export function TaskProvider({ children }: { children: ReactNode }) {
   const { user, loading: authLoading } = useUser();
+  const firestore = useFirestore();
 
   const [tasks, setTasks] = useState<Task[]>([]);
   const [labels, setLabels] = useState<Label[]>(DEFAULT_LABELS);
@@ -37,48 +49,72 @@ export function TaskProvider({ children }: { children: ReactNode }) {
   
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // Load from localStorage
+  // Firestore Sync Logic
   useEffect(() => {
-    if (authLoading) return;
+    if (authLoading || !firestore) return;
 
-    const storagePrefix = user ? `user_${user.uid}_` : 'guest_';
-    
-    try {
-      const storedTasks = localStorage.getItem(`${storagePrefix}tasks`);
-      const storedLabels = localStorage.getItem(`${storagePrefix}labels`);
-      const storedSessions = localStorage.getItem(`${storagePrefix}sessions`);
-      const storedPrefs = localStorage.getItem(`${storagePrefix}preferences`);
+    if (!user) {
+      // Guest mode: load from localStorage
+      try {
+        const storedTasks = localStorage.getItem('guest_tasks');
+        const storedLabels = localStorage.getItem('guest_labels');
+        const storedSessions = localStorage.getItem('guest_sessions');
+        const storedPrefs = localStorage.getItem('guest_preferences');
 
-      if (storedTasks) setTasks(JSON.parse(storedTasks));
-      if (storedLabels) setLabels(JSON.parse(storedLabels));
-      else setLabels(DEFAULT_LABELS);
-      
-      if (storedSessions) setSessions(JSON.parse(storedSessions));
-      
-      if (storedPrefs) {
-        const prefs = JSON.parse(storedPrefs);
-        setDailyGoals(prefs.dailyGoals || {});
-        setCustomSongs(prefs.customSongs || []);
+        if (storedTasks) setTasks(JSON.parse(storedTasks));
+        if (storedLabels) setLabels(JSON.parse(storedLabels));
+        else setLabels(DEFAULT_LABELS);
+        if (storedSessions) setSessions(JSON.parse(storedSessions));
+        if (storedPrefs) {
+          const prefs = JSON.parse(storedPrefs);
+          setDailyGoals(prefs.dailyGoals || {});
+          setCustomSongs(prefs.customSongs || []);
+        }
+      } catch (e) {
+        console.error("Guest mode load failed", e);
       }
-    } catch (e) {
-      console.error("Failed to load data from localStorage", e);
+      setIsInitialized(true);
+      return;
     }
+
+    // Authenticated mode: Firestore Listeners
+    const userId = user.uid;
     
+    const tasksQuery = query(collection(firestore, 'users', userId, 'tasks'), orderBy('createdAt', 'desc'));
+    const unsubTasks = onSnapshot(tasksQuery, (snapshot) => {
+      setTasks(snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Task)));
+    });
+
+    const labelsQuery = query(collection(firestore, 'users', userId, 'labels'));
+    const unsubLabels = onSnapshot(labelsQuery, (snapshot) => {
+      const data = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Label));
+      setLabels(data.length > 0 ? data : DEFAULT_LABELS);
+    });
+
+    const sessionsQuery = query(collection(firestore, 'users', userId, 'sessions'), orderBy('startTime', 'desc'));
+    const unsubSessions = onSnapshot(sessionsQuery, (snapshot) => {
+      setSessions(snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Session)));
+    });
+
+    const unsubPrefs = onSnapshot(doc(firestore, 'users', userId, 'preferences', 'main'), (doc) => {
+      if (doc.exists()) {
+        const data = doc.data();
+        setDailyGoals(data.dailyGoals || {});
+        setCustomSongs(data.customSongs || []);
+      }
+    });
+
     setIsInitialized(true);
-  }, [user, authLoading]);
 
-  // Save to localStorage
-  useEffect(() => {
-    if (!isInitialized) return;
+    return () => {
+      unsubTasks();
+      unsubLabels();
+      unsubSessions();
+      unsubPrefs();
+    };
+  }, [user, authLoading, firestore]);
 
-    const storagePrefix = user ? `user_${user.uid}_` : 'guest_';
-    
-    localStorage.setItem(`${storagePrefix}tasks`, JSON.stringify(tasks));
-    localStorage.setItem(`${storagePrefix}labels`, JSON.stringify(labels));
-    localStorage.setItem(`${storagePrefix}sessions`, JSON.stringify(sessions));
-    localStorage.setItem(`${storagePrefix}preferences`, JSON.stringify({ dailyGoals, customSongs }));
-  }, [tasks, labels, sessions, dailyGoals, customSongs, isInitialized, user]);
-
+  // Timer logic
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (isWorkTimerActive && workTimerLeft > 0) {
@@ -124,71 +160,136 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     return currentStreak;
   }, [tasks]);
 
-  const addTask = (taskData: Omit<Task, 'id' | 'createdAt'>) => {
-    const newTask: Task = {
-      ...taskData,
-      id: crypto.randomUUID(),
-      createdAt: Date.now()
-    };
-    setTasks(prev => [...prev, newTask]);
+  // Data Actions
+  const addTask = async (taskData: Omit<Task, 'id' | 'createdAt'>) => {
+    const id = crypto.randomUUID();
+    const newTask: Task = { ...taskData, id, createdAt: Date.now() };
+    
+    if (user && firestore) {
+      await setDoc(doc(firestore, 'users', user.uid, 'tasks', id), newTask);
+    } else {
+      setTasks(prev => [...prev, newTask]);
+      localStorage.setItem('guest_tasks', JSON.stringify([...tasks, newTask]));
+    }
   };
 
-  const updateTask = (id: string, updates: Partial<Task>) => {
-    setTasks(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t));
+  const updateTask = async (id: string, updates: Partial<Task>) => {
+    if (user && firestore) {
+      await updateDoc(doc(firestore, 'users', user.uid, 'tasks', id), updates);
+    } else {
+      const newTasks = tasks.map(t => t.id === id ? { ...t, ...updates } : t);
+      setTasks(newTasks);
+      localStorage.setItem('guest_tasks', JSON.stringify(newTasks));
+    }
   };
 
-  const deleteTask = (id: string) => {
-    setTasks(prev => prev.filter(t => t.id !== id));
+  const deleteTask = async (id: string) => {
+    if (user && firestore) {
+      await deleteDoc(doc(firestore, 'users', user.uid, 'tasks', id));
+    } else {
+      const newTasks = tasks.filter(t => t.id !== id);
+      setTasks(newTasks);
+      localStorage.setItem('guest_tasks', JSON.stringify(newTasks));
+    }
   };
 
   const toggleTask = (id: string) => {
-    setTasks(prev => prev.map(t => t.id === id ? { ...t, completed: !t.completed } : t));
+    const task = tasks.find(t => t.id === id);
+    if (task) updateTask(id, { completed: !task.completed });
   };
 
-  const addLabel = (name: string, color: string) => {
-    const newLabel: Label = {
-      id: crypto.randomUUID(),
-      name: name.toLowerCase().trim(),
-      color
-    };
-    setLabels(prev => [...prev, newLabel]);
+  const addLabel = async (name: string, color: string) => {
+    const id = crypto.randomUUID();
+    const newLabel: Label = { id, name: name.toLowerCase().trim(), color };
+    
+    if (user && firestore) {
+      await setDoc(doc(firestore, 'users', user.uid, 'labels', id), newLabel);
+    } else {
+      const newLabels = [...labels, newLabel];
+      setLabels(newLabels);
+      localStorage.setItem('guest_labels', JSON.stringify(newLabels));
+    }
   };
 
-  const deleteLabel = (id: string) => {
-    setLabels(prev => prev.filter(l => l.id !== id));
+  const deleteLabel = async (id: string) => {
+    if (user && firestore) {
+      await deleteDoc(doc(firestore, 'users', user.uid, 'labels', id));
+    } else {
+      const newLabels = labels.filter(l => l.id !== id);
+      setLabels(newLabels);
+      localStorage.setItem('guest_labels', JSON.stringify(newLabels));
+    }
   };
 
-  const addSession = (durationMinutes: number, type: 'work' | 'short' | 'manual', note?: string, date?: string) => {
+  const addSession = async (durationMinutes: number, type: 'work' | 'short' | 'manual', note?: string, date?: string) => {
+    const id = crypto.randomUUID();
     const newSession: Session = {
-      id: crypto.randomUUID(),
+      id,
       startTime: Date.now(),
       durationMinutes,
       type,
       date: date || format(new Date(), 'yyyy-MM-dd'),
       note: note || "",
     };
-    setSessions(prev => [newSession, ...prev]);
+    
+    if (user && firestore) {
+      await setDoc(doc(firestore, 'users', user.uid, 'sessions', id), newSession);
+    } else {
+      const newSessions = [newSession, ...sessions];
+      setSessions(newSessions);
+      localStorage.setItem('guest_sessions', JSON.stringify(newSessions));
+    }
   };
 
-  const updateSession = (id: string, updates: Partial<Session>) => {
-    setSessions(prev => prev.map(s => s.id === id ? { ...s, ...updates } : s));
+  const updateSession = async (id: string, updates: Partial<Session>) => {
+    if (user && firestore) {
+      await updateDoc(doc(firestore, 'users', user.uid, 'sessions', id), updates);
+    } else {
+      const newSessions = sessions.map(s => s.id === id ? { ...s, ...updates } : s);
+      setSessions(newSessions);
+      localStorage.setItem('guest_sessions', JSON.stringify(newSessions));
+    }
   };
 
-  const deleteSession = (id: string) => {
-    setSessions(prev => prev.filter(s => s.id !== id));
+  const deleteSession = async (id: string) => {
+    if (user && firestore) {
+      await deleteDoc(doc(firestore, 'users', user.uid, 'sessions', id));
+    } else {
+      const newSessions = sessions.filter(s => s.id !== id);
+      setSessions(newSessions);
+      localStorage.setItem('guest_sessions', JSON.stringify(newSessions));
+    }
   };
 
-  const setDailyGoal = (date: string, target: number) => {
-    setDailyGoals(prev => ({ ...prev, [date]: target }));
+  const setDailyGoal = async (date: string, target: number) => {
+    const newGoals = { ...dailyGoals, [date]: target };
+    if (user && firestore) {
+      await setDoc(doc(firestore, 'users', user.uid, 'preferences', 'main'), { dailyGoals: newGoals }, { merge: true });
+    } else {
+      setDailyGoals(newGoals);
+      localStorage.setItem('guest_preferences', JSON.stringify({ dailyGoals: newGoals, customSongs }));
+    }
   };
 
-  const addCustomSong = (label: string, url: string) => {
+  const addCustomSong = async (label: string, url: string) => {
     const newSong: CustomSong = { id: crypto.randomUUID(), label, url };
-    setCustomSongs(prev => [...prev, newSong]);
+    const newSongs = [...customSongs, newSong];
+    if (user && firestore) {
+      await setDoc(doc(firestore, 'users', user.uid, 'preferences', 'main'), { customSongs: newSongs }, { merge: true });
+    } else {
+      setCustomSongs(newSongs);
+      localStorage.setItem('guest_preferences', JSON.stringify({ dailyGoals, customSongs: newSongs }));
+    }
   };
 
-  const removeCustomSong = (id: string) => {
-    setCustomSongs(prev => prev.filter(s => s.id !== id));
+  const removeCustomSong = async (id: string) => {
+    const newSongs = customSongs.filter(s => s.id !== id);
+    if (user && firestore) {
+      await setDoc(doc(firestore, 'users', user.uid, 'preferences', 'main'), { customSongs: newSongs }, { merge: true });
+    } else {
+      setCustomSongs(newSongs);
+      localStorage.setItem('guest_preferences', JSON.stringify({ dailyGoals, customSongs: newSongs }));
+    }
   };
 
   const resetWorkTimer = useCallback(() => {
