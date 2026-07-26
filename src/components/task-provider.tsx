@@ -2,7 +2,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo, useCallback } from 'react';
-import { Task, Label, Session, TaskContextType, CustomSong, Priority } from '@/lib/types';
+import { Task, Label, Session, TaskContextType, CustomSong } from '@/lib/types';
 import { format, subDays, isSameDay } from 'date-fns';
 import { useUser, useFirestore } from '@/firebase';
 import { 
@@ -12,7 +12,6 @@ import {
   setDoc, 
   deleteDoc, 
   updateDoc, 
-  query,
   Unsubscribe
 } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -232,7 +231,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
   }, [user, firestore, dailyGoals]);
 
   const addCustomSong = useCallback((label: string, url: string) => {
-    const newSong: CustomSong = { id: generateId(), label, url };
+    const newSong = { id: generateId(), label, url };
     const newSongs = [...customSongs, newSong];
     if (user && firestore) {
       const docRef = doc(firestore, 'users', user.uid, 'preferences', 'main');
@@ -309,9 +308,10 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     const userId = user.uid;
     const unsubs: Unsubscribe[] = [];
     
+    // Fail-safe to ensure dashboard renders even if Firestore is slow
     const initTimer = setTimeout(() => {
       setIsInitialized(true);
-    }, 3000);
+    }, 5000);
 
     const tasksRef = collection(firestore, 'users', userId, 'tasks');
     unsubs.push(onSnapshot(tasksRef, (snapshot) => {
