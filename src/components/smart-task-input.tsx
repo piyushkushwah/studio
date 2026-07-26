@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Loader2, ArrowRight, AlertCircle } from "lucide-react";
+import { Sparkles, Loader2, ArrowRight } from "lucide-react";
 import { extractTaskDetails } from "@/ai/flows/smart-task-entry";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
@@ -25,7 +25,6 @@ export function SmartTaskInput({ onTaskParsed }: SmartTaskInputProps) {
 
     setIsLoading(true);
     try {
-      // Pass the client's local date to the AI for relative date resolution
       const currentDate = format(new Date(), "yyyy-MM-dd");
       
       const result = await extractTaskDetails({ 
@@ -39,10 +38,6 @@ export function SmartTaskInput({ onTaskParsed }: SmartTaskInputProps) {
           dueDate: result.dueDate || undefined,
         });
         setValue("");
-        toast({
-          title: "Task Added ✨",
-          description: `"${result.description}" ${result.dueDate ? `scheduled for ${result.dueDate}` : 'added to your list'}.`,
-        });
       }
     } catch (error: any) {
       console.error("SmartTaskInput Error:", error);

@@ -16,7 +16,7 @@ import {
 } from 'firebase/firestore';
 import { useFirestore, useUser } from '@/firebase';
 import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
+import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 
 const DEFAULT_LABELS: Label[] = [
   { id: '1', name: 'work', color: 'bg-blue-600 text-white hover:bg-blue-700' },
@@ -69,11 +69,9 @@ export function TaskProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    // Safety fallback: if listeners don't respond in 3 seconds, show the dashboard anyway
-    // This prevents the "Syncing..." screen from getting stuck due to network/COOP issues
     initializationTimeoutRef.current = setTimeout(() => {
       setIsInitialized(true);
-    }, 3000);
+    }, 5000);
 
     const tasksRef = collection(db, 'users', user.uid, 'tasks');
     const labelsRef = collection(db, 'users', user.uid, 'labels');
@@ -85,7 +83,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
       setTasks(snapshot.docs.map(d => ({ id: d.id, ...d.data() } as Task)));
       setIsInitialized(true);
       if (initializationTimeoutRef.current) clearTimeout(initializationTimeoutRef.current);
-    }, (err) => {
+    }, async (err) => {
       errorEmitter.emit('permission-error', new FirestorePermissionError({ path: tasksRef.path, operation: 'list' }));
       setIsInitialized(true);
     });
@@ -93,13 +91,13 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     const unsubLabels = onSnapshot(labelsRef, (snapshot) => {
       const dbLabels = snapshot.docs.map(d => ({ id: d.id, ...d.data() } as Label));
       setLabels(dbLabels.length > 0 ? dbLabels : DEFAULT_LABELS);
-    }, (err) => {
+    }, async (err) => {
       errorEmitter.emit('permission-error', new FirestorePermissionError({ path: labelsRef.path, operation: 'list' }));
     });
 
     const unsubSessions = onSnapshot(sessionsQuery, (snapshot) => {
       setSessions(snapshot.docs.map(d => ({ id: d.id, ...d.data() } as Session)));
-    }, (err) => {
+    }, async (err) => {
       errorEmitter.emit('permission-error', new FirestorePermissionError({ path: sessionsRef.path, operation: 'list' }));
     });
 
@@ -109,7 +107,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
         setDailyGoals(data.dailyGoals || {});
         setCustomSongs(data.customSongs || []);
       }
-    }, (err) => {
+    }, async (err) => {
       errorEmitter.emit('permission-error', new FirestorePermissionError({ path: prefsRef.path, operation: 'get' }));
     });
 
@@ -170,22 +168,34 @@ export function TaskProvider({ children }: { children: ReactNode }) {
   const addTask = (taskData: Omit<Task, 'id' | 'createdAt'>) => {
     if (!db || !user) return;
     const tasksRef = collection(db, 'users', user.uid, 'tasks');
-    addDoc(tasksRef, { ...taskData, createdAt: Date.now() })
-      .catch(err => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: tasksRef.path, operation: 'create', requestResourceData: taskData })));
+    const finalData = { ...taskData, createdAt: Date.now() };
+    addDoc(tasksRef, finalData)
+      .catch(async (err) => errorEmitter.emit('permission-error', new FirestorePermissionError({ 
+        path: tasksRef.path, 
+        operation: 'create', 
+        requestResourceData: finalData 
+      })));
   };
 
   const updateTask = (id: string, updates: Partial<Task>) => {
     if (!db || !user) return;
     const taskRef = doc(db, 'users', user.uid, 'tasks', id);
     updateDoc(taskRef, updates)
-      .catch(err => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: taskRef.path, operation: 'update', requestResourceData: updates })));
+      .catch(async (err) => errorEmitter.emit('permission-error', new FirestorePermissionError({ 
+        path: taskRef.path, 
+        operation: 'update', 
+        requestResourceData: updates 
+      })));
   };
 
   const deleteTask = (id: string) => {
     if (!db || !user) return;
     const taskRef = doc(db, 'users', user.uid, 'tasks', id);
     deleteDoc(taskRef)
-      .catch(err => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: taskRef.path, operation: 'delete' })));
+      .catch(async (err) => errorEmitter.emit('permission-error', new FirestorePermissionError({ 
+        path: taskRef.path, 
+        operation: 'delete' 
+      })));
   };
 
   const toggleTask = (id: string) => {
@@ -196,15 +206,23 @@ export function TaskProvider({ children }: { children: ReactNode }) {
   const addLabel = (name: string, color: string) => {
     if (!db || !user) return;
     const labelsRef = collection(db, 'users', user.uid, 'labels');
-    addDoc(labelsRef, { name: name.toLowerCase().trim(), color })
-      .catch(err => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: labelsRef.path, operation: 'create' })));
+    const labelData = { name: name.toLowerCase().trim(), color };
+    addDoc(labelsRef, labelData)
+      .catch(async (err) => errorEmitter.emit('permission-error', new FirestorePermissionError({ 
+        path: labelsRef.path, 
+        operation: 'create',
+        requestResourceData: labelData
+      })));
   };
 
   const deleteLabel = (id: string) => {
     if (!db || !user) return;
     const labelRef = doc(db, 'users', user.uid, 'labels', id);
     deleteDoc(labelRef)
-      .catch(err => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: labelRef.path, operation: 'delete' })));
+      .catch(async (err) => errorEmitter.emit('permission-error', new FirestorePermissionError({ 
+        path: labelRef.path, 
+        operation: 'delete' 
+      })));
   };
 
   const addSession = (durationMinutes: number, type: 'work' | 'short' | 'manual', note?: string, date?: string) => {
@@ -218,43 +236,69 @@ export function TaskProvider({ children }: { children: ReactNode }) {
       note: note || "",
     };
     addDoc(sessionsRef, data)
-      .catch(err => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: sessionsRef.path, operation: 'create' })));
+      .catch(async (err) => errorEmitter.emit('permission-error', new FirestorePermissionError({ 
+        path: sessionsRef.path, 
+        operation: 'create',
+        requestResourceData: data
+      })));
   };
 
   const updateSession = (id: string, updates: Partial<Session>) => {
     if (!db || !user) return;
     const sessionRef = doc(db, 'users', user.uid, 'sessions', id);
     updateDoc(sessionRef, updates)
-      .catch(err => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: sessionRef.path, operation: 'update' })));
+      .catch(async (err) => errorEmitter.emit('permission-error', new FirestorePermissionError({ 
+        path: sessionRef.path, 
+        operation: 'update',
+        requestResourceData: updates
+      })));
   };
 
   const deleteSession = (id: string) => {
     if (!db || !user) return;
     const sessionRef = doc(db, 'users', user.uid, 'sessions', id);
     deleteDoc(sessionRef)
-      .catch(err => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: sessionRef.path, operation: 'delete' })));
+      .catch(async (err) => errorEmitter.emit('permission-error', new FirestorePermissionError({ 
+        path: sessionRef.path, 
+        operation: 'delete' 
+      })));
   };
 
   const setDailyGoal = (date: string, target: number) => {
     if (!db || !user) return;
     const prefsRef = doc(db, 'users', user.uid, 'preferences', 'main');
-    setDoc(prefsRef, { dailyGoals: { ...dailyGoals, [date]: target } }, { merge: true })
-      .catch(err => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: prefsRef.path, operation: 'update' })));
+    const goalsUpdate = { dailyGoals: { ...dailyGoals, [date]: target } };
+    setDoc(prefsRef, goalsUpdate, { merge: true })
+      .catch(async (err) => errorEmitter.emit('permission-error', new FirestorePermissionError({ 
+        path: prefsRef.path, 
+        operation: 'write',
+        requestResourceData: goalsUpdate
+      })));
   };
 
   const addCustomSong = (label: string, url: string) => {
     if (!db || !user) return;
     const prefsRef = doc(db, 'users', user.uid, 'preferences', 'main');
     const newSong = { id: crypto.randomUUID(), label, url };
-    setDoc(prefsRef, { customSongs: [...customSongs, newSong] }, { merge: true })
-      .catch(err => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: prefsRef.path, operation: 'update' })));
+    const songUpdate = { customSongs: [...customSongs, newSong] };
+    setDoc(prefsRef, songUpdate, { merge: true })
+      .catch(async (err) => errorEmitter.emit('permission-error', new FirestorePermissionError({ 
+        path: prefsRef.path, 
+        operation: 'write',
+        requestResourceData: songUpdate
+      })));
   };
 
   const removeCustomSong = (id: string) => {
     if (!db || !user) return;
     const prefsRef = doc(db, 'users', user.uid, 'preferences', 'main');
-    setDoc(prefsRef, { customSongs: customSongs.filter(s => s.id !== id) }, { merge: true })
-      .catch(err => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: prefsRef.path, operation: 'update' })));
+    const songUpdate = { customSongs: customSongs.filter(s => s.id !== id) };
+    setDoc(prefsRef, songUpdate, { merge: true })
+      .catch(async (err) => errorEmitter.emit('permission-error', new FirestorePermissionError({ 
+        path: prefsRef.path, 
+        operation: 'write',
+        requestResourceData: songUpdate
+      })));
   };
 
   const resetWorkTimer = useCallback(() => {
