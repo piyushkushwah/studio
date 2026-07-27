@@ -38,8 +38,8 @@ export function TaskItem({ task, onToggle, onDelete, onEdit }: TaskItemProps) {
 
   return (
     <div className={cn(
-      "group flex flex-col p-3 md:p-4 rounded-xl border bg-white transition-all hover:shadow-md hover:border-primary/20",
-      task.completed && "bg-white/40 border-accent/20 opacity-80",
+      "group flex flex-col p-3 md:p-4 rounded-xl border bg-card transition-all hover:shadow-md hover:border-primary/20",
+      task.completed && "bg-card/40 border-accent/20 opacity-80",
       !task.completed && task.priority === 'high' && "border-destructive/30 shadow-sm shadow-destructive/5",
       task.completed && "animate-completion"
     )}>

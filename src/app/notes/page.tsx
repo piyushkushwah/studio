@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useMemo } from "react";
@@ -34,13 +33,13 @@ import { cn } from "@/lib/utils";
 import { Note } from "@/lib/types";
 
 const NOTE_COLORS = [
-  "bg-white",
-  "bg-yellow-100 border-yellow-200",
-  "bg-blue-100 border-blue-200",
-  "bg-green-100 border-green-200",
-  "bg-purple-100 border-purple-200",
-  "bg-pink-100 border-pink-200",
-  "bg-orange-100 border-orange-200",
+  "bg-card border-border",
+  "bg-yellow-100/10 border-yellow-200/20 text-yellow-900 dark:text-yellow-100",
+  "bg-blue-100/10 border-blue-200/20 text-blue-900 dark:text-blue-100",
+  "bg-green-100/10 border-green-200/20 text-green-900 dark:text-green-100",
+  "bg-purple-100/10 border-purple-200/20 text-purple-900 dark:text-purple-100",
+  "bg-pink-100/10 border-pink-200/20 text-pink-900 dark:text-pink-100",
+  "bg-orange-100/10 border-orange-200/20 text-orange-900 dark:text-orange-100",
 ];
 
 export default function NotesPage() {
@@ -119,7 +118,7 @@ export default function NotesPage() {
       <header className="w-full max-w-6xl flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div className="flex items-center gap-3">
           <Link href="/">
-            <Button variant="ghost" size="icon" className="rounded-xl hover:bg-white shadow-sm border border-transparent hover:border-border">
+            <Button variant="ghost" size="icon" className="rounded-xl hover:bg-card shadow-sm border border-transparent hover:border-border">
               <ArrowLeft className="w-6 h-6" />
             </Button>
           </Link>
@@ -139,10 +138,10 @@ export default function NotesPage() {
               placeholder="Search your notes..." 
               value={searchQuery} 
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 h-11 bg-white rounded-xl shadow-sm border-white/50 focus:border-primary/20"
+              className="pl-10 h-11 bg-card rounded-xl shadow-sm border-white/5 focus:border-primary/20"
             />
           </div>
-          <div className="flex bg-white p-1 rounded-xl shadow-sm border border-white/50">
+          <div className="flex bg-card p-1 rounded-xl shadow-sm border border-white/5">
             <Button 
               variant="ghost" 
               size="icon" 
@@ -190,7 +189,7 @@ export default function NotesPage() {
               <Card 
                 key={note.id} 
                 className={cn(
-                  "group relative flex flex-col transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 rounded-[1.5rem] overflow-hidden border-white/50",
+                  "group relative flex flex-col transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 rounded-[1.5rem] overflow-hidden border-white/5",
                   note.color || NOTE_COLORS[0]
                 )}
               >
@@ -242,7 +241,7 @@ export default function NotesPage() {
                   value={formData.title}
                   onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
                   placeholder="Note Title (optional)"
-                  className="bg-white/50 border-white/60 h-12 text-lg font-bold placeholder:text-primary/20 rounded-xl"
+                  className="bg-background/50 border-white/10 h-12 text-lg font-bold placeholder:text-primary/20 rounded-xl"
                 />
               </div>
               <div className="space-y-2">
@@ -250,7 +249,7 @@ export default function NotesPage() {
                   value={formData.content}
                   onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
                   placeholder="What's on your mind?..."
-                  className="bg-white/50 border-white/60 min-h-[250px] resize-none text-base font-medium placeholder:text-primary/20 rounded-xl p-4 leading-relaxed"
+                  className="bg-background/50 border-white/10 min-h-[250px] resize-none text-base font-medium placeholder:text-primary/20 rounded-xl p-4 leading-relaxed"
                 />
               </div>
               
@@ -264,7 +263,7 @@ export default function NotesPage() {
                       className={cn(
                         "w-8 h-8 rounded-full border-2 transition-all",
                         color.split(' ')[0],
-                        formData.color === color ? "ring-2 ring-primary ring-offset-2 scale-110" : "border-white/50 opacity-80 hover:opacity-100"
+                        formData.color === color ? "ring-2 ring-primary ring-offset-2 scale-110" : "border-white/10 opacity-80 hover:opacity-100"
                       )}
                     />
                   ))}

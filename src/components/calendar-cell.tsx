@@ -32,9 +32,9 @@ export function CalendarCell({
     <button
       onClick={onClick}
       className={cn(
-        "calendar-cell relative p-1 md:p-2 flex flex-col items-start gap-1 transition-all border border-transparent hover:bg-white/50 group rounded-md overflow-hidden",
+        "calendar-cell relative p-1 md:p-2 flex flex-col items-start gap-1 transition-all border border-transparent hover:bg-card/50 group rounded-md overflow-hidden",
         !isCurrentMonth && "opacity-30",
-        isSelected && "bg-white shadow-sm ring-2 ring-primary border-primary z-10",
+        isSelected && "bg-card shadow-sm ring-2 ring-primary border-primary z-10",
         !isSelected && isTodayDate && "bg-primary/5 border-primary/20"
       )}
     >

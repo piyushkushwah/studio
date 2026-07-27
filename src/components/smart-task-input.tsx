@@ -74,7 +74,7 @@ export function SmartTaskInput({ onTaskParsed }: SmartTaskInputProps) {
         value={value}
         onChange={(e) => setValue(e.target.value)}
         placeholder="Smart add: 'Gym tomorrow' or 'Laundry next Mon'"
-        className="pl-10 pr-12 bg-white border-primary/10 focus:border-primary/30 transition-all h-11 rounded-xl shadow-sm"
+        className="pl-10 pr-12 bg-card border-primary/10 focus:border-primary/30 transition-all h-11 rounded-xl shadow-sm"
         disabled={isLoading}
       />
       <div className="absolute right-1.5 top-1/2 -translate-y-1/2">

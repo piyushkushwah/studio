@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useMemo } from "react";
@@ -254,7 +253,7 @@ export default function ExpensesPage() {
                   {expenses.map((expense) => (
                     <div 
                       key={expense.id} 
-                      className="group flex items-center justify-between p-4 md:p-6 hover:bg-emerald-50/30 dark:hover:bg-emerald-900/10 transition-colors"
+                      className="group flex items-center justify-between p-4 md:p-6 hover:bg-muted/50 transition-colors"
                     >
                       <div className="flex items-center gap-4">
                         <div className="bg-background p-3 rounded-2xl shadow-sm border border-border group-hover:border-emerald-200 dark:group-hover:border-emerald-800 transition-colors">
