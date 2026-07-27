@@ -58,6 +58,7 @@ const SUPPORTED_CURRENCIES = [
   { code: "EUR", symbol: "€" },
   { code: "GBP", symbol: "£" },
   { code: "JPY", symbol: "¥" },
+  { code: "INR", symbol: "₹" },
   { code: "CAD", symbol: "C$" },
   { code: "AUD", symbol: "A$" },
 ];
