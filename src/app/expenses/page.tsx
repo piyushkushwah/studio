@@ -31,12 +31,14 @@ import {
   Pencil, 
   DollarSign,
   Calendar as CalendarIcon,
-  Tag
+  Tag,
+  Calculator as CalculatorIcon
 } from "lucide-react";
 import Link from "next/link";
 import { format, parseISO, startOfMonth, endOfMonth, isWithinInterval } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Expense } from "@/lib/types";
+import { DraggableCalculator } from "@/components/draggable-calculator";
 
 const EXPENSE_CATEGORIES = [
   "Food & Drink",
@@ -53,6 +55,7 @@ const EXPENSE_CATEGORIES = [
 export default function ExpensesPage() {
   const { expenses, addExpense, updateExpense, deleteExpense, isInitialized } = useTasks();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isCalculatorOpen, setIsCalculatorOpen] = useState(false);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   
   const [formData, setFormData] = useState({
@@ -133,6 +136,8 @@ export default function ExpensesPage() {
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-8 flex flex-col items-center">
+      {isCalculatorOpen && <DraggableCalculator onClose={() => setIsCalculatorOpen(false)} />}
+      
       <header className="w-full max-w-5xl flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div className="flex items-center gap-3">
           <Link href="/">
@@ -148,10 +153,20 @@ export default function ExpensesPage() {
             <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest">Personal Finance Management</p>
           </div>
         </div>
-        <Button onClick={() => handleOpenDialog()} className="h-12 rounded-xl px-6 gap-2 bg-emerald-600 hover:bg-emerald-700 shadow-xl shadow-emerald-200">
-          <Plus className="w-5 h-5" />
-          Log Expense
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button 
+            variant="outline" 
+            onClick={() => setIsCalculatorOpen(!isCalculatorOpen)}
+            className={cn("h-12 rounded-xl px-4 gap-2 border-primary/20 hover:bg-primary/5 transition-all", isCalculatorOpen && "bg-primary/10 border-primary text-primary")}
+          >
+            <CalculatorIcon className="w-5 h-5" />
+            <span className="hidden sm:inline">Calc</span>
+          </Button>
+          <Button onClick={() => handleOpenDialog()} className="h-12 rounded-xl px-6 gap-2 bg-emerald-600 hover:bg-emerald-700 shadow-xl shadow-emerald-200">
+            <Plus className="w-5 h-5" />
+            Log Expense
+          </Button>
+        </div>
       </header>
 
       <main className="w-full max-w-5xl space-y-8">
