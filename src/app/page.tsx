@@ -49,13 +49,17 @@ import {
   Loader2,
   AlertTriangle,
   StickyNote,
-  Wallet
+  Wallet,
+  Moon,
+  Sun,
+  Sparkles
 } from "lucide-react";
 import { Task, Priority } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { getRandomQuote } from "@/lib/quotes";
 import { useToast } from "@/hooks/use-toast";
+import { generateDailyBriefing } from "@/ai/flows/daily-briefing-flow";
 
 export default function DailyTaskTrack() {
   const auth = useAuth();
@@ -72,8 +76,26 @@ export default function DailyTaskTrack() {
   const [quote, setQuote] = useState<string | null>(null);
   const [isAuthProcessing, setIsAuthProcessing] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [dailyBriefing, setDailyBriefing] = useState<string | null>(null);
+  const [isGeneratingBriefing, setIsGeneratingBriefing] = useState(false);
   
   const { toast } = useToast();
+
+  useEffect(() => {
+    const isDark = document.documentElement.classList.contains('dark');
+    setIsDarkMode(isDark);
+  }, []);
+
+  const toggleTheme = () => {
+    const newMode = !isDarkMode;
+    setIsDarkMode(newMode);
+    if (newMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  };
 
   const handleLogin = async () => {
     if (!auth) {
@@ -118,6 +140,26 @@ export default function DailyTaskTrack() {
     if (!auth) return;
     await signOut(auth);
     toast({ title: "Signed Out", description: "Successfully logged out." });
+  };
+
+  const fetchDailyBriefing = async () => {
+    if (!user) return;
+    setIsGeneratingBriefing(true);
+    try {
+      const todayStr = format(new Date(), "yyyy-MM-dd");
+      const todayTasks = tasks.filter(t => t.dueDate === todayStr);
+      const result = await generateDailyBriefing({
+        userName: user.displayName?.split(' ')[0] || 'User',
+        tasks: todayTasks.slice(0, 5).map(t => t.description),
+        completedCount: todayTasks.filter(t => t.completed).length,
+        streak: streak,
+      });
+      setDailyBriefing(result.briefing);
+    } catch (error) {
+      console.error("Briefing Failed", error);
+    } finally {
+      setIsGeneratingBriefing(false);
+    }
   };
 
   const fetchNewQuote = useCallback(async () => {
@@ -243,7 +285,7 @@ export default function DailyTaskTrack() {
                   Whitelisting Required
                 </div>
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  The domain <strong>{authError}</strong> is not authorized. Go to Firebase Console {"->"} Authentication {"->"} Settings and add it to the &quot;Authorized Domains&quot; list.
+                  The domain <strong>{authError}</strong> is not authorized. Go to Firebase Console &gt; Authentication &gt; Settings and add it to the &quot;Authorized Domains&quot; list.
                 </p>
               </div>
             )}
@@ -268,30 +310,51 @@ export default function DailyTaskTrack() {
       <AppTour />
       
       <header id="tour-header" className="w-full max-6xl flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 md:mb-12 shrink-0">
-        <div className="flex items-center gap-5">
+        <div className="flex items-center gap-5 min-w-0">
           <div className="bg-primary text-white p-3 rounded-2xl shadow-xl shadow-primary/20 shrink-0">
             <CalendarIcon className="w-7 h-7" />
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <h1 className="text-2xl md:text-3xl font-black tracking-tight text-primary leading-tight">{greeting}, {user.displayName?.split(' ')[0]}</h1>
+              <h1 className="text-2xl md:text-3xl font-black tracking-tight text-primary leading-tight truncate">{greeting}, {user.displayName?.split(' ')[0]}</h1>
               {streak > 0 && (
-                <div className="flex items-center gap-1 bg-orange-100 text-orange-600 px-2 py-0.5 rounded-full text-xs font-bold border border-orange-200 shrink-0">
+                <div className="flex items-center gap-1 bg-orange-100 dark:bg-orange-900/30 text-orange-600 px-2 py-0.5 rounded-full text-xs font-bold border border-orange-200 dark:border-orange-800/30 shrink-0">
                   <Flame className="w-3 h-3 fill-current" />
-                  {streak} Day Streak
+                  {streak}
                 </div>
               )}
             </div>
-            <div className="flex items-start gap-2 mt-1 max-w-md h-8">
-              <Quote className="w-3 h-3 text-accent mt-1 shrink-0" />
-              {quote ? <p className="text-xs italic text-muted-foreground font-medium line-clamp-2">{quote}</p> : <div className="space-y-1.5 py-1 w-full"><Skeleton className="h-2 w-full max-w-[280px]" /><Skeleton className="h-2 w-[180px]" /></div>}
+            <div className="mt-1 flex flex-col gap-1">
+              {dailyBriefing ? (
+                <div className="flex items-start gap-2 bg-primary/5 p-2 rounded-xl border border-primary/10 animate-in slide-in-from-left-2">
+                  <Sparkles className="w-3 h-3 text-primary mt-0.5 shrink-0" />
+                  <p className="text-[10px] font-bold text-primary/80 leading-relaxed italic pr-8">{dailyBriefing}</p>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <Quote className="w-3 h-3 text-accent shrink-0" />
+                  {quote ? <p className="text-xs italic text-muted-foreground font-medium truncate">{quote}</p> : <Skeleton className="h-2 w-[180px]" />}
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-5 w-5 rounded-full hover:bg-primary/10" 
+                    onClick={fetchDailyBriefing}
+                    disabled={isGeneratingBriefing}
+                  >
+                    {isGeneratingBriefing ? <Loader2 className="w-3 h-3 animate-spin text-primary" /> : <Sparkles className="w-3 h-3 text-primary" />}
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-3">
+          <Button variant="ghost" size="icon" onClick={toggleTheme} className="h-12 w-12 rounded-2xl bg-white dark:bg-slate-900 border shadow-sm">
+            {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+          </Button>
           <FocusPlayer />
           <PomodoroTimer />
-          <div id="tour-nav" className="flex items-center gap-1 h-12 bg-white border px-2 rounded-2xl shadow-sm">
+          <div id="tour-nav" className="flex items-center gap-1 h-12 bg-white dark:bg-slate-900 border px-2 rounded-2xl shadow-sm">
             <LabelManager />
             <Link href="/notes">
               <Button variant="ghost" className="flex flex-col items-center justify-center gap-0 h-auto py-1 px-3 rounded-xl hover:bg-primary/5 group" title="Quick Notes">
@@ -300,15 +363,9 @@ export default function DailyTaskTrack() {
               </Button>
             </Link>
             <Link href="/expenses">
-              <Button variant="ghost" className="flex flex-col items-center justify-center gap-0 h-auto py-1 px-3 rounded-xl hover:bg-emerald-50 group" title="Expense Tracker">
+              <Button variant="ghost" className="flex flex-col items-center justify-center gap-0 h-auto py-1 px-3 rounded-xl hover:bg-emerald-50 dark:hover:bg-emerald-900/20 group" title="Expense Tracker">
                 <Wallet className="w-4 h-4 text-emerald-600 transition-transform group-hover:scale-110" />
                 <span className="text-[8px] font-black uppercase tracking-tighter text-muted-foreground/60 mt-0.5">Wallet</span>
-              </Button>
-            </Link>
-            <Link href="/time-tracking">
-              <Button variant="ghost" className="flex flex-col items-center justify-center gap-0 h-auto py-1 px-3 rounded-xl hover:bg-primary/5 group" title="Time Tracking">
-                <Clock className="w-4 h-4 text-primary transition-transform group-hover:scale-110" />
-                <span className="text-[8px] font-black uppercase tracking-tighter text-muted-foreground/60 mt-0.5">Log</span>
               </Button>
             </Link>
             <Link href="/analytics">
@@ -331,12 +388,12 @@ export default function DailyTaskTrack() {
 
       <main className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-12 gap-10 items-stretch flex-1 min-h-0">
         <div id="tour-calendar" className="lg:col-span-7 flex flex-col gap-8 w-full">
-          <Card className="p-6 md:p-10 shadow-2xl shadow-primary/5 bg-white border-white/50 rounded-[2rem] h-full">
+          <Card className="p-6 md:p-10 shadow-2xl shadow-primary/5 bg-white dark:bg-slate-900 border-white/50 dark:border-slate-800 rounded-[2rem] h-full">
             <div className="flex items-center justify-between mb-8 md:mb-10">
               <h2 className="text-2xl md:text-3xl font-black text-primary tracking-tight">{format(currentMonth, "MMMM yyyy")}</h2>
               <div className="flex gap-2">
-                <Button variant="outline" size="icon" onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="h-10 w-10 bg-white shadow-sm rounded-xl"><ChevronLeft className="w-5 h-5" /></Button>
-                <Button variant="outline" size="icon" onClick={() => setCurrentMonth(addMonths(currentMonth, 1))} className="h-10 w-10 bg-white shadow-sm rounded-xl"><ChevronRight className="w-5 h-5" /></Button>
+                <Button variant="outline" size="icon" onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="h-10 w-10 bg-white dark:bg-slate-900 shadow-sm rounded-xl"><ChevronLeft className="w-5 h-5" /></Button>
+                <Button variant="outline" size="icon" onClick={() => setCurrentMonth(addMonths(currentMonth, 1))} className="h-10 w-10 bg-white dark:bg-slate-900 shadow-sm rounded-xl"><ChevronRight className="w-5 h-5" /></Button>
               </div>
             </div>
             <div className="calendar-grid">
@@ -347,7 +404,7 @@ export default function DailyTaskTrack() {
         </div>
 
         <div id="tour-tasks" className="lg:col-span-5 flex flex-col w-full h-[600px] lg:h-[calc(100vh-14rem)] lg:sticky lg:top-8 min-h-0">
-          <Card className={cn("p-6 md:p-8 shadow-2xl transition-all duration-500 flex flex-col bg-white border-white/50 rounded-[2rem] overflow-hidden h-full", goalMet ? "shadow-accent/10 border-accent/20 ring-1 ring-accent/10" : "shadow-primary/5")}>
+          <Card className={cn("p-6 md:p-8 shadow-2xl transition-all duration-500 flex flex-col bg-white dark:bg-slate-900 border-white/50 dark:border-slate-800 rounded-[2rem] overflow-hidden h-full", goalMet ? "shadow-accent/10 border-accent/20 ring-1 ring-accent/10" : "shadow-primary/5")}>
             <div className="flex items-center justify-between mb-6 shrink-0">
               <div className="flex items-center gap-4">
                 <div className="relative flex items-center justify-center shrink-0">
@@ -367,16 +424,16 @@ export default function DailyTaskTrack() {
 
             <div className="space-y-4 mb-6 shrink-0">
               <div className={cn("flex items-center gap-3 p-3 rounded-2xl border transition-colors", goalMet ? "bg-accent/5 border-accent/20" : "bg-primary/5 border-primary/10")}>
-                <div className={cn("p-2 rounded-lg shadow-sm transition-colors shrink-0", goalMet ? "bg-accent text-white" : "bg-white text-primary")}><Trophy className="w-3.5 h-3.5" /></div>
+                <div className={cn("p-2 rounded-lg shadow-sm transition-colors shrink-0", goalMet ? "bg-accent text-white" : "bg-white dark:bg-slate-800 text-primary")}><Trophy className="w-3.5 h-3.5" /></div>
                 <div className="flex-1">
                   <p className={cn("text-[9px] font-black uppercase tracking-widest", goalMet ? "text-accent" : "text-primary/60")}>Goal</p>
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold">{completedCount} / {dailyGoalValue || 0}</span>
-                    <input type="number" min="0" max="20" value={dailyGoalValue} onChange={(e) => setDailyGoal(selectedDateStr, parseInt(e.target.value) || 0)} className="w-12 h-6 text-[10px] font-bold text-center border-none bg-white shadow-sm rounded-lg outline-none" />
+                    <input type="number" min="0" max="20" value={dailyGoalValue} onChange={(e) => setDailyGoal(selectedDateStr, parseInt(e.target.value) || 0)} className="w-12 h-6 text-[10px] font-bold text-center border-none bg-white dark:bg-slate-800 shadow-sm rounded-lg outline-none" />
                   </div>
                 </div>
               </div>
-              <div className="relative group"><Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground group-focus-within:text-primary" /><input placeholder="Search..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-9 h-10 bg-muted/20 border-transparent rounded-xl text-xs outline-none focus:ring-1 focus:ring-primary/20" /></div>
+              <div className="relative group"><Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground group-focus-within:text-primary" /><input placeholder="Search..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-9 h-10 bg-muted/20 border-transparent rounded-xl text-xs outline-none focus:ring-1 focus:ring-primary/20 dark:text-white" /></div>
               <div className="flex flex-wrap gap-1.5">
                 <Button variant={activeLabelFilter === null ? "default" : "outline"} size="sm" onClick={() => setActiveLabelFilter(null)} className="h-7 px-3 text-[9px] font-black uppercase tracking-widest rounded-lg">All</Button>
                 {labels.map(l => (<Button key={l.id} variant={activeLabelFilter === l.name ? "default" : "outline"} size="sm" onClick={() => setActiveLabelFilter(l.name === activeLabelFilter ? null : l.name)} className={cn("h-7 px-3 text-[9px] font-black uppercase tracking-widest rounded-lg", activeLabelFilter === l.name ? l.color : "hover:border-primary/30")}>{l.name}</Button>))}
