@@ -56,6 +56,20 @@
       },
       "required": ["content", "createdAt", "updatedAt"]
     },
+    "Expense": {
+      "title": "Expense",
+      "description": "A financial transaction for tracking spending",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "amount": { "type": "number" },
+        "category": { "type": "string" },
+        "description": { "type": "string" },
+        "date": { "type": "string", "format": "date" },
+        "createdAt": { "type": "number" }
+      },
+      "required": ["amount", "category", "description", "date", "createdAt"]
+    },
     "UserPreference": {
       "title": "User Preference",
       "description": "User specific settings including custom songs",
@@ -98,6 +112,10 @@
     "/users/{userId}/notes/{noteId}": {
       "schema": { "$ref": "#/backend/entities/Note" },
       "description": "Personal notes for the user"
+    },
+    "/users/{userId}/expenses/{expenseId}": {
+      "schema": { "$ref": "#/backend/entities/Expense" },
+      "description": "User financial expenses"
     },
     "/users/{userId}/preferences/main": {
       "schema": { "$ref": "#/backend/entities/UserPreference" },

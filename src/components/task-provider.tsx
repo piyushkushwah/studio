@@ -2,7 +2,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo, useCallback } from 'react';
-import { Task, Label, Session, Note, TaskContextType, CustomSong } from '@/lib/types';
+import { Task, Label, Session, Note, Expense, TaskContextType, CustomSong } from '@/lib/types';
 import { format, subDays, isSameDay } from 'date-fns';
 import { useUser, useFirestore } from '@/firebase';
 import { 
@@ -47,6 +47,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
   const [labels, setLabels] = useState<Label[]>(DEFAULT_LABELS);
   const [sessions, setSessions] = useState<Session[]>([]);
   const [notes, setNotes] = useState<Note[]>([]);
+  const [expenses, setExpenses] = useState<Expense[]>([]);
   const [dailyGoals, setDailyGoals] = useState<Record<string, number>>({});
   const [customSongs, setCustomSongs] = useState<CustomSong[]>([]);
   
@@ -276,6 +277,59 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     }
   }, [user, firestore]);
 
+  const addExpense = useCallback((expenseData: Omit<Expense, 'id' | 'createdAt'>) => {
+    const id = generateId();
+    const newExpense: Expense = { ...expenseData, id, createdAt: Date.now() };
+    
+    if (user && firestore) {
+      const docRef = doc(firestore, 'users', user.uid, 'expenses', id);
+      setDoc(docRef, newExpense).catch((err) => {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+          path: docRef.path,
+          operation: 'create',
+          requestResourceData: newExpense
+        }));
+      });
+    } else {
+      setExpenses(prev => [newExpense, ...prev].sort((a, b) => b.createdAt - a.createdAt));
+      const stored = JSON.parse(localStorage.getItem('daily_task_track_expenses') || '[]');
+      syncLocal('daily_task_track_expenses', [newExpense, ...stored]);
+    }
+  }, [user, firestore]);
+
+  const updateExpense = useCallback((id: string, updates: Partial<Expense>) => {
+    if (user && firestore) {
+      const docRef = doc(firestore, 'users', user.uid, 'expenses', id);
+      updateDoc(docRef, updates).catch((err) => {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+          path: docRef.path,
+          operation: 'update',
+          requestResourceData: updates
+        }));
+      });
+    } else {
+      setExpenses(prev => prev.map(e => e.id === id ? { ...e, ...updates } : e));
+      const stored = JSON.parse(localStorage.getItem('daily_task_track_expenses') || '[]');
+      syncLocal('daily_task_track_expenses', stored.map((e: Expense) => e.id === id ? { ...e, ...updates } : e));
+    }
+  }, [user, firestore]);
+
+  const deleteExpense = useCallback((id: string) => {
+    if (user && firestore) {
+      const docRef = doc(firestore, 'users', user.uid, 'expenses', id);
+      deleteDoc(docRef).catch((err) => {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+          path: docRef.path,
+          operation: 'delete'
+        }));
+      });
+    } else {
+      setExpenses(prev => prev.filter(e => e.id !== id));
+      const stored = JSON.parse(localStorage.getItem('daily_task_track_expenses') || '[]');
+      syncLocal('daily_task_track_expenses', stored.filter((e: Expense) => e.id !== id));
+    }
+  }, [user, firestore]);
+
   const setDailyGoal = useCallback((date: string, target: number) => {
     const newGoals = { ...dailyGoals, [date]: target };
     if (user && firestore) {
@@ -346,6 +400,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
         const storedLabels = localStorage.getItem('daily_task_track_labels');
         const storedSessions = localStorage.getItem('daily_task_track_sessions');
         const storedNotes = localStorage.getItem('daily_task_track_notes');
+        const storedExpenses = localStorage.getItem('daily_task_track_expenses');
         const storedPrefs = localStorage.getItem('daily_task_track_prefs');
 
         if (storedTasks) setTasks(JSON.parse(storedTasks).sort((a: any, b: any) => b.createdAt - a.createdAt));
@@ -353,6 +408,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
         else setLabels(DEFAULT_LABELS);
         if (storedSessions) setSessions(JSON.parse(storedSessions).sort((a: any, b: any) => b.startTime - a.startTime));
         if (storedNotes) setNotes(JSON.parse(storedNotes).sort((a: any, b: any) => b.updatedAt - a.updatedAt));
+        if (storedExpenses) setExpenses(JSON.parse(storedExpenses).sort((a: any, b: any) => b.createdAt - a.createdAt));
         if (storedPrefs) {
           const prefs = JSON.parse(storedPrefs);
           setDailyGoals(prefs.dailyGoals || {});
@@ -368,7 +424,6 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     const userId = user.uid;
     const unsubs: Unsubscribe[] = [];
     
-    // Fail-safe to ensure dashboard renders even if Firestore is slow
     const initTimer = setTimeout(() => {
       setIsInitialized(true);
     }, 5000);
@@ -406,6 +461,14 @@ export function TaskProvider({ children }: { children: ReactNode }) {
       setNotes(snapshot.docs
         .map(doc => ({ ...doc.data(), id: doc.id } as Note))
         .sort((a, b) => b.updatedAt - a.updatedAt)
+      );
+    }));
+
+    const expensesRef = collection(firestore, 'users', userId, 'expenses');
+    unsubs.push(onSnapshot(expensesRef, (snapshot) => {
+      setExpenses(snapshot.docs
+        .map(doc => ({ ...doc.data(), id: doc.id } as Expense))
+        .sort((a, b) => b.createdAt - a.createdAt)
       );
     }));
 
@@ -456,11 +519,12 @@ export function TaskProvider({ children }: { children: ReactNode }) {
 
   return (
     <TaskContext.Provider value={{ 
-      tasks, labels, sessions, notes, dailyGoals, customSongs, streak,
+      tasks, labels, sessions, notes, expenses, dailyGoals, customSongs, streak,
       workTimerLeft, breakTimerLeft, isWorkTimerActive, isBreakTimerActive,
       addTask, updateTask, deleteTask, toggleTask, addLabel, deleteLabel, 
       addSession, updateSession, deleteSession, 
       addNote, updateNote, deleteNote,
+      addExpense, updateExpense, deleteExpense,
       setDailyGoal, addCustomSong, removeCustomSong,
       setWorkTimerActive: (a) => { if(a) setBreakTimerActive(false); setWorkTimerActive(a); },
       setBreakTimerActive: (a) => { if(a) setWorkTimerActive(false); setBreakTimerActive(a); },

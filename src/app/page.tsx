@@ -48,7 +48,8 @@ import {
   Layout,
   Loader2,
   AlertTriangle,
-  StickyNote
+  StickyNote,
+  Wallet
 } from "lucide-react";
 import { Task, Priority } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -296,6 +297,12 @@ export default function DailyTaskTrack() {
               <Button variant="ghost" className="flex flex-col items-center justify-center gap-0 h-auto py-1 px-3 rounded-xl hover:bg-primary/5 group" title="Quick Notes">
                 <StickyNote className="w-4 h-4 text-primary transition-transform group-hover:scale-110" />
                 <span className="text-[8px] font-black uppercase tracking-tighter text-muted-foreground/60 mt-0.5">Notes</span>
+              </Button>
+            </Link>
+            <Link href="/expenses">
+              <Button variant="ghost" className="flex flex-col items-center justify-center gap-0 h-auto py-1 px-3 rounded-xl hover:bg-emerald-50 group" title="Expense Tracker">
+                <Wallet className="w-4 h-4 text-emerald-600 transition-transform group-hover:scale-110" />
+                <span className="text-[8px] font-black uppercase tracking-tighter text-muted-foreground/60 mt-0.5">Wallet</span>
               </Button>
             </Link>
             <Link href="/time-tracking">

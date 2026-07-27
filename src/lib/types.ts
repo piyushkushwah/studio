@@ -36,6 +36,15 @@ export interface Note {
   updatedAt: number;
 }
 
+export interface Expense {
+  id: string;
+  amount: number;
+  category: string;
+  description: string;
+  date: string; // YYYY-MM-DD
+  createdAt: number;
+}
+
 export interface DailyGoal {
   date: string; // YYYY-MM-DD
   targetTasks: number;
@@ -55,6 +64,7 @@ export interface TaskContextType {
   labels: Label[];
   sessions: Session[];
   notes: Note[];
+  expenses: Expense[];
   dailyGoals: Record<string, number>;
   customSongs: CustomSong[];
   streak: number;
@@ -83,6 +93,11 @@ export interface TaskContextType {
   addNote: (note: Omit<Note, 'id' | 'createdAt' | 'updatedAt'>) => void;
   updateNote: (id: string, updates: Partial<Note>) => void;
   deleteNote: (id: string) => void;
+
+  // Expense Actions
+  addExpense: (expense: Omit<Expense, 'id' | 'createdAt'>) => void;
+  updateExpense: (id: string, updates: Partial<Expense>) => void;
+  deleteExpense: (id: string) => void;
   
   // Timer Actions
   setWorkTimerActive: (active: boolean) => void;
