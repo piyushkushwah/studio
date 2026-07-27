@@ -39,6 +39,7 @@ export interface Note {
 export interface Expense {
   id: string;
   amount: number;
+  currency: string;
   category: string;
   description: string;
   date: string; // YYYY-MM-DD

@@ -34,7 +34,8 @@ import {
   DollarSign,
   Calendar as CalendarIcon,
   Tag,
-  ChevronRight
+  ChevronRight,
+  Coins
 } from "lucide-react";
 import Link from "next/link";
 import { format, parseISO, startOfMonth, endOfMonth, isWithinInterval } from "date-fns";
@@ -53,6 +54,15 @@ const EXPENSE_CATEGORIES = [
   "Other"
 ];
 
+const CURRENCIES = [
+  { code: "USD", symbol: "$" },
+  { code: "EUR", symbol: "€" },
+  { code: "GBP", symbol: "£" },
+  { code: "JPY", symbol: "¥" },
+  { code: "CAD", symbol: "C$" },
+  { code: "AUD", symbol: "A$" },
+];
+
 export default function ExpensesPage() {
   const { expenses, addExpense, updateExpense, deleteExpense, isInitialized } = useTasks();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -60,6 +70,7 @@ export default function ExpensesPage() {
   
   const [formData, setFormData] = useState({
     amount: "",
+    currency: "USD",
     description: "",
     category: EXPENSE_CATEGORIES[0],
     date: format(new Date(), "yyyy-MM-dd")
@@ -74,8 +85,13 @@ export default function ExpensesPage() {
     });
   }, [expenses]);
 
-  const totalSpent = useMemo(() => {
-    return currentMonthExpenses.reduce((acc, e) => acc + e.amount, 0);
+  const currencyTotals = useMemo(() => {
+    const totals: Record<string, number> = {};
+    currentMonthExpenses.forEach(e => {
+      const curr = e.currency || "USD";
+      totals[curr] = (totals[curr] || 0) + e.amount;
+    });
+    return totals;
   }, [currentMonthExpenses]);
 
   const handleOpenDialog = (expense: Expense | null = null) => {
@@ -83,6 +99,7 @@ export default function ExpensesPage() {
       setEditingExpense(expense);
       setFormData({
         amount: expense.amount.toString(),
+        currency: expense.currency || "USD",
         description: expense.description,
         category: expense.category,
         date: expense.date
@@ -91,6 +108,7 @@ export default function ExpensesPage() {
       setEditingExpense(null);
       setFormData({
         amount: "",
+        currency: "USD",
         description: "",
         category: EXPENSE_CATEGORIES[0],
         date: format(new Date(), "yyyy-MM-dd")
@@ -106,6 +124,7 @@ export default function ExpensesPage() {
     if (editingExpense) {
       updateExpense(editingExpense.id, {
         amount,
+        currency: formData.currency,
         description: formData.description,
         category: formData.category,
         date: formData.date
@@ -113,6 +132,7 @@ export default function ExpensesPage() {
     } else {
       addExpense({
         amount,
+        currency: formData.currency,
         description: formData.description,
         category: formData.category,
         date: formData.date
@@ -146,7 +166,7 @@ export default function ExpensesPage() {
           </div>
           <div>
             <h1 className="text-xl md:text-2xl font-black text-primary tracking-tight">Expense Tracker</h1>
-            <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest">Personal Finance Command</p>
+            <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest">Multi-Currency Management</p>
           </div>
         </div>
         <Button onClick={() => handleOpenDialog()} className="h-12 rounded-xl px-6 gap-2 bg-emerald-600 hover:bg-emerald-700 shadow-xl shadow-emerald-200">
@@ -159,10 +179,18 @@ export default function ExpensesPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           <Card className="shadow-2xl shadow-emerald-100 border-white/50 bg-emerald-50/30 backdrop-blur-sm">
             <CardHeader className="pb-2">
-              <CardDescription className="font-black text-[10px] uppercase tracking-[0.2em] text-emerald-700/60">Total Spent (This Month)</CardDescription>
-              <CardTitle className="text-3xl font-black text-emerald-700 flex items-center gap-1">
-                <DollarSign className="w-6 h-6" />
-                {totalSpent.toFixed(2)}
+              <CardDescription className="font-black text-[10px] uppercase tracking-[0.2em] text-emerald-700/60">Total Spent (Main Currency)</CardDescription>
+              <CardTitle className="text-3xl font-black text-emerald-700 flex flex-col gap-1">
+                {Object.entries(currencyTotals).length === 0 ? (
+                  <span className="flex items-center gap-1"><DollarSign className="w-6 h-6" />0.00</span>
+                ) : (
+                  Object.entries(currencyTotals).map(([curr, total]) => (
+                    <div key={curr} className="flex items-center gap-1">
+                      <span className="text-sm opacity-60 font-black">{curr}</span>
+                      {total.toFixed(2)}
+                    </div>
+                  ))
+                )}
               </CardTitle>
             </CardHeader>
           </Card>
@@ -176,9 +204,9 @@ export default function ExpensesPage() {
           </Card>
           <Card className="shadow-xl shadow-primary/5 border-white/40 bg-white/50 backdrop-blur-sm">
             <CardHeader className="pb-2">
-              <CardDescription className="font-black text-[10px] uppercase tracking-[0.2em]">Daily Average</CardDescription>
+              <CardDescription className="font-black text-[10px] uppercase tracking-[0.2em]">Active Currencies</CardDescription>
               <CardTitle className="text-3xl font-black text-primary">
-                ${(totalSpent / 30).toFixed(2)}
+                {Object.keys(currencyTotals).length}
               </CardTitle>
             </CardHeader>
           </Card>
@@ -233,9 +261,12 @@ export default function ExpensesPage() {
                         </div>
                       </div>
                       <div className="flex items-center gap-6">
-                        <span className="font-black text-emerald-700 text-lg">
-                          -${expense.amount.toFixed(2)}
-                        </span>
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-[10px] font-black opacity-40">{expense.currency || "USD"}</span>
+                          <span className="font-black text-emerald-700 text-lg">
+                            -{expense.amount.toFixed(2)}
+                          </span>
+                        </div>
                         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                           <Button 
                             variant="ghost" 
@@ -278,18 +309,35 @@ export default function ExpensesPage() {
 
             <div className="space-y-6">
               <div className="space-y-2">
-                <UILabel htmlFor="amount" className="text-[10px] font-black uppercase tracking-widest text-primary/60">Amount (USD)</UILabel>
-                <div className="relative">
-                  <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-emerald-600" />
-                  <Input
-                    id="amount"
-                    type="number"
-                    step="0.01"
-                    value={formData.amount}
-                    onChange={(e) => setFormData(prev => ({ ...prev, amount: e.target.value }))}
-                    placeholder="0.00"
-                    className="h-14 pl-12 text-2xl font-black text-emerald-700 bg-emerald-50/50 border-emerald-100 rounded-2xl focus:ring-emerald-200"
-                  />
+                <UILabel htmlFor="amount" className="text-[10px] font-black uppercase tracking-widest text-primary/60">Amount & Currency</UILabel>
+                <div className="flex gap-2">
+                  <Select 
+                    value={formData.currency} 
+                    onValueChange={(val) => setFormData(prev => ({ ...prev, currency: val }))}
+                  >
+                    <SelectTrigger className="w-32 h-14 bg-emerald-50/50 border-emerald-100 rounded-2xl font-black text-emerald-700 focus:ring-emerald-200">
+                      <SelectValue placeholder="USD" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CURRENCIES.map(curr => (
+                        <SelectItem key={curr.code} value={curr.code} className="font-bold">
+                          {curr.code} ({curr.symbol})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <div className="relative flex-1">
+                    <Coins className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-emerald-600/40" />
+                    <Input
+                      id="amount"
+                      type="number"
+                      step="0.01"
+                      value={formData.amount}
+                      onChange={(e) => setFormData(prev => ({ ...prev, amount: e.target.value }))}
+                      placeholder="0.00"
+                      className="h-14 pl-12 text-2xl font-black text-emerald-700 bg-emerald-50/50 border-emerald-100 rounded-2xl focus:ring-emerald-200"
+                    />
+                  </div>
                 </div>
               </div>
 

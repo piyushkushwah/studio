@@ -63,12 +63,13 @@
       "properties": {
         "id": { "type": "string" },
         "amount": { "type": "number" },
+        "currency": { "type": "string" },
         "category": { "type": "string" },
         "description": { "type": "string" },
         "date": { "type": "string", "format": "date" },
         "createdAt": { "type": "number" }
       },
-      "required": ["amount", "category", "description", "date", "createdAt"]
+      "required": ["amount", "currency", "category", "description", "date", "createdAt"]
     },
     "UserPreference": {
       "title": "User Preference",
