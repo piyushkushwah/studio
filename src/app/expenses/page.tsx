@@ -32,7 +32,8 @@ import {
   DollarSign,
   Calendar as CalendarIcon,
   Tag,
-  Calculator as CalculatorIcon
+  Calculator as CalculatorIcon,
+  Coins
 } from "lucide-react";
 import Link from "next/link";
 import { format, parseISO, startOfMonth, endOfMonth, isWithinInterval } from "date-fns";
@@ -52,6 +53,15 @@ const EXPENSE_CATEGORIES = [
   "Other"
 ];
 
+const SUPPORTED_CURRENCIES = [
+  { code: "USD", symbol: "$" },
+  { code: "EUR", symbol: "€" },
+  { code: "GBP", symbol: "£" },
+  { code: "JPY", symbol: "¥" },
+  { code: "CAD", symbol: "C$" },
+  { code: "AUD", symbol: "A$" },
+];
+
 export default function ExpensesPage() {
   const { expenses, addExpense, updateExpense, deleteExpense, isInitialized } = useTasks();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -62,6 +72,7 @@ export default function ExpensesPage() {
     amount: "",
     description: "",
     category: EXPENSE_CATEGORIES[0],
+    currency: SUPPORTED_CURRENCIES[0].code,
     date: format(new Date(), "yyyy-MM-dd")
   });
 
@@ -74,8 +85,12 @@ export default function ExpensesPage() {
     });
   }, [expenses]);
 
-  const totalSpent = useMemo(() => {
-    return currentMonthExpenses.reduce((acc, e) => acc + e.amount, 0);
+  const currencyTotals = useMemo(() => {
+    const totals: Record<string, number> = {};
+    currentMonthExpenses.forEach(e => {
+      totals[e.currency] = (totals[e.currency] || 0) + e.amount;
+    });
+    return totals;
   }, [currentMonthExpenses]);
 
   const handleOpenDialog = (expense: Expense | null = null) => {
@@ -85,6 +100,7 @@ export default function ExpensesPage() {
         amount: expense.amount.toString(),
         description: expense.description,
         category: expense.category,
+        currency: expense.currency || SUPPORTED_CURRENCIES[0].code,
         date: expense.date
       });
     } else {
@@ -93,6 +109,7 @@ export default function ExpensesPage() {
         amount: "",
         description: "",
         category: EXPENSE_CATEGORIES[0],
+        currency: SUPPORTED_CURRENCIES[0].code,
         date: format(new Date(), "yyyy-MM-dd")
       });
     }
@@ -106,7 +123,7 @@ export default function ExpensesPage() {
     if (editingExpense) {
       updateExpense(editingExpense.id, {
         amount,
-        currency: "USD",
+        currency: formData.currency,
         description: formData.description,
         category: formData.category,
         date: formData.date
@@ -114,13 +131,17 @@ export default function ExpensesPage() {
     } else {
       addExpense({
         amount,
-        currency: "USD",
+        currency: formData.currency,
         description: formData.description,
         category: formData.category,
         date: formData.date
       });
     }
     setIsDialogOpen(false);
+  };
+
+  const getCurrencySymbol = (code: string) => {
+    return SUPPORTED_CURRENCIES.find(c => c.code === code)?.symbol || "$";
   };
 
   if (!isInitialized) {
@@ -150,7 +171,7 @@ export default function ExpensesPage() {
           </div>
           <div>
             <h1 className="text-xl md:text-2xl font-black text-primary tracking-tight">Expense Tracker</h1>
-            <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest">Personal Finance Management</p>
+            <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest">Multi-Currency Management</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -170,14 +191,27 @@ export default function ExpensesPage() {
       </header>
 
       <main className="w-full max-w-5xl space-y-8">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          <Card className="shadow-2xl shadow-emerald-100 border-white/50 bg-emerald-50/30 backdrop-blur-sm">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <Card className="shadow-2xl shadow-emerald-100 border-white/50 bg-emerald-50/30 backdrop-blur-sm lg:col-span-2">
             <CardHeader className="pb-2">
-              <CardDescription className="font-black text-[10px] uppercase tracking-[0.2em] text-emerald-700/60">Monthly Spending</CardDescription>
-              <CardTitle className="text-3xl font-black text-emerald-700 flex items-center gap-1">
-                <DollarSign className="w-6 h-6" />
-                {totalSpent.toFixed(2)}
-              </CardTitle>
+              <CardDescription className="font-black text-[10px] uppercase tracking-[0.2em] text-emerald-700/60">Monthly Spending Totals</CardDescription>
+              <div className="flex flex-wrap gap-6 mt-2">
+                {Object.keys(currencyTotals).length > 0 ? (
+                  Object.entries(currencyTotals).map(([code, total]) => (
+                    <div key={code} className="flex flex-col">
+                      <span className="text-[10px] font-black text-emerald-600/60 uppercase">{code}</span>
+                      <span className="text-2xl font-black text-emerald-700">
+                        {getCurrencySymbol(code)}{total.toFixed(2)}
+                      </span>
+                    </div>
+                  ))
+                ) : (
+                  <CardTitle className="text-3xl font-black text-emerald-700 flex items-center gap-1">
+                    <Coins className="w-6 h-6" />
+                    0.00
+                  </CardTitle>
+                )}
+              </div>
             </CardHeader>
           </Card>
           <Card className="shadow-xl shadow-primary/5 border-white/40 bg-white/50 backdrop-blur-sm">
@@ -185,14 +219,6 @@ export default function ExpensesPage() {
               <CardDescription className="font-black text-[10px] uppercase tracking-[0.2em]">Transaction Count</CardDescription>
               <CardTitle className="text-3xl font-black text-primary">
                 {currentMonthExpenses.length}
-              </CardTitle>
-            </CardHeader>
-          </Card>
-          <Card className="shadow-xl shadow-primary/5 border-white/40 bg-white/50 backdrop-blur-sm">
-            <CardHeader className="pb-2">
-              <CardDescription className="font-black text-[10px] uppercase tracking-[0.2em]">Recent Average</CardDescription>
-              <CardTitle className="text-3xl font-black text-primary">
-                ${currentMonthExpenses.length > 0 ? (totalSpent / currentMonthExpenses.length).toFixed(2) : "0.00"}
               </CardTitle>
             </CardHeader>
           </Card>
@@ -249,7 +275,7 @@ export default function ExpensesPage() {
                       <div className="flex items-center gap-6">
                         <div className="flex items-baseline gap-1">
                           <span className="font-black text-emerald-700 text-lg">
-                            -${expense.amount.toFixed(2)}
+                            -{getCurrencySymbol(expense.currency)}{expense.amount.toFixed(2)}
                           </span>
                         </div>
                         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -288,24 +314,45 @@ export default function ExpensesPage() {
                 {editingExpense ? "Update Transaction" : "Record Spending"}
               </DialogTitle>
               <DialogDescription className="text-[10px] font-black uppercase tracking-widest">
-                Data is secured in your personal cloud
+                Multi-currency entry supported
               </DialogDescription>
             </DialogHeader>
 
             <div className="space-y-6">
               <div className="space-y-2">
-                <UILabel htmlFor="amount" className="text-[10px] font-black uppercase tracking-widest text-primary/60">Amount</UILabel>
-                <div className="relative">
-                  <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-emerald-600" />
-                  <Input
-                    id="amount"
-                    type="number"
-                    step="0.01"
-                    value={formData.amount}
-                    onChange={(e) => setFormData(prev => ({ ...prev, amount: e.target.value }))}
-                    placeholder="0.00"
-                    className="h-14 pl-12 text-2xl font-black text-emerald-700 bg-emerald-50/50 border-emerald-100 rounded-2xl focus:ring-emerald-200"
-                  />
+                <UILabel htmlFor="amount" className="text-[10px] font-black uppercase tracking-widest text-primary/60">Amount & Currency</UILabel>
+                <div className="flex gap-2">
+                  <div className="w-24 shrink-0">
+                    <Select 
+                      value={formData.currency} 
+                      onValueChange={(val) => setFormData(prev => ({ ...prev, currency: val }))}
+                    >
+                      <SelectTrigger className="h-14 rounded-2xl bg-emerald-50/50 border-emerald-100 text-lg font-black text-emerald-700">
+                        <SelectValue placeholder="USD" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {SUPPORTED_CURRENCIES.map(curr => (
+                          <SelectItem key={curr.code} value={curr.code} className="rounded-lg">
+                            {curr.code} ({curr.symbol})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="relative flex-1">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-600 font-bold text-xl">
+                      {getCurrencySymbol(formData.currency)}
+                    </span>
+                    <Input
+                      id="amount"
+                      type="number"
+                      step="0.01"
+                      value={formData.amount}
+                      onChange={(e) => setFormData(prev => ({ ...prev, amount: e.target.value }))}
+                      placeholder="0.00"
+                      className="h-14 pl-10 text-2xl font-black text-emerald-700 bg-emerald-50/50 border-emerald-100 rounded-2xl focus:ring-emerald-200"
+                    />
+                  </div>
                 </div>
               </div>
 
