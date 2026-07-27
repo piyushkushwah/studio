@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useMemo } from "react";
@@ -73,7 +72,7 @@ export default function ExpensesPage() {
     amount: "",
     description: "",
     category: EXPENSE_CATEGORIES[0],
-    currency: SUPPORTED_CURRENCIES[0].code,
+    currency: "INR",
     date: format(new Date(), "yyyy-MM-dd")
   });
 
@@ -101,7 +100,7 @@ export default function ExpensesPage() {
         amount: expense.amount.toString(),
         description: expense.description,
         category: expense.category,
-        currency: expense.currency || SUPPORTED_CURRENCIES[0].code,
+        currency: expense.currency || "INR",
         date: expense.date
       });
     } else {
@@ -110,7 +109,7 @@ export default function ExpensesPage() {
         amount: "",
         description: "",
         category: EXPENSE_CATEGORIES[0],
-        currency: SUPPORTED_CURRENCIES[0].code,
+        currency: "INR",
         date: format(new Date(), "yyyy-MM-dd")
       });
     }
@@ -329,7 +328,7 @@ export default function ExpensesPage() {
                       onValueChange={(val) => setFormData(prev => ({ ...prev, currency: val }))}
                     >
                       <SelectTrigger className="h-14 rounded-2xl bg-emerald-50/50 border-emerald-100 text-lg font-black text-emerald-700">
-                        <SelectValue placeholder="USD" />
+                        <SelectValue placeholder="INR" />
                       </SelectTrigger>
                       <SelectContent>
                         {SUPPORTED_CURRENCIES.map(curr => (
