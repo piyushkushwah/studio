@@ -132,7 +132,7 @@ export function FocusPlayer() {
       
       <Popover>
         <PopoverTrigger asChild>
-          <div className="flex items-center gap-1 bg-white border shadow-sm rounded-2xl px-2 h-12 hover:border-primary/30 transition-all cursor-pointer group">
+          <div className="flex items-center gap-1 bg-card border border-border shadow-sm rounded-2xl px-2 h-12 hover:border-primary/30 transition-all cursor-pointer group">
             <Button
               variant="ghost" size="icon"
               className={cn("h-9 w-9 rounded-xl", isPlaying && "text-primary bg-primary/5", hasError && "text-destructive")}
@@ -141,11 +141,11 @@ export function FocusPlayer() {
             </Button>
             <div className="hidden md:flex flex-col pr-2">
               <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground leading-none mb-0.5">Focus Radio</span>
-              <span className="text-xs font-bold truncate max-w-[70px]">{activeSoundId ? activeSoundLabel : "Off"}</span>
+              <span className="text-xs font-bold truncate max-w-[70px] text-primary">{activeSoundId ? activeSoundLabel : "Off"}</span>
             </div>
           </div>
         </PopoverTrigger>
-        <PopoverContent className="w-80 p-4 rounded-[1.5rem] shadow-2xl border-primary/10">
+        <PopoverContent className="w-80 p-4 rounded-[1.5rem] shadow-2xl border-primary/10 bg-card">
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h4 className="font-black text-primary text-sm uppercase tracking-widest">Focus Radio</h4>
@@ -155,9 +155,9 @@ export function FocusPlayer() {
             </div>
 
             {showAddForm && (
-              <div className="bg-muted/30 p-3 rounded-xl space-y-2 border border-dashed">
-                <Input placeholder="Track Name" value={newSongLabel} onChange={e => setNewSongLabel(e.target.value)} className="h-8 text-xs" />
-                <Input placeholder="MP3 URL" value={newSongUrl} onChange={e => setNewSongUrl(e.target.value)} className="h-8 text-xs" />
+              <div className="bg-muted/30 p-3 rounded-xl space-y-2 border border-dashed border-border">
+                <Input placeholder="Track Name" value={newSongLabel} onChange={e => setNewSongLabel(e.target.value)} className="h-8 text-xs bg-background" />
+                <Input placeholder="MP3 URL" value={newSongUrl} onChange={e => setNewSongUrl(e.target.value)} className="h-8 text-xs bg-background" />
                 <div className="flex gap-2">
                   <Button size="sm" className="flex-1 h-8 text-[10px] uppercase font-bold" onClick={handleAddSong}>Save</Button>
                   <Button size="sm" variant="ghost" className="h-8 text-[10px] uppercase font-bold" onClick={() => setShowAddForm(false)}>Cancel</Button>
@@ -196,7 +196,7 @@ export function FocusPlayer() {
               })}
             </div>
 
-            <div className="space-y-3 pt-2 border-t">
+            <div className="space-y-3 pt-2 border-t border-border">
               <div className="flex items-center justify-between text-[10px] font-black text-muted-foreground uppercase tracking-widest">
                 <span>Volume</span>
                 <span>{volume[0]}%</span>

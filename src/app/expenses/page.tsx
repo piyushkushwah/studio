@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useMemo } from "react";
@@ -162,11 +163,11 @@ export default function ExpensesPage() {
       <header className="w-full max-w-5xl flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div className="flex items-center gap-3">
           <Link href="/">
-            <Button variant="ghost" size="icon" className="rounded-xl hover:bg-white shadow-sm">
+            <Button variant="ghost" size="icon" className="rounded-xl hover:bg-card shadow-sm border border-transparent hover:border-border">
               <ArrowLeft className="w-6 h-6" />
             </Button>
           </Link>
-          <div className="bg-emerald-600 text-white p-2.5 rounded-xl shadow-lg shadow-emerald-200 shrink-0">
+          <div className="bg-emerald-600 text-white p-2.5 rounded-xl shadow-lg shadow-emerald-200 dark:shadow-emerald-900/20 shrink-0">
             <Wallet className="w-6 h-6" />
           </div>
           <div>
@@ -183,7 +184,7 @@ export default function ExpensesPage() {
             <CalculatorIcon className="w-5 h-5" />
             <span className="hidden sm:inline">Calc</span>
           </Button>
-          <Button onClick={() => handleOpenDialog()} className="h-12 rounded-xl px-6 gap-2 bg-emerald-600 hover:bg-emerald-700 shadow-xl shadow-emerald-200">
+          <Button onClick={() => handleOpenDialog()} className="h-12 rounded-xl px-6 gap-2 bg-emerald-600 hover:bg-emerald-700 shadow-xl shadow-emerald-200 dark:shadow-emerald-900/20">
             <Plus className="w-5 h-5" />
             Log Expense
           </Button>
@@ -192,21 +193,21 @@ export default function ExpensesPage() {
 
       <main className="w-full max-w-5xl space-y-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <Card className="shadow-2xl shadow-emerald-100 border-white/50 bg-emerald-50/30 backdrop-blur-sm lg:col-span-2">
+          <Card className="shadow-2xl shadow-emerald-100 dark:shadow-emerald-950/20 border-border bg-card backdrop-blur-sm lg:col-span-2">
             <CardHeader className="pb-2">
-              <CardDescription className="font-black text-[10px] uppercase tracking-[0.2em] text-emerald-700/60">Monthly Spending Totals</CardDescription>
+              <CardDescription className="font-black text-[10px] uppercase tracking-[0.2em] text-emerald-700 dark:text-emerald-500">Monthly Spending Totals</CardDescription>
               <div className="flex flex-wrap gap-6 mt-2">
                 {Object.keys(currencyTotals).length > 0 ? (
                   Object.entries(currencyTotals).map(([code, total]) => (
                     <div key={code} className="flex flex-col">
-                      <span className="text-[10px] font-black text-emerald-600/60 uppercase">{code}</span>
-                      <span className="text-2xl font-black text-emerald-700">
+                      <span className="text-[10px] font-black text-emerald-600 uppercase">{code}</span>
+                      <span className="text-2xl font-black text-emerald-700 dark:text-emerald-400">
                         {getCurrencySymbol(code)}{total.toFixed(2)}
                       </span>
                     </div>
                   ))
                 ) : (
-                  <CardTitle className="text-3xl font-black text-emerald-700 flex items-center gap-1">
+                  <CardTitle className="text-3xl font-black text-emerald-700 dark:text-emerald-500 flex items-center gap-1">
                     <Coins className="w-6 h-6" />
                     0.00
                   </CardTitle>
@@ -214,7 +215,7 @@ export default function ExpensesPage() {
               </div>
             </CardHeader>
           </Card>
-          <Card className="shadow-xl shadow-primary/5 border-white/40 bg-white/50 backdrop-blur-sm">
+          <Card className="shadow-xl shadow-primary/5 border-border bg-card backdrop-blur-sm">
             <CardHeader className="pb-2">
               <CardDescription className="font-black text-[10px] uppercase tracking-[0.2em]">Transaction Count</CardDescription>
               <CardTitle className="text-3xl font-black text-primary">
@@ -224,8 +225,8 @@ export default function ExpensesPage() {
           </Card>
         </div>
 
-        <Card className="shadow-2xl shadow-primary/5 border-white/50 bg-white/80 backdrop-blur-xl rounded-[2rem] overflow-hidden">
-          <CardHeader className="border-b bg-white/50">
+        <Card className="shadow-2xl shadow-primary/5 border-border bg-card/80 backdrop-blur-xl rounded-[2rem] overflow-hidden">
+          <CardHeader className="border-b bg-card/50">
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle className="text-lg font-black text-primary">Transaction History</CardTitle>
@@ -249,14 +250,14 @@ export default function ExpensesPage() {
                   </Button>
                 </div>
               ) : (
-                <div className="divide-y">
+                <div className="divide-y border-border">
                   {expenses.map((expense) => (
                     <div 
                       key={expense.id} 
-                      className="group flex items-center justify-between p-4 md:p-6 hover:bg-emerald-50/30 transition-colors"
+                      className="group flex items-center justify-between p-4 md:p-6 hover:bg-emerald-50/30 dark:hover:bg-emerald-900/10 transition-colors"
                     >
                       <div className="flex items-center gap-4">
-                        <div className="bg-white p-3 rounded-2xl shadow-sm border group-hover:border-emerald-200 transition-colors">
+                        <div className="bg-background p-3 rounded-2xl shadow-sm border border-border group-hover:border-emerald-200 dark:group-hover:border-emerald-800 transition-colors">
                           <Tag className="w-5 h-5 text-emerald-600" />
                         </div>
                         <div>
@@ -274,7 +275,7 @@ export default function ExpensesPage() {
                       </div>
                       <div className="flex items-center gap-6">
                         <div className="flex items-baseline gap-1">
-                          <span className="font-black text-emerald-700 text-lg">
+                          <span className="font-black text-emerald-700 dark:text-emerald-500 text-lg">
                             -{getCurrencySymbol(expense.currency)}{expense.amount.toFixed(2)}
                           </span>
                         </div>
@@ -282,7 +283,7 @@ export default function ExpensesPage() {
                           <Button 
                             variant="ghost" 
                             size="icon" 
-                            className="h-9 w-9 rounded-xl hover:bg-white"
+                            className="h-9 w-9 rounded-xl hover:bg-background"
                             onClick={() => handleOpenDialog(expense)}
                           >
                             <Pencil className="w-4 h-4 text-primary" />
@@ -308,7 +309,7 @@ export default function ExpensesPage() {
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="sm:max-w-[425px] p-0 overflow-hidden rounded-[2.5rem] border-none shadow-2xl">
-          <div className="p-8 space-y-8">
+          <div className="p-8 space-y-8 bg-card">
             <DialogHeader>
               <DialogTitle className="text-2xl font-black text-primary tracking-tight">
                 {editingExpense ? "Update Transaction" : "Record Spending"}
@@ -327,7 +328,7 @@ export default function ExpensesPage() {
                       value={formData.currency} 
                       onValueChange={(val) => setFormData(prev => ({ ...prev, currency: val }))}
                     >
-                      <SelectTrigger className="h-14 rounded-2xl bg-emerald-50/50 border-emerald-100 text-lg font-black text-emerald-700">
+                      <SelectTrigger className="h-14 rounded-2xl bg-muted/30 border-border text-lg font-black text-primary">
                         <SelectValue placeholder="INR" />
                       </SelectTrigger>
                       <SelectContent>
@@ -350,7 +351,7 @@ export default function ExpensesPage() {
                       value={formData.amount}
                       onChange={(e) => setFormData(prev => ({ ...prev, amount: e.target.value }))}
                       placeholder="0.00"
-                      className="h-14 pl-10 text-2xl font-black text-emerald-700 bg-emerald-50/50 border-emerald-100 rounded-2xl focus:ring-emerald-200"
+                      className="h-14 pl-10 text-2xl font-black text-emerald-700 bg-muted/30 border-border rounded-2xl focus:ring-emerald-200"
                     />
                   </div>
                 </div>
@@ -363,7 +364,7 @@ export default function ExpensesPage() {
                   value={formData.description}
                   onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                   placeholder="What was this for?"
-                  className="h-12 rounded-xl bg-muted/30 border-transparent focus:bg-white focus:border-primary/20"
+                  className="h-12 rounded-xl bg-muted/30 border-transparent focus:bg-card focus:border-primary/20"
                 />
               </div>
 

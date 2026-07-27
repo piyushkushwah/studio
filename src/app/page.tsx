@@ -248,7 +248,7 @@ export default function DailyTaskTrack() {
   if (!user) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-6">
-        <Card className="max-w-md w-full p-8 text-center space-y-8 shadow-2xl rounded-[2.5rem] border-white/50 bg-white/80 backdrop-blur-xl animate-in fade-in zoom-in duration-500">
+        <Card className="max-w-md w-full p-8 text-center space-y-8 shadow-2xl rounded-[2.5rem] border-border bg-card/80 backdrop-blur-xl animate-in fade-in zoom-in duration-500">
           <div className="bg-primary/10 w-24 h-24 rounded-[2rem] flex items-center justify-center mx-auto text-primary shadow-inner">
             <Layout className="w-12 h-12" />
           </div>
@@ -349,12 +349,12 @@ export default function DailyTaskTrack() {
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={toggleTheme} className="h-12 w-12 rounded-2xl bg-white dark:bg-slate-900 border shadow-sm">
+          <Button variant="ghost" size="icon" onClick={toggleTheme} className="h-12 w-12 rounded-2xl bg-card border shadow-sm">
             {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
           </Button>
           <FocusPlayer />
           <PomodoroTimer />
-          <div id="tour-nav" className="flex items-center gap-1 h-12 bg-white dark:bg-slate-900 border px-2 rounded-2xl shadow-sm">
+          <div id="tour-nav" className="flex items-center gap-1 h-12 bg-card border px-2 rounded-2xl shadow-sm">
             <LabelManager />
             <Link href="/notes">
               <Button variant="ghost" className="flex flex-col items-center justify-center gap-0 h-auto py-1 px-3 rounded-xl hover:bg-primary/5 group" title="Quick Notes">
@@ -379,7 +379,7 @@ export default function DailyTaskTrack() {
               <span className="text-[8px] font-black uppercase tracking-tighter text-muted-foreground/60 mt-0.5">Exit</span>
             </Button>
           </div>
-          <Avatar className="h-12 w-12 border-2 border-white shadow-sm ring-2 ring-primary/10">
+          <Avatar className="h-12 w-12 border-2 border-background shadow-sm ring-2 ring-primary/10">
             <AvatarImage src={user.photoURL || undefined} />
             <AvatarFallback className="bg-primary/5 text-primary font-black">{user.displayName?.charAt(0)}</AvatarFallback>
           </Avatar>
@@ -388,12 +388,12 @@ export default function DailyTaskTrack() {
 
       <main className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-12 gap-10 items-stretch flex-1 min-h-0">
         <div id="tour-calendar" className="lg:col-span-7 flex flex-col gap-8 w-full">
-          <Card className="p-6 md:p-10 shadow-2xl shadow-primary/5 bg-white dark:bg-slate-900 border-white/50 dark:border-slate-800 rounded-[2rem] h-full">
+          <Card className="p-6 md:p-10 shadow-2xl shadow-primary/5 bg-card border-border rounded-[2rem] h-full">
             <div className="flex items-center justify-between mb-8 md:mb-10">
               <h2 className="text-2xl md:text-3xl font-black text-primary tracking-tight">{format(currentMonth, "MMMM yyyy")}</h2>
               <div className="flex gap-2">
-                <Button variant="outline" size="icon" onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="h-10 w-10 bg-white dark:bg-slate-900 shadow-sm rounded-xl"><ChevronLeft className="w-5 h-5" /></Button>
-                <Button variant="outline" size="icon" onClick={() => setCurrentMonth(addMonths(currentMonth, 1))} className="h-10 w-10 bg-white dark:bg-slate-900 shadow-sm rounded-xl"><ChevronRight className="w-5 h-5" /></Button>
+                <Button variant="outline" size="icon" onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="h-10 w-10 bg-card shadow-sm rounded-xl"><ChevronLeft className="w-5 h-5" /></Button>
+                <Button variant="outline" size="icon" onClick={() => setCurrentMonth(addMonths(currentMonth, 1))} className="h-10 w-10 bg-card shadow-sm rounded-xl"><ChevronRight className="w-5 h-5" /></Button>
               </div>
             </div>
             <div className="calendar-grid">
@@ -404,7 +404,7 @@ export default function DailyTaskTrack() {
         </div>
 
         <div id="tour-tasks" className="lg:col-span-5 flex flex-col w-full h-[600px] lg:h-[calc(100vh-14rem)] lg:sticky lg:top-8 min-h-0">
-          <Card className={cn("p-6 md:p-8 shadow-2xl transition-all duration-500 flex flex-col bg-white dark:bg-slate-900 border-white/50 dark:border-slate-800 rounded-[2rem] overflow-hidden h-full", goalMet ? "shadow-accent/10 border-accent/20 ring-1 ring-accent/10" : "shadow-primary/5")}>
+          <Card className={cn("p-6 md:p-8 shadow-2xl transition-all duration-500 flex flex-col bg-card border-border rounded-[2rem] overflow-hidden h-full", goalMet ? "shadow-accent/10 border-accent/20 ring-1 ring-accent/10" : "shadow-primary/5")}>
             <div className="flex items-center justify-between mb-6 shrink-0">
               <div className="flex items-center gap-4">
                 <div className="relative flex items-center justify-center shrink-0">
@@ -424,16 +424,16 @@ export default function DailyTaskTrack() {
 
             <div className="space-y-4 mb-6 shrink-0">
               <div className={cn("flex items-center gap-3 p-3 rounded-2xl border transition-colors", goalMet ? "bg-accent/5 border-accent/20" : "bg-primary/5 border-primary/10")}>
-                <div className={cn("p-2 rounded-lg shadow-sm transition-colors shrink-0", goalMet ? "bg-accent text-white" : "bg-white dark:bg-slate-800 text-primary")}><Trophy className="w-3.5 h-3.5" /></div>
+                <div className={cn("p-2 rounded-lg shadow-sm transition-colors shrink-0", goalMet ? "bg-accent text-white" : "bg-background text-primary")}><Trophy className="w-3.5 h-3.5" /></div>
                 <div className="flex-1">
                   <p className={cn("text-[9px] font-black uppercase tracking-widest", goalMet ? "text-accent" : "text-primary/60")}>Goal</p>
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold">{completedCount} / {dailyGoalValue || 0}</span>
-                    <input type="number" min="0" max="20" value={dailyGoalValue} onChange={(e) => setDailyGoal(selectedDateStr, parseInt(e.target.value) || 0)} className="w-12 h-6 text-[10px] font-bold text-center border-none bg-white dark:bg-slate-800 shadow-sm rounded-lg outline-none" />
+                    <input type="number" min="0" max="20" value={dailyGoalValue} onChange={(e) => setDailyGoal(selectedDateStr, parseInt(e.target.value) || 0)} className="w-12 h-6 text-[10px] font-bold text-center border-none bg-background shadow-sm rounded-lg outline-none" />
                   </div>
                 </div>
               </div>
-              <div className="relative group"><Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground group-focus-within:text-primary" /><input placeholder="Search..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-9 h-10 bg-muted/20 border-transparent rounded-xl text-xs outline-none focus:ring-1 focus:ring-primary/20 dark:text-white" /></div>
+              <div className="relative group"><Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground group-focus-within:text-primary" /><input placeholder="Search..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-9 h-10 bg-muted/20 border-transparent rounded-xl text-xs outline-none focus:ring-1 focus:ring-primary/20" /></div>
               <div className="flex flex-wrap gap-1.5">
                 <Button variant={activeLabelFilter === null ? "default" : "outline"} size="sm" onClick={() => setActiveLabelFilter(null)} className="h-7 px-3 text-[9px] font-black uppercase tracking-widest rounded-lg">All</Button>
                 {labels.map(l => (<Button key={l.id} variant={activeLabelFilter === l.name ? "default" : "outline"} size="sm" onClick={() => setActiveLabelFilter(l.name === activeLabelFilter ? null : l.name)} className={cn("h-7 px-3 text-[9px] font-black uppercase tracking-widest rounded-lg", activeLabelFilter === l.name ? l.color : "hover:border-primary/30")}>{l.name}</Button>))}

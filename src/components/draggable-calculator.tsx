@@ -71,7 +71,7 @@ export function DraggableCalculator({ onClose }: DraggableCalculatorProps) {
       animate={{ opacity: 1, scale: 1, y: 0 }}
       className="fixed z-[100] top-24 right-8 w-64 shadow-2xl pointer-events-auto"
     >
-      <Card className="overflow-hidden border-white/50 bg-white/90 backdrop-blur-xl rounded-[1.5rem] shadow-2xl">
+      <Card className="overflow-hidden border-border bg-card/90 backdrop-blur-xl rounded-[1.5rem] shadow-2xl">
         <div className="bg-primary/5 p-3 flex items-center justify-between cursor-move drag-handle">
           <div className="flex items-center gap-2">
             <GripVertical className="w-4 h-4 text-muted-foreground" />
@@ -83,7 +83,7 @@ export function DraggableCalculator({ onClose }: DraggableCalculatorProps) {
         </div>
 
         <div className="p-4 space-y-4">
-          <div className="bg-muted/30 p-3 rounded-xl text-right overflow-hidden border">
+          <div className="bg-muted/30 p-3 rounded-xl text-right overflow-hidden border border-border">
             <div className="text-[10px] font-bold text-muted-foreground/60 h-4 truncate">
               {expression || "0"}
             </div>
