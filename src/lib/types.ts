@@ -1,3 +1,4 @@
+
 export type Priority = 'low' | 'medium' | 'high';
 
 export interface Label {
@@ -26,6 +27,15 @@ export interface Task {
   priority?: Priority;
 }
 
+export interface Note {
+  id: string;
+  title?: string;
+  content: string;
+  color?: string;
+  createdAt: number;
+  updatedAt: number;
+}
+
 export interface DailyGoal {
   date: string; // YYYY-MM-DD
   targetTasks: number;
@@ -44,6 +54,7 @@ export interface TaskContextType {
   tasks: Task[];
   labels: Label[];
   sessions: Session[];
+  notes: Note[];
   dailyGoals: Record<string, number>;
   customSongs: CustomSong[];
   streak: number;
@@ -67,6 +78,11 @@ export interface TaskContextType {
   setDailyGoal: (date: string, target: number) => void;
   addCustomSong: (label: string, url: string) => void;
   removeCustomSong: (id: string) => void;
+  
+  // Note Actions
+  addNote: (note: Omit<Note, 'id' | 'createdAt' | 'updatedAt'>) => void;
+  updateNote: (id: string, updates: Partial<Note>) => void;
+  deleteNote: (id: string) => void;
   
   // Timer Actions
   setWorkTimerActive: (active: boolean) => void;

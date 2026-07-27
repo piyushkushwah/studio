@@ -2,7 +2,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo, useCallback } from 'react';
-import { Task, Label, Session, TaskContextType, CustomSong } from '@/lib/types';
+import { Task, Label, Session, Note, TaskContextType, CustomSong } from '@/lib/types';
 import { format, subDays, isSameDay } from 'date-fns';
 import { useUser, useFirestore } from '@/firebase';
 import { 
@@ -46,6 +46,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [labels, setLabels] = useState<Label[]>(DEFAULT_LABELS);
   const [sessions, setSessions] = useState<Session[]>([]);
+  const [notes, setNotes] = useState<Note[]>([]);
   const [dailyGoals, setDailyGoals] = useState<Record<string, number>>({});
   const [customSongs, setCustomSongs] = useState<CustomSong[]>([]);
   
@@ -218,6 +219,63 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     }
   }, [user, firestore]);
 
+  const addNote = useCallback((noteData: Omit<Note, 'id' | 'createdAt' | 'updatedAt'>) => {
+    const id = generateId();
+    const now = Date.now();
+    const newNote: Note = { ...noteData, id, createdAt: now, updatedAt: now };
+    
+    if (user && firestore) {
+      const docRef = doc(firestore, 'users', user.uid, 'notes', id);
+      setDoc(docRef, newNote).catch((err) => {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+          path: docRef.path,
+          operation: 'create',
+          requestResourceData: newNote
+        }));
+      });
+    } else {
+      setNotes(prev => [newNote, ...prev]);
+      const stored = JSON.parse(localStorage.getItem('daily_task_track_notes') || '[]');
+      syncLocal('daily_task_track_notes', [newNote, ...stored]);
+    }
+  }, [user, firestore]);
+
+  const updateNote = useCallback((id: string, updates: Partial<Note>) => {
+    const now = Date.now();
+    const finalUpdates = { ...updates, updatedAt: now };
+    
+    if (user && firestore) {
+      const docRef = doc(firestore, 'users', user.uid, 'notes', id);
+      updateDoc(docRef, finalUpdates).catch((err) => {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+          path: docRef.path,
+          operation: 'update',
+          requestResourceData: finalUpdates
+        }));
+      });
+    } else {
+      setNotes(prev => prev.map(n => n.id === id ? { ...n, ...finalUpdates } : n));
+      const stored = JSON.parse(localStorage.getItem('daily_task_track_notes') || '[]');
+      syncLocal('daily_task_track_notes', stored.map((n: Note) => n.id === id ? { ...n, ...finalUpdates } : n));
+    }
+  }, [user, firestore]);
+
+  const deleteNote = useCallback((id: string) => {
+    if (user && firestore) {
+      const docRef = doc(firestore, 'users', user.uid, 'notes', id);
+      deleteDoc(docRef).catch((err) => {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+          path: docRef.path,
+          operation: 'delete'
+        }));
+      });
+    } else {
+      setNotes(prev => prev.filter(n => n.id !== id));
+      const stored = JSON.parse(localStorage.getItem('daily_task_track_notes') || '[]');
+      syncLocal('daily_task_track_notes', stored.filter((n: Note) => n.id !== id));
+    }
+  }, [user, firestore]);
+
   const setDailyGoal = useCallback((date: string, target: number) => {
     const newGoals = { ...dailyGoals, [date]: target };
     if (user && firestore) {
@@ -287,12 +345,14 @@ export function TaskProvider({ children }: { children: ReactNode }) {
         const storedTasks = localStorage.getItem('daily_task_track_tasks');
         const storedLabels = localStorage.getItem('daily_task_track_labels');
         const storedSessions = localStorage.getItem('daily_task_track_sessions');
+        const storedNotes = localStorage.getItem('daily_task_track_notes');
         const storedPrefs = localStorage.getItem('daily_task_track_prefs');
 
         if (storedTasks) setTasks(JSON.parse(storedTasks).sort((a: any, b: any) => b.createdAt - a.createdAt));
         if (storedLabels) setLabels(JSON.parse(storedLabels));
         else setLabels(DEFAULT_LABELS);
         if (storedSessions) setSessions(JSON.parse(storedSessions).sort((a: any, b: any) => b.startTime - a.startTime));
+        if (storedNotes) setNotes(JSON.parse(storedNotes).sort((a: any, b: any) => b.updatedAt - a.updatedAt));
         if (storedPrefs) {
           const prefs = JSON.parse(storedPrefs);
           setDailyGoals(prefs.dailyGoals || {});
@@ -338,6 +398,14 @@ export function TaskProvider({ children }: { children: ReactNode }) {
       setSessions(snapshot.docs
         .map(doc => ({ ...doc.data(), id: doc.id } as Session))
         .sort((a, b) => b.startTime - a.startTime)
+      );
+    }));
+
+    const notesRef = collection(firestore, 'users', userId, 'notes');
+    unsubs.push(onSnapshot(notesRef, (snapshot) => {
+      setNotes(snapshot.docs
+        .map(doc => ({ ...doc.data(), id: doc.id } as Note))
+        .sort((a, b) => b.updatedAt - a.updatedAt)
       );
     }));
 
@@ -388,10 +456,12 @@ export function TaskProvider({ children }: { children: ReactNode }) {
 
   return (
     <TaskContext.Provider value={{ 
-      tasks, labels, sessions, dailyGoals, customSongs, streak,
+      tasks, labels, sessions, notes, dailyGoals, customSongs, streak,
       workTimerLeft, breakTimerLeft, isWorkTimerActive, isBreakTimerActive,
       addTask, updateTask, deleteTask, toggleTask, addLabel, deleteLabel, 
-      addSession, updateSession, deleteSession, setDailyGoal, addCustomSong, removeCustomSong,
+      addSession, updateSession, deleteSession, 
+      addNote, updateNote, deleteNote,
+      setDailyGoal, addCustomSong, removeCustomSong,
       setWorkTimerActive: (a) => { if(a) setBreakTimerActive(false); setWorkTimerActive(a); },
       setBreakTimerActive: (a) => { if(a) setWorkTimerActive(false); setBreakTimerActive(a); },
       resetWorkTimer, resetBreakTimer,

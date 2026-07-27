@@ -47,7 +47,8 @@ import {
   LogOut,
   Layout,
   Loader2,
-  AlertTriangle
+  AlertTriangle,
+  StickyNote
 } from "lucide-react";
 import { Task, Priority } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -241,7 +242,7 @@ export default function DailyTaskTrack() {
                   Whitelisting Required
                 </div>
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  The domain <strong>{authError}</strong> is not authorized. Go to Firebase Console &gt; Authentication &gt; Settings and add it to the &quot;Authorized Domains&quot; list.
+                  The domain <strong>{authError}</strong> is not authorized. Go to Firebase Console {"->"} Authentication {"->"} Settings and add it to the &quot;Authorized Domains&quot; list.
                 </p>
               </div>
             )}
@@ -291,6 +292,12 @@ export default function DailyTaskTrack() {
           <PomodoroTimer />
           <div id="tour-nav" className="flex items-center gap-1 h-12 bg-white border px-2 rounded-2xl shadow-sm">
             <LabelManager />
+            <Link href="/notes">
+              <Button variant="ghost" className="flex flex-col items-center justify-center gap-0 h-auto py-1 px-3 rounded-xl hover:bg-primary/5 group" title="Quick Notes">
+                <StickyNote className="w-4 h-4 text-primary transition-transform group-hover:scale-110" />
+                <span className="text-[8px] font-black uppercase tracking-tighter text-muted-foreground/60 mt-0.5">Notes</span>
+              </Button>
+            </Link>
             <Link href="/time-tracking">
               <Button variant="ghost" className="flex flex-col items-center justify-center gap-0 h-auto py-1 px-3 rounded-xl hover:bg-primary/5 group" title="Time Tracking">
                 <Clock className="w-4 h-4 text-primary transition-transform group-hover:scale-110" />

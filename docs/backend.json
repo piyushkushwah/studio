@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "Task": {
@@ -41,6 +42,20 @@
       },
       "required": ["startTime", "durationMinutes", "type", "date"]
     },
+    "Note": {
+      "title": "Note",
+      "description": "A simple text note for quick thoughts",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "content": { "type": "string" },
+        "color": { "type": "string" },
+        "createdAt": { "type": "number" },
+        "updatedAt": { "type": "number" }
+      },
+      "required": ["content", "createdAt", "updatedAt"]
+    },
     "UserPreference": {
       "title": "User Preference",
       "description": "User specific settings including custom songs",
@@ -79,6 +94,10 @@
     "/users/{userId}/sessions/{sessionId}": {
       "schema": { "$ref": "#/backend/entities/Session" },
       "description": "Recorded productivity sessions"
+    },
+    "/users/{userId}/notes/{noteId}": {
+      "schema": { "$ref": "#/backend/entities/Note" },
+      "description": "Personal notes for the user"
     },
     "/users/{userId}/preferences/main": {
       "schema": { "$ref": "#/backend/entities/UserPreference" },
