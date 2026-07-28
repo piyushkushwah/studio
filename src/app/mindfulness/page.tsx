@@ -36,7 +36,9 @@ import {
   Calendar as CalendarIcon,
   Search,
   Quote,
-  Pencil
+  Pencil,
+  BookOpen,
+  UserCheck
 } from "lucide-react";
 import Link from "next/link";
 import { format, parseISO } from "date-fns";
@@ -44,10 +46,10 @@ import { cn } from "@/lib/utils";
 import { GrowthNote, GrowthNoteType } from "@/lib/types";
 
 const NOTE_TYPES: { value: GrowthNoteType; label: string; icon: any; color: string }[] = [
-  { value: "reflection", label: "Reflection", icon: MessageSquare, color: "text-blue-500 bg-blue-500/10" },
-  { value: "gratitude", label: "Gratitude", icon: Heart, color: "text-pink-500 bg-pink-500/10" },
-  { value: "affirmation", label: "Affirmation", icon: Sun, color: "text-orange-500 bg-orange-500/10" },
-  { value: "lesson", label: "Life Lesson", icon: Zap, color: "text-emerald-500 bg-emerald-500/10" },
+  { value: "reflection", label: "चिंतन (Reflection)", icon: MessageSquare, color: "text-blue-500 bg-blue-500/10" },
+  { value: "gratitude", label: "आभार (Gratitude)", icon: Heart, color: "text-pink-500 bg-pink-500/10" },
+  { value: "affirmation", label: "सकारात्मक विचार (Affirmation)", icon: Sun, color: "text-orange-500 bg-orange-500/10" },
+  { value: "lesson", label: "जीवन की सीख (Lesson)", icon: Zap, color: "text-emerald-500 bg-emerald-500/10" },
 ];
 
 export default function MindfulnessPage() {
@@ -58,6 +60,7 @@ export default function MindfulnessPage() {
   
   const [formData, setFormData] = useState({
     content: "",
+    source: "",
     type: "reflection" as GrowthNoteType,
     date: format(new Date(), "yyyy-MM-dd")
   });
@@ -65,7 +68,10 @@ export default function MindfulnessPage() {
   const filteredNotes = useMemo(() => {
     let filtered = growthNotes;
     if (searchQuery) {
-      filtered = filtered.filter(n => n.content.toLowerCase().includes(searchQuery.toLowerCase()));
+      filtered = filtered.filter(n => 
+        n.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        n.source?.toLowerCase().includes(searchQuery.toLowerCase())
+      );
     }
     return filtered;
   }, [growthNotes, searchQuery]);
@@ -83,6 +89,7 @@ export default function MindfulnessPage() {
       setEditingNote(note);
       setFormData({
         content: note.content,
+        source: note.source || "",
         type: note.type,
         date: note.date
       });
@@ -90,6 +97,7 @@ export default function MindfulnessPage() {
       setEditingNote(null);
       setFormData({
         content: "",
+        source: "",
         type: "reflection",
         date: format(new Date(), "yyyy-MM-dd")
       });
@@ -100,18 +108,17 @@ export default function MindfulnessPage() {
   const handleSave = () => {
     if (!formData.content.trim()) return;
 
+    const entryData = {
+      content: formData.content,
+      source: formData.source.trim() || undefined,
+      type: formData.type,
+      date: formData.date
+    };
+
     if (editingNote) {
-      updateGrowthNote(editingNote.id, {
-        content: formData.content,
-        type: formData.type,
-        date: formData.date
-      });
+      updateGrowthNote(editingNote.id, entryData);
     } else {
-      addGrowthNote({
-        content: formData.content,
-        type: formData.type,
-        date: formData.date
-      });
+      addGrowthNote(entryData);
     }
     setIsDialogOpen(false);
   };
@@ -148,7 +155,7 @@ export default function MindfulnessPage() {
           <div className="relative group hidden sm:block">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input 
-              placeholder="Search reflections..." 
+              placeholder="Search reflections or gurus..." 
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               className="pl-10 h-12 w-64 rounded-xl bg-card border-border"
@@ -172,7 +179,7 @@ export default function MindfulnessPage() {
                 <span className="text-xl font-black text-primary">{(stats as any)[type.value]}</span>
               </CardHeader>
               <CardContent className="px-4 pb-4">
-                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{type.label}s</p>
+                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{type.label}</p>
               </CardContent>
             </Card>
           ))}
@@ -220,9 +227,18 @@ export default function MindfulnessPage() {
                             </Button>
                           </div>
                         </div>
-                        <p className="text-lg font-medium text-primary leading-relaxed whitespace-pre-wrap">
-                          {note.content}
-                        </p>
+                        <div className="space-y-4">
+                          <p className="text-lg font-medium text-primary leading-relaxed whitespace-pre-wrap">
+                            {note.content}
+                          </p>
+                          {note.source && (
+                            <div className="flex items-center gap-2 pt-2 border-t border-border/50">
+                              <UserCheck className="w-3.5 h-3.5 text-purple-500" />
+                              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Source:</span>
+                              <span className="text-xs font-bold text-primary">{note.source}</span>
+                            </div>
+                          )}
+                        </div>
                       </CardContent>
                     </Card>
                   );
@@ -279,7 +295,7 @@ export default function MindfulnessPage() {
             <div className="space-y-6">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <UILabel className="text-[10px] font-black uppercase tracking-widest text-primary/60">Note Category</UILabel>
+                  <UILabel className="text-[10px] font-black uppercase tracking-widest text-primary/60">Category (श्रेणी)</UILabel>
                   <Select value={formData.type} onValueChange={(val: any) => setFormData(prev => ({ ...prev, type: val }))}>
                     <SelectTrigger className="h-12 rounded-xl bg-muted/30 border-transparent font-bold capitalize">
                       <SelectValue />
@@ -292,7 +308,7 @@ export default function MindfulnessPage() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <UILabel htmlFor="date" className="text-[10px] font-black uppercase tracking-widest text-primary/60">Date</UILabel>
+                  <UILabel htmlFor="date" className="text-[10px] font-black uppercase tracking-widest text-primary/60">Date (तारीख)</UILabel>
                   <Input
                     id="date"
                     type="date"
@@ -304,7 +320,20 @@ export default function MindfulnessPage() {
               </div>
 
               <div className="space-y-2">
-                <UILabel htmlFor="content" className="text-[10px] font-black uppercase tracking-widest text-primary/60">Your Thoughts</UILabel>
+                <UILabel htmlFor="source" className="text-[10px] font-black uppercase tracking-widest text-primary/60 flex items-center gap-2">
+                  <BookOpen className="w-3 h-3" /> Source (Guru / Book / Person)
+                </UILabel>
+                <Input
+                  id="source"
+                  value={formData.source}
+                  onChange={(e) => setFormData(prev => ({ ...prev, source: e.target.value }))}
+                  placeholder="e.g. Bhagavad Gita, Swami Vivekananda"
+                  className="h-12 rounded-xl bg-muted/30 border-transparent font-bold"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <UILabel htmlFor="content" className="text-[10px] font-black uppercase tracking-widest text-primary/60">Your Thoughts (विचार)</UILabel>
                 <Textarea
                   id="content"
                   value={formData.content}

@@ -42,6 +42,7 @@ export interface GrowthNote {
   id: string;
   content: string;
   type: GrowthNoteType;
+  source?: string; // Guru name or Book name
   date: string; // YYYY-MM-DD
   createdAt: number;
 }
