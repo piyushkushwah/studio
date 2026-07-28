@@ -11,6 +11,7 @@ import { LabelManager } from "@/components/label-manager";
 import { PomodoroTimer } from "@/components/pomodoro-timer";
 import { FocusPlayer } from "@/components/focus-player";
 import { AppTour } from "@/components/app-tour";
+import { FloatButtonGroup } from "@/components/float-button-group";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card } from "@/components/ui/card";
@@ -46,14 +47,9 @@ import {
   Moon,
   Sun,
   Sparkles,
-  Apple,
-  Dumbbell,
-  Compass,
-  Wallet,
-  BarChart2,
-  StickyNote,
   LogOut,
-  Clock
+  Clock,
+  BarChart2
 } from "lucide-react";
 import Link from "next/link";
 import { Task, Priority } from "@/lib/types";
@@ -62,13 +58,7 @@ import { getRandomQuote } from "@/lib/quotes";
 import { useToast } from "@/hooks/use-toast";
 import { generateDailyBriefing } from "@/ai/flows/daily-briefing-flow";
 
-const NAV_ITEMS = [
-  { title: "Notes", url: "/notes", icon: StickyNote, color: "text-blue-500" },
-  { title: "Growth", url: "/mindfulness", icon: Sparkles, color: "text-purple-500" },
-  { title: "Health", url: "/health", icon: Apple, color: "text-sky-500" },
-  { title: "Workout", url: "/exercise", icon: Dumbbell, color: "text-orange-500" },
-  { title: "Travel", url: "/travel", icon: Compass, color: "text-emerald-500" },
-  { title: "Wallet", url: "/expenses", icon: Wallet, color: "text-emerald-600" },
+const HEADER_NAV_ITEMS = [
   { title: "Time Log", url: "/time-tracking", icon: Clock, color: "text-primary" },
   { title: "Stats", url: "/analytics", icon: BarChart2, color: "text-primary" },
 ];
@@ -320,6 +310,7 @@ export default function DailyTaskTrack() {
   return (
     <div className="min-h-screen bg-background p-4 md:p-8 flex flex-col items-center overflow-x-hidden animate-in fade-in duration-700">
       <AppTour />
+      <FloatButtonGroup />
       
       <header className="w-full max-w-6xl flex flex-col gap-8 mb-8 md:mb-12 shrink-0">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -374,7 +365,7 @@ export default function DailyTaskTrack() {
         </div>
 
         <div className="flex flex-wrap gap-2 md:gap-3 p-1.5 bg-card/50 backdrop-blur-sm border rounded-2xl shadow-sm">
-          {NAV_ITEMS.map((item) => (
+          {HEADER_NAV_ITEMS.map((item) => (
             <Link key={item.title} href={item.url} className="flex-1 min-w-[90px]">
               <Button variant="ghost" className="w-full h-12 gap-2 rounded-xl hover:bg-primary/5 transition-all">
                 <item.icon className={cn("w-4 h-4", item.color)} />
