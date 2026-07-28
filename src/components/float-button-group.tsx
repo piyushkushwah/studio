@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -63,7 +64,7 @@ export function FloatButtonGroup() {
           "w-16 h-16 rounded-[2rem] shadow-2xl transition-all duration-300 active:scale-90 ring-4 ring-background",
           isOpen 
             ? "bg-destructive hover:bg-destructive/90 rotate-90" 
-            : "bg-primary hover:bg-primary/90 hover:shadow-primary/40"
+            : "bg-blue-600 hover:bg-blue-700 hover:shadow-blue-600/40 text-white"
         )}
       >
         {isOpen ? <X className="w-8 h-8" /> : <LayoutGrid className="w-8 h-8" />}
