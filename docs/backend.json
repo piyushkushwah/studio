@@ -1,4 +1,3 @@
-
 {
   "entities": {
     "Task": {
@@ -71,15 +70,43 @@
       },
       "required": ["amount", "currency", "category", "description", "date", "createdAt"]
     },
+    "DietEntry": {
+      "title": "Diet Entry",
+      "description": "A log of food consumption",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "calories": { "type": "number" },
+        "mealType": { "type": "string", "enum": ["breakfast", "lunch", "dinner", "snack"] },
+        "date": { "type": "string", "format": "date" },
+        "createdAt": { "type": "number" }
+      },
+      "required": ["name", "mealType", "date", "createdAt"]
+    },
+    "WaterEntry": {
+      "title": "Water Entry",
+      "description": "A log of water consumption in milliliters",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "amount": { "type": "number" },
+        "date": { "type": "string", "format": "date" },
+        "createdAt": { "type": "number" }
+      },
+      "required": ["amount", "date", "createdAt"]
+    },
     "UserPreference": {
       "title": "User Preference",
-      "description": "User specific settings including custom songs",
+      "description": "User specific settings including custom songs and goals",
       "type": "object",
       "properties": {
         "dailyGoals": { 
           "type": "object", 
           "additionalProperties": { "type": "number" } 
         },
+        "waterGoal": { "type": "number" },
+        "calorieGoal": { "type": "number" },
         "customSongs": { 
           "type": "array", 
           "items": {
@@ -117,6 +144,14 @@
     "/users/{userId}/expenses/{expenseId}": {
       "schema": { "$ref": "#/backend/entities/Expense" },
       "description": "User financial expenses"
+    },
+    "/users/{userId}/diet/{dietId}": {
+      "schema": { "$ref": "#/backend/entities/DietEntry" },
+      "description": "User daily food log"
+    },
+    "/users/{userId}/water/{waterId}": {
+      "schema": { "$ref": "#/backend/entities/WaterEntry" },
+      "description": "User daily water intake log"
     },
     "/users/{userId}/preferences/main": {
       "schema": { "$ref": "#/backend/entities/UserPreference" },

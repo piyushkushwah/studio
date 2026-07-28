@@ -1,4 +1,3 @@
-
 export type Priority = 'low' | 'medium' | 'high';
 
 export interface Label {
@@ -46,6 +45,22 @@ export interface Expense {
   createdAt: number;
 }
 
+export interface DietEntry {
+  id: string;
+  name: string;
+  calories: number;
+  mealType: 'breakfast' | 'lunch' | 'dinner' | 'snack';
+  date: string; // YYYY-MM-DD
+  createdAt: number;
+}
+
+export interface WaterEntry {
+  id: string;
+  amount: number;
+  date: string; // YYYY-MM-DD
+  createdAt: number;
+}
+
 export interface DailyGoal {
   date: string; // YYYY-MM-DD
   targetTasks: number;
@@ -66,7 +81,11 @@ export interface TaskContextType {
   sessions: Session[];
   notes: Note[];
   expenses: Expense[];
+  diet: DietEntry[];
+  water: WaterEntry[];
   dailyGoals: Record<string, number>;
+  waterGoal: number;
+  calorieGoal: number;
   customSongs: CustomSong[];
   streak: number;
   
@@ -87,6 +106,8 @@ export interface TaskContextType {
   updateSession: (id: string, updates: Partial<Session>) => void;
   deleteSession: (id: string) => void;
   setDailyGoal: (date: string, target: number) => void;
+  setWaterGoal: (target: number) => void;
+  setCalorieGoal: (target: number) => void;
   addCustomSong: (label: string, url: string) => void;
   removeCustomSong: (id: string) => void;
   
@@ -99,6 +120,12 @@ export interface TaskContextType {
   addExpense: (expense: Omit<Expense, 'id' | 'createdAt'>) => void;
   updateExpense: (id: string, updates: Partial<Expense>) => void;
   deleteExpense: (id: string) => void;
+
+  // Health Actions
+  addDietEntry: (entry: Omit<DietEntry, 'id' | 'createdAt'>) => void;
+  deleteDietEntry: (id: string) => void;
+  addWaterEntry: (amount: number, date?: string) => void;
+  deleteWaterEntry: (id: string) => void;
   
   // Timer Actions
   setWorkTimerActive: (active: boolean) => void;
