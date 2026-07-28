@@ -146,7 +146,7 @@ export function AppHeader() {
           </div>
         </div>
 
-        <div className="flex flex-col items-end gap-3 xl:ml-auto">
+        <div className="flex flex-col items-start gap-3 xl:ml-auto">
           {/* Top Row: Focus Radio & Navigation Modules */}
           <div className="flex items-center gap-3">
             <FocusPlayer />
