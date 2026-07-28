@@ -44,9 +44,9 @@ export function FloatButtonGroup() {
                 <Link href={item.url}>
                   <Button 
                     variant="ghost"
-                    className="h-12 px-6 gap-3 rounded-[1.25rem] shadow-lg bg-white text-primary hover:bg-slate-50 border border-primary/10 transition-all font-black uppercase tracking-widest text-[10px]"
+                    className="h-12 px-6 gap-3 rounded-[1.25rem] shadow-lg bg-white text-slate-600 hover:text-primary hover:bg-slate-50 border border-primary/10 transition-all font-black uppercase tracking-widest text-[10px]"
                   >
-                    <item.icon className="w-5 h-5" />
+                    <item.icon className="w-5 h-5 transition-colors" />
                     <span>{item.title}</span>
                   </Button>
                 </Link>
