@@ -16,7 +16,6 @@ import { ArrowLeft, PieChart as PieChartIcon, Info, FileSpreadsheet, Flame, Cale
 import Link from "next/link";
 import { format, eachDayOfInterval, subDays } from "date-fns";
 import { cn } from "@/lib/utils";
-import { SidebarTrigger } from "@/components/ui/sidebar";
 
 export default function AnalyticsPage() {
   const { tasks, labels, isInitialized, sessions } = useTasks();
@@ -146,7 +145,6 @@ export default function AnalyticsPage() {
     <div className="min-h-screen bg-background p-4 md:p-8 flex flex-col items-center">
       <header className="w-full max-w-5xl flex items-center justify-between mb-8">
         <div className="flex items-center gap-3">
-          <SidebarTrigger className="h-10 w-10 text-primary border-border bg-card shadow-sm" />
           <Link href="/">
             <Button variant="ghost" size="icon" className="rounded-xl">
               <ArrowLeft className="w-6 h-6" />

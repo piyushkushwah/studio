@@ -45,14 +45,31 @@ import {
   AlertTriangle,
   Moon,
   Sun,
-  Sparkles
+  Sparkles,
+  Apple,
+  Dumbbell,
+  Compass,
+  Wallet,
+  BarChart2,
+  StickyNote,
+  LogOut
 } from "lucide-react";
+import Link from "next/link";
 import { Task, Priority } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { getRandomQuote } from "@/lib/quotes";
 import { useToast } from "@/hooks/use-toast";
 import { generateDailyBriefing } from "@/ai/flows/daily-briefing-flow";
-import { SidebarTrigger } from "@/components/ui/sidebar";
+
+const NAV_ITEMS = [
+  { title: "Notes", url: "/notes", icon: StickyNote, color: "text-blue-500" },
+  { title: "Growth", url: "/mindfulness", icon: Sparkles, color: "text-purple-500" },
+  { title: "Health", url: "/health", icon: Apple, color: "text-sky-500" },
+  { title: "Workout", url: "/exercise", icon: Dumbbell, color: "text-orange-500" },
+  { title: "Travel", url: "/travel", icon: Compass, color: "text-emerald-500" },
+  { title: "Wallet", url: "/expenses", icon: Wallet, color: "text-emerald-600" },
+  { title: "Stats", url: "/analytics", icon: BarChart2, color: "text-primary" },
+];
 
 export default function DailyTaskTrack() {
   const auth = useAuth();
@@ -127,6 +144,12 @@ export default function DailyTaskTrack() {
     } finally {
       setIsAuthProcessing(false);
     }
+  };
+
+  const handleLogout = async () => {
+    if (!auth) return;
+    await signOut(auth);
+    toast({ title: "Signed Out", description: "Successfully logged out." });
   };
 
   const fetchDailyBriefing = async () => {
@@ -296,52 +319,67 @@ export default function DailyTaskTrack() {
     <div className="min-h-screen bg-background p-4 md:p-8 flex flex-col items-center overflow-x-hidden animate-in fade-in duration-700">
       <AppTour />
       
-      <header id="tour-header" className="w-full max-w-6xl flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 md:mb-12 shrink-0">
-        <div className="flex items-center gap-5 min-w-0">
-          <SidebarTrigger className="h-10 w-10 text-primary border-border bg-card shadow-sm hover:bg-muted" />
-          <div className="bg-primary text-primary-foreground p-3 rounded-2xl shadow-xl shadow-primary/20 shrink-0 hidden md:block">
-            <CalendarIcon className="w-7 h-7" />
+      <header id="tour-header" className="w-full max-w-6xl flex flex-col gap-8 mb-8 md:mb-12 shrink-0">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="flex items-center gap-5 min-w-0">
+            <div className="bg-primary text-primary-foreground p-3 rounded-2xl shadow-xl shadow-primary/20 shrink-0 hidden md:block">
+              <CalendarIcon className="w-7 h-7" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl md:text-3xl font-black tracking-tight text-primary leading-tight truncate">{greeting}, {user.displayName?.split(' ')[0]}</h1>
+                {streak > 0 && (
+                  <div className="flex items-center gap-1 bg-orange-100 dark:bg-orange-900/30 text-orange-600 px-2 py-0.5 rounded-full text-xs font-bold border border-orange-200 dark:border-orange-800/30 shrink-0">
+                    <Flame className="w-3 h-3 fill-current" />
+                    {streak}
+                  </div>
+                )}
+              </div>
+              <div className="mt-1 flex flex-col gap-1">
+                {dailyBriefing ? (
+                  <div className="flex items-start gap-2 bg-primary/5 p-2 rounded-xl border border-primary/10 animate-in slide-in-from-left-2 max-w-md">
+                    <Sparkles className="w-3 h-3 text-primary mt-0.5 shrink-0" />
+                    <p className="text-[10px] font-bold text-primary/80 leading-relaxed italic pr-8">{dailyBriefing}</p>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <Quote className="w-3 h-3 text-accent shrink-0" />
+                    {quote ? <p className="text-xs italic text-muted-foreground font-medium truncate">{quote}</p> : <Skeleton className="h-2 w-[180px]" />}
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-5 w-5 rounded-full hover:bg-primary/10" 
+                      onClick={fetchDailyBriefing}
+                      disabled={isGeneratingBriefing}
+                    >
+                      {isGeneratingBriefing ? <Loader2 className="w-3 h-3 animate-spin text-primary" /> : <Sparkles className="w-3 h-3 text-primary" />}
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2">
-              <h1 className="text-2xl md:text-3xl font-black tracking-tight text-primary leading-tight truncate">{greeting}, {user.displayName?.split(' ')[0]}</h1>
-              {streak > 0 && (
-                <div className="flex items-center gap-1 bg-orange-100 dark:bg-orange-900/30 text-orange-600 px-2 py-0.5 rounded-full text-xs font-bold border border-orange-200 dark:border-orange-800/30 shrink-0">
-                  <Flame className="w-3 h-3 fill-current" />
-                  {streak}
-                </div>
-              )}
-            </div>
-            <div className="mt-1 flex flex-col gap-1">
-              {dailyBriefing ? (
-                <div className="flex items-start gap-2 bg-primary/5 p-2 rounded-xl border border-primary/10 animate-in slide-in-from-left-2 max-w-md">
-                  <Sparkles className="w-3 h-3 text-primary mt-0.5 shrink-0" />
-                  <p className="text-[10px] font-bold text-primary/80 leading-relaxed italic pr-8">{dailyBriefing}</p>
-                </div>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <Quote className="w-3 h-3 text-accent shrink-0" />
-                  {quote ? <p className="text-xs italic text-muted-foreground font-medium truncate">{quote}</p> : <Skeleton className="h-2 w-[180px]" />}
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="h-5 w-5 rounded-full hover:bg-primary/10" 
-                    onClick={fetchDailyBriefing}
-                    disabled={isGeneratingBriefing}
-                  >
-                    {isGeneratingBriefing ? <Loader2 className="w-3 h-3 animate-spin text-primary" /> : <Sparkles className="w-3 h-3 text-primary" />}
-                  </Button>
-                </div>
-              )}
-            </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <Button variant="ghost" size="icon" onClick={toggleTheme} className="h-12 w-12 rounded-2xl bg-card border shadow-sm">
+              {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            </Button>
+            <Button variant="ghost" size="icon" onClick={handleLogout} className="h-12 w-12 rounded-2xl bg-card border shadow-sm text-muted-foreground hover:text-destructive">
+              <LogOut className="w-5 h-5" />
+            </Button>
+            <FocusPlayer />
+            <PomodoroTimer />
           </div>
         </div>
-        <div className="flex flex-wrap items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={toggleTheme} className="h-12 w-12 rounded-2xl bg-card border shadow-sm">
-            {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-          </Button>
-          <FocusPlayer />
-          <PomodoroTimer />
+
+        <div className="flex flex-wrap gap-2 md:gap-3 p-1.5 bg-card/50 backdrop-blur-sm border rounded-2xl shadow-sm">
+          {NAV_ITEMS.map((item) => (
+            <Link key={item.title} href={item.url} className="flex-1 min-w-[90px]">
+              <Button variant="ghost" className="w-full h-12 gap-2 rounded-xl hover:bg-primary/5 transition-all">
+                <item.icon className={cn("w-4 h-4", item.color)} />
+                <span className="text-[10px] font-black uppercase tracking-widest">{item.title}</span>
+              </Button>
+            </Link>
+          ))}
         </div>
       </header>
 
