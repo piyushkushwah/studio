@@ -17,12 +17,12 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 const FLOAT_ITEMS = [
-  { title: "Notes", url: "/notes", icon: StickyNote, color: "bg-blue-500/10 text-blue-600 border border-blue-200/50 hover:bg-blue-500/20 dark:border-blue-800/30 dark:text-blue-400" },
-  { title: "Growth", url: "/mindfulness", icon: Sparkles, color: "bg-purple-500/10 text-purple-600 border border-purple-200/50 hover:bg-purple-500/20 dark:border-purple-800/30 dark:text-purple-400" },
-  { title: "Health", url: "/health", icon: Apple, color: "bg-sky-500/10 text-sky-600 border border-sky-200/50 hover:bg-sky-500/20 dark:border-sky-800/30 dark:text-sky-400" },
-  { title: "Workout", url: "/exercise", icon: Dumbbell, color: "bg-orange-500/10 text-orange-600 border border-orange-200/50 hover:bg-orange-500/20 dark:border-orange-800/30 dark:text-orange-400" },
-  { title: "Travel", url: "/travel", icon: Compass, color: "bg-emerald-500/10 text-emerald-600 border border-emerald-200/50 hover:bg-emerald-500/20 dark:border-emerald-800/30 dark:text-emerald-400" },
-  { title: "Wallet", url: "/expenses", icon: Wallet, color: "bg-emerald-600/10 text-emerald-700 border border-emerald-200/50 hover:bg-emerald-600/20 dark:border-emerald-800/30 dark:text-emerald-500" },
+  { title: "Notes", url: "/notes", icon: StickyNote },
+  { title: "Growth", url: "/mindfulness", icon: Sparkles },
+  { title: "Health", url: "/health", icon: Apple },
+  { title: "Workout", url: "/exercise", icon: Dumbbell },
+  { title: "Travel", url: "/travel", icon: Compass },
+  { title: "Wallet", url: "/expenses", icon: Wallet },
 ];
 
 export function FloatButtonGroup() {
@@ -44,10 +44,7 @@ export function FloatButtonGroup() {
                 <Link href={item.url}>
                   <Button 
                     variant="ghost"
-                    className={cn(
-                      "h-12 px-6 gap-3 rounded-[1.25rem] shadow-lg backdrop-blur-md hover:scale-105 transition-all font-black uppercase tracking-widest text-[10px]",
-                      item.color
-                    )}
+                    className="h-12 px-6 gap-3 rounded-[1.25rem] shadow-lg bg-white text-primary hover:bg-slate-50 border border-primary/10 transition-all font-black uppercase tracking-widest text-[10px]"
                   >
                     <item.icon className="w-5 h-5" />
                     <span>{item.title}</span>
