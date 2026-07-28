@@ -365,6 +365,12 @@ export default function DailyTaskTrack() {
                 <span className="text-[8px] font-black uppercase tracking-tighter text-muted-foreground/60 mt-0.5">Notes</span>
               </Button>
             </Link>
+            <Link href="/mindfulness">
+              <Button variant="ghost" className="flex flex-col items-center justify-center gap-0 h-auto py-1 px-3 rounded-xl hover:bg-purple-50 dark:hover:bg-purple-900/20 group" title="Mindfulness Sanctuary">
+                <Sparkles className="w-4 h-4 text-purple-600 transition-transform group-hover:scale-110" />
+                <span className="text-[8px] font-black uppercase tracking-tighter text-muted-foreground/60 mt-0.5">Growth</span>
+              </Button>
+            </Link>
             <Link href="/health">
               <Button variant="ghost" className="flex flex-col items-center justify-center gap-0 h-auto py-1 px-3 rounded-xl hover:bg-sky-50 dark:hover:bg-sky-900/20 group" title="Health Tracker">
                 <Apple className="w-4 h-4 text-sky-600 transition-transform group-hover:scale-110" />

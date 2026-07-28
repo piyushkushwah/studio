@@ -56,6 +56,19 @@
       },
       "required": ["content", "createdAt", "updatedAt"]
     },
+    "GrowthNote": {
+      "title": "Growth Note",
+      "description": "Adhyatmic or self-improvement reflection",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "content": { "type": "string" },
+        "type": { "type": "string", "enum": ["reflection", "gratitude", "affirmation", "lesson"] },
+        "date": { "type": "string", "format": "date" },
+        "createdAt": { "type": "number" }
+      },
+      "required": ["content", "type", "date", "createdAt"]
+    },
     "Expense": {
       "title": "Expense",
       "description": "A financial transaction for tracking spending",
@@ -174,6 +187,10 @@
     "/users/{userId}/notes/{noteId}": {
       "schema": { "$ref": "#/backend/entities/Note" },
       "description": "Personal notes for the user"
+    },
+    "/users/{userId}/growthNotes/{noteId}": {
+      "schema": { "$ref": "#/backend/entities/GrowthNote" },
+      "description": "Self-improvement and Adhyatmic notes"
     },
     "/users/{userId}/expenses/{expenseId}": {
       "schema": { "$ref": "#/backend/entities/Expense" },

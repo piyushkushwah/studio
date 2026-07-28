@@ -36,6 +36,16 @@ export interface Note {
   updatedAt: number;
 }
 
+export type GrowthNoteType = 'reflection' | 'gratitude' | 'affirmation' | 'lesson';
+
+export interface GrowthNote {
+  id: string;
+  content: string;
+  type: GrowthNoteType;
+  date: string; // YYYY-MM-DD
+  createdAt: number;
+}
+
 export interface Expense {
   id: string;
   amount: number;
@@ -102,6 +112,7 @@ export interface TaskContextType {
   labels: Label[];
   sessions: Session[];
   notes: Note[];
+  growthNotes: GrowthNote[];
   expenses: Expense[];
   diet: DietEntry[];
   water: WaterEntry[];
@@ -142,6 +153,11 @@ export interface TaskContextType {
   addNote: (note: Omit<Note, 'id' | 'createdAt' | 'updatedAt'>) => void;
   updateNote: (id: string, updates: Partial<Note>) => void;
   deleteNote: (id: string) => void;
+
+  // Growth Note Actions
+  addGrowthNote: (note: Omit<GrowthNote, 'id' | 'createdAt'>) => void;
+  updateGrowthNote: (id: string, updates: Partial<GrowthNote>) => void;
+  deleteGrowthNote: (id: string) => void;
 
   // Expense Actions
   addExpense: (expense: Omit<Expense, 'id' | 'createdAt'>) => void;

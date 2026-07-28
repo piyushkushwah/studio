@@ -2,7 +2,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo, useCallback } from 'react';
-import { Task, Label, Session, Note, Expense, DietEntry, WaterEntry, Exercise, TravelGoal, TaskContextType, CustomSong } from '@/lib/types';
+import { Task, Label, Session, Note, GrowthNote, Expense, DietEntry, WaterEntry, Exercise, TravelGoal, TaskContextType, CustomSong } from '@/lib/types';
 import { format, subDays, isSameDay } from 'date-fns';
 import { useUser, useFirestore } from '@/firebase';
 import { 
@@ -47,6 +47,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
   const [labels, setLabels] = useState<Label[]>(DEFAULT_LABELS);
   const [sessions, setSessions] = useState<Session[]>([]);
   const [notes, setNotes] = useState<Note[]>([]);
+  const [growthNotes, setGrowthNotes] = useState<GrowthNote[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [diet, setDiet] = useState<DietEntry[]>([]);
   const [water, setWater] = useState<WaterEntry[]>([]);
@@ -282,6 +283,59 @@ export function TaskProvider({ children }: { children: ReactNode }) {
       setNotes(prev => prev.filter(n => n.id !== id));
       const stored = JSON.parse(localStorage.getItem('daily_task_track_notes') || '[]');
       syncLocal('daily_task_track_notes', stored.filter((n: Note) => n.id !== id));
+    }
+  }, [user, firestore]);
+
+  const addGrowthNote = useCallback((noteData: Omit<GrowthNote, 'id' | 'createdAt'>) => {
+    const id = generateId();
+    const newNote: GrowthNote = { ...noteData, id, createdAt: Date.now() };
+    
+    if (user && firestore) {
+      const docRef = doc(firestore, 'users', user.uid, 'growthNotes', id);
+      setDoc(docRef, newNote).catch((err) => {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+          path: docRef.path,
+          operation: 'create',
+          requestResourceData: newNote
+        }));
+      });
+    } else {
+      setGrowthNotes(prev => [newNote, ...prev]);
+      const stored = JSON.parse(localStorage.getItem('daily_task_track_growth') || '[]');
+      syncLocal('daily_task_track_growth', [newNote, ...stored]);
+    }
+  }, [user, firestore]);
+
+  const updateGrowthNote = useCallback((id: string, updates: Partial<GrowthNote>) => {
+    if (user && firestore) {
+      const docRef = doc(firestore, 'users', user.uid, 'growthNotes', id);
+      updateDoc(docRef, updates).catch((err) => {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+          path: docRef.path,
+          operation: 'update',
+          requestResourceData: updates
+        }));
+      });
+    } else {
+      setGrowthNotes(prev => prev.map(n => n.id === id ? { ...n, ...updates } : n));
+      const stored = JSON.parse(localStorage.getItem('daily_task_track_growth') || '[]');
+      syncLocal('daily_task_track_growth', stored.map((n: GrowthNote) => n.id === id ? { ...n, ...updates } : n));
+    }
+  }, [user, firestore]);
+
+  const deleteGrowthNote = useCallback((id: string) => {
+    if (user && firestore) {
+      const docRef = doc(firestore, 'users', user.uid, 'growthNotes', id);
+      deleteDoc(docRef).catch((err) => {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+          path: docRef.path,
+          operation: 'delete'
+        }));
+      });
+    } else {
+      setGrowthNotes(prev => prev.filter(n => n.id !== id));
+      const stored = JSON.parse(localStorage.getItem('daily_task_track_growth') || '[]');
+      syncLocal('daily_task_track_growth', stored.filter((n: GrowthNote) => n.id !== id));
     }
   }, [user, firestore]);
 
@@ -608,6 +662,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
         const storedLabels = localStorage.getItem('daily_task_track_labels');
         const storedSessions = localStorage.getItem('daily_task_track_sessions');
         const storedNotes = localStorage.getItem('daily_task_track_notes');
+        const storedGrowth = localStorage.getItem('daily_task_track_growth');
         const storedExpenses = localStorage.getItem('daily_task_track_expenses');
         const storedDiet = localStorage.getItem('daily_task_track_diet');
         const storedWater = localStorage.getItem('daily_task_track_water');
@@ -620,6 +675,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
         else setLabels(DEFAULT_LABELS);
         if (storedSessions) setSessions(JSON.parse(storedSessions).sort((a: any, b: any) => b.startTime - a.startTime));
         if (storedNotes) setNotes(JSON.parse(storedNotes).sort((a: any, b: any) => b.updatedAt - a.updatedAt));
+        if (storedGrowth) setGrowthNotes(JSON.parse(storedGrowth).sort((a: any, b: any) => b.createdAt - a.createdAt));
         if (storedExpenses) setExpenses(JSON.parse(storedExpenses).sort((a: any, b: any) => b.createdAt - a.createdAt));
         if (storedDiet) setDiet(JSON.parse(storedDiet));
         if (storedWater) setWater(JSON.parse(storedWater));
@@ -677,6 +733,14 @@ export function TaskProvider({ children }: { children: ReactNode }) {
       setNotes(snapshot.docs
         .map(doc => ({ ...doc.data(), id: doc.id } as Note))
         .sort((a, b) => b.updatedAt - a.updatedAt)
+      );
+    }));
+
+    const growthRef = collection(firestore, 'users', userId, 'growthNotes');
+    unsubs.push(onSnapshot(growthRef, (snapshot) => {
+      setGrowthNotes(snapshot.docs
+        .map(doc => ({ ...doc.data(), id: doc.id } as GrowthNote))
+        .sort((a, b) => b.createdAt - a.createdAt)
       );
     }));
 
@@ -765,12 +829,13 @@ export function TaskProvider({ children }: { children: ReactNode }) {
 
   return (
     <TaskContext.Provider value={{ 
-      tasks, labels, sessions, notes, expenses, diet, water, exercises, travelGoals, dailyGoals, customSongs, streak,
+      tasks, labels, sessions, notes, growthNotes, expenses, diet, water, exercises, travelGoals, dailyGoals, customSongs, streak,
       waterGoal, calorieGoal, height, weight,
       workTimerLeft, breakTimerLeft, isWorkTimerActive, isBreakTimerActive,
       addTask, updateTask, deleteTask, toggleTask, addLabel, deleteLabel, 
       addSession, updateSession, deleteSession, 
       addNote, updateNote, deleteNote,
+      addGrowthNote, updateGrowthNote, deleteGrowthNote,
       addExpense, updateExpense, deleteExpense,
       addDietEntry, deleteDietEntry, addWaterEntry, deleteWaterEntry,
       addExercise, deleteExercise,
