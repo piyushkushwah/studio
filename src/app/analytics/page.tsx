@@ -168,7 +168,7 @@ export default function AnalyticsPage() {
               <ArrowLeft className="w-6 h-6" />
             </Button>
           </Link>
-          <div className="bg-primary text-white p-2 rounded-lg shrink-0">
+          <div className="bg-primary text-primary-foreground p-2 rounded-lg shrink-0">
             <PieChartIcon className="w-5 h-5" />
           </div>
           <h1 className="text-lg md:text-xl font-bold text-primary truncate">Productivity Analytics</h1>
@@ -186,13 +186,13 @@ export default function AnalyticsPage() {
 
       <main className="w-full max-w-5xl space-y-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card className="shadow-sm border-white/40 bg-white/50 backdrop-blur-sm">
+          <Card className="shadow-sm border-border bg-card/50 backdrop-blur-sm">
             <CardHeader className="pb-2">
               <CardDescription className="font-black text-[10px] uppercase tracking-widest">Total Tasks</CardDescription>
               <CardTitle className="text-2xl font-black text-primary">{stats.total}</CardTitle>
             </CardHeader>
           </Card>
-          <Card className="shadow-sm border-white/40 bg-white/50 backdrop-blur-sm">
+          <Card className="shadow-sm border-border bg-card/50 backdrop-blur-sm">
             <CardHeader className="pb-2">
               <CardDescription className="font-black text-[10px] uppercase tracking-widest">Efficiency</CardDescription>
               <CardTitle className="text-2xl font-black">
@@ -200,7 +200,7 @@ export default function AnalyticsPage() {
               </CardTitle>
             </CardHeader>
           </Card>
-          <Card className="shadow-sm border-white/40 bg-white/50 backdrop-blur-sm">
+          <Card className="shadow-sm border-border bg-card/50 backdrop-blur-sm">
             <CardHeader className="pb-2">
               <CardDescription className="font-black text-[10px] uppercase tracking-widest flex items-center gap-1">
                 <Flame className="w-3 h-3 text-orange-500" />
@@ -211,7 +211,7 @@ export default function AnalyticsPage() {
               </CardTitle>
             </CardHeader>
           </Card>
-          <Card className="shadow-sm border-white/40 bg-white/50 backdrop-blur-sm">
+          <Card className="shadow-sm border-border bg-card/50 backdrop-blur-sm">
             <CardHeader className="pb-2">
               <CardDescription className="font-black text-[10px] uppercase tracking-widest">Completed</CardDescription>
               <CardTitle className="text-2xl font-black text-accent">
@@ -222,7 +222,7 @@ export default function AnalyticsPage() {
         </div>
 
         {/* Consistency Heatmap */}
-        <Card className="shadow-xl shadow-primary/5 border-white/40 bg-white/50 backdrop-blur-sm">
+        <Card className="shadow-xl shadow-primary/5 border-border bg-card/50 backdrop-blur-sm">
           <CardHeader>
             <div className="flex items-center gap-2">
               <CalendarIcon className="w-4 h-4 text-primary" />
@@ -251,7 +251,7 @@ export default function AnalyticsPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Time Allocation (Work vs Break) */}
-          <Card className="shadow-xl shadow-primary/5 border-white/40 bg-white/50 backdrop-blur-sm">
+          <Card className="shadow-xl shadow-primary/5 border-border bg-card/50 backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="text-lg">Time Allocation</CardTitle>
               <CardDescription>Work focus vs Break time distribution</CardDescription>
@@ -288,7 +288,7 @@ export default function AnalyticsPage() {
           </Card>
 
           {/* Label Distribution */}
-          <Card className="shadow-xl shadow-primary/5 border-white/40 bg-white/50 backdrop-blur-sm">
+          <Card className="shadow-xl shadow-primary/5 border-border bg-card/50 backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="text-lg">Category Distribution</CardTitle>
               <CardDescription>Breakdown of all tasks by label</CardDescription>

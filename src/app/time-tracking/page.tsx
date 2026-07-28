@@ -118,7 +118,7 @@ export default function TimeTrackingPage() {
               <ArrowLeft className="w-6 h-6" />
             </Button>
           </Link>
-          <div className="bg-primary text-white p-2 rounded-lg shrink-0">
+          <div className="bg-primary text-primary-foreground p-2 rounded-lg shrink-0">
             <Clock className="w-5 h-5" />
           </div>
           <h1 className="text-lg md:text-xl font-bold text-primary truncate">Manual & Automatic Time Logs</h1>
@@ -131,7 +131,7 @@ export default function TimeTrackingPage() {
 
       <main className="w-full max-w-5xl space-y-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card className="shadow-sm border-white/40 bg-white/50 backdrop-blur-sm">
+          <Card className="shadow-sm border-border bg-card/50 backdrop-blur-sm">
             <CardHeader className="pb-2">
               <CardDescription className="font-bold uppercase tracking-widest text-[10px]">Total Deep Work</CardDescription>
               <CardTitle className="text-2xl font-black text-primary flex items-baseline gap-1">
@@ -139,7 +139,7 @@ export default function TimeTrackingPage() {
               </CardTitle>
             </CardHeader>
           </Card>
-          <Card className="shadow-sm border-white/40 bg-white/50 backdrop-blur-sm">
+          <Card className="shadow-sm border-border bg-card/50 backdrop-blur-sm">
             <CardHeader className="pb-2">
               <CardDescription className="font-bold uppercase tracking-widest text-[10px]">Total Break Time</CardDescription>
               <CardTitle className="text-2xl font-black text-accent flex items-baseline gap-1">
@@ -147,7 +147,7 @@ export default function TimeTrackingPage() {
               </CardTitle>
             </CardHeader>
           </Card>
-          <Card className="shadow-sm border-white/40 bg-white/50 backdrop-blur-sm">
+          <Card className="shadow-sm border-border bg-card/50 backdrop-blur-sm">
             <CardHeader className="pb-2">
               <CardDescription className="font-bold uppercase tracking-widest text-[10px]">Focus Intensity</CardDescription>
               <CardTitle className="text-2xl font-black text-orange-600 flex items-center gap-2">
@@ -156,7 +156,7 @@ export default function TimeTrackingPage() {
               </CardTitle>
             </CardHeader>
           </Card>
-          <Card className="shadow-sm border-white/40 bg-white/50 backdrop-blur-sm">
+          <Card className="shadow-sm border-border bg-card/50 backdrop-blur-sm">
             <CardHeader className="pb-2">
               <CardDescription className="font-bold uppercase tracking-widest text-[10px]">Logged Sessions</CardDescription>
               <CardTitle className="text-2xl font-black">
@@ -166,7 +166,7 @@ export default function TimeTrackingPage() {
           </Card>
         </div>
 
-        <Card className="shadow-xl shadow-primary/5 border-white/40 bg-white/50 backdrop-blur-sm">
+        <Card className="shadow-xl shadow-primary/5 border-border bg-card/50 backdrop-blur-sm">
           <CardHeader>
             <div className="flex items-center gap-3">
               <History className="w-5 h-5 text-primary" />
@@ -194,7 +194,7 @@ export default function TimeTrackingPage() {
                         {daySessions.map((session) => (
                           <div 
                             key={session.id} 
-                            className="group flex flex-col p-4 bg-white rounded-xl border border-white/50 shadow-sm transition-all hover:border-primary/20"
+                            className="group flex flex-col p-4 bg-card rounded-xl border border-border shadow-sm transition-all hover:border-primary/20"
                           >
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-4">
@@ -262,6 +262,7 @@ export default function TimeTrackingPage() {
                 value={formData.duration}
                 onChange={(e) => setFormData(prev => ({ ...prev, duration: e.target.value }))}
                 placeholder="25"
+                className="bg-card border-border"
               />
             </div>
             <div className="grid gap-2">
@@ -271,7 +272,7 @@ export default function TimeTrackingPage() {
                 <Input
                   id="date"
                   type="date"
-                  className="pl-10"
+                  className="pl-10 bg-card border-border"
                   value={formData.date}
                   onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
                 />
@@ -284,6 +285,7 @@ export default function TimeTrackingPage() {
                 value={formData.note}
                 onChange={(e) => setFormData(prev => ({ ...prev, note: e.target.value }))}
                 placeholder="What did you focus on?"
+                className="bg-card border-border"
               />
             </div>
             <div className="grid gap-2">

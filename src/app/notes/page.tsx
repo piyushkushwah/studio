@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useMemo } from "react";
@@ -122,7 +123,7 @@ export default function NotesPage() {
               <ArrowLeft className="w-6 h-6" />
             </Button>
           </Link>
-          <div className="bg-primary text-white p-2.5 rounded-xl shadow-lg shadow-primary/20 shrink-0">
+          <div className="bg-primary text-primary-foreground p-2.5 rounded-xl shadow-lg shadow-primary/20 shrink-0">
             <StickyNote className="w-6 h-6" />
           </div>
           <div>
@@ -138,10 +139,10 @@ export default function NotesPage() {
               placeholder="Search your notes..." 
               value={searchQuery} 
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 h-11 bg-card rounded-xl shadow-sm border-white/5 focus:border-primary/20"
+              className="pl-10 h-11 bg-card rounded-xl shadow-sm border-border focus:border-primary/20"
             />
           </div>
-          <div className="flex bg-card p-1 rounded-xl shadow-sm border border-white/5">
+          <div className="flex bg-card p-1 rounded-xl shadow-sm border border-border">
             <Button 
               variant="ghost" 
               size="icon" 
@@ -189,7 +190,7 @@ export default function NotesPage() {
               <Card 
                 key={note.id} 
                 className={cn(
-                  "group relative flex flex-col transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 rounded-[1.5rem] overflow-hidden border-white/5",
+                  "group relative flex flex-col transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 rounded-[1.5rem] overflow-hidden border-border",
                   note.color || NOTE_COLORS[0]
                 )}
               >
@@ -241,7 +242,7 @@ export default function NotesPage() {
                   value={formData.title}
                   onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
                   placeholder="Note Title (optional)"
-                  className="bg-background/50 border-white/10 h-12 text-lg font-bold placeholder:text-primary/20 rounded-xl"
+                  className="bg-card border-border h-12 text-lg font-bold placeholder:text-primary/20 rounded-xl"
                 />
               </div>
               <div className="space-y-2">
@@ -249,7 +250,7 @@ export default function NotesPage() {
                   value={formData.content}
                   onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
                   placeholder="What's on your mind?..."
-                  className="bg-background/50 border-white/10 min-h-[250px] resize-none text-base font-medium placeholder:text-primary/20 rounded-xl p-4 leading-relaxed"
+                  className="bg-card border-border min-h-[250px] resize-none text-base font-medium placeholder:text-primary/20 rounded-xl p-4 leading-relaxed"
                 />
               </div>
               
@@ -263,7 +264,7 @@ export default function NotesPage() {
                       className={cn(
                         "w-8 h-8 rounded-full border-2 transition-all",
                         color.split(' ')[0],
-                        formData.color === color ? "ring-2 ring-primary ring-offset-2 scale-110" : "border-white/10 opacity-80 hover:opacity-100"
+                        formData.color === color ? "ring-2 ring-primary ring-offset-2 scale-110" : "border-border opacity-80 hover:opacity-100"
                       )}
                     />
                   ))}

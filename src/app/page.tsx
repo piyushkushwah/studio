@@ -311,7 +311,7 @@ export default function DailyTaskTrack() {
       
       <header id="tour-header" className="w-full max-6xl flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 md:mb-12 shrink-0">
         <div className="flex items-center gap-5 min-w-0">
-          <div className="bg-primary text-white p-3 rounded-2xl shadow-xl shadow-primary/20 shrink-0">
+          <div className="bg-primary text-primary-foreground p-3 rounded-2xl shadow-xl shadow-primary/20 shrink-0">
             <CalendarIcon className="w-7 h-7" />
           </div>
           <div className="min-w-0 flex-1">
