@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useMemo, useEffect, useCallback } from "react";
@@ -16,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
   format, 
   addMonths, 
@@ -85,7 +87,7 @@ export default function DailyTaskTrack() {
   const { toast } = useToast();
 
   useEffect(() => {
-    const isDark = document.documentElement.classList.contains('dark');
+    const isDark = typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
     setIsDarkMode(isDark);
   }, []);
 
@@ -364,17 +366,27 @@ export default function DailyTaskTrack() {
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-2 md:gap-3 p-1.5 bg-card/50 backdrop-blur-sm border rounded-2xl shadow-sm">
-          {HEADER_NAV_ITEMS.map((item) => (
-            <Link key={item.title} href={item.url} className="flex-1 min-w-[90px]">
-              <Button variant="ghost" className="w-full h-12 gap-2 rounded-xl hover:bg-primary/5 transition-all">
-                <item.icon className={cn("w-4 h-4", item.color)} />
-                <span className="text-[10px] font-black uppercase tracking-widest">{item.title}</span>
-              </Button>
-            </Link>
-          ))}
-          <div className="flex-1 min-w-[90px]">
-            <LabelManager />
+        <div className="flex items-center gap-2 md:gap-3 p-1 bg-card/50 backdrop-blur-sm border rounded-2xl shadow-sm w-full max-w-lg mx-auto">
+          <div className="flex items-center flex-1 gap-1 md:gap-2">
+            {HEADER_NAV_ITEMS.map((item) => (
+              <Link key={item.title} href={item.url} className="flex-1 min-w-0">
+                <Button variant="ghost" className="w-full h-9 gap-2 rounded-xl hover:bg-primary/5 transition-all px-2">
+                  <item.icon className={cn("w-3.5 h-3.5 shrink-0", item.color)} />
+                  <span className="text-[9px] font-black uppercase tracking-widest hidden sm:inline">{item.title}</span>
+                </Button>
+              </Link>
+            ))}
+            <div className="flex-1 min-w-0">
+              <LabelManager />
+            </div>
+          </div>
+          <div className="px-2 border-l border-border/50 h-6 flex items-center">
+            <Avatar className="h-7 w-7 border-2 border-background shadow-sm ring-2 ring-primary/5">
+              <AvatarImage src={user.photoURL || undefined} />
+              <AvatarFallback className="bg-primary/5 text-primary text-[10px] font-black">
+                {user.displayName?.charAt(0)}
+              </AvatarFallback>
+            </Avatar>
           </div>
         </div>
       </header>
