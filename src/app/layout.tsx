@@ -3,6 +3,8 @@ import './globals.css';
 import { TaskProvider } from '@/components/task-provider';
 import { Toaster } from '@/components/ui/toaster';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
+import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
+import { AppSidebar } from '@/components/app-sidebar';
 
 export const metadata: Metadata = {
   title: 'DailyTaskTrack | Focus & Productivity',
@@ -27,7 +29,12 @@ export default function RootLayout({
       <body className="font-body antialiased">
         <FirebaseClientProvider>
           <TaskProvider>
-            {children}
+            <SidebarProvider>
+              <AppSidebar />
+              <SidebarInset className="bg-background">
+                {children}
+              </SidebarInset>
+            </SidebarProvider>
             <Toaster />
           </TaskProvider>
         </FirebaseClientProvider>

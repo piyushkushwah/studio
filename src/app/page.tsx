@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useMemo, useEffect, useCallback } from "react";
@@ -55,7 +54,8 @@ import {
   Sparkles,
   Apple,
   Dumbbell,
-  Compass
+  Compass,
+  SidebarTrigger
 } from "lucide-react";
 import { Task, Priority } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -63,6 +63,7 @@ import Link from "next/link";
 import { getRandomQuote } from "@/lib/quotes";
 import { useToast } from "@/hooks/use-toast";
 import { generateDailyBriefing } from "@/ai/flows/daily-briefing-flow";
+import { SidebarTrigger as UISidebarTrigger } from "@/components/ui/sidebar";
 
 export default function DailyTaskTrack() {
   const auth = useAuth();
@@ -137,12 +138,6 @@ export default function DailyTaskTrack() {
     } finally {
       setIsAuthProcessing(false);
     }
-  };
-
-  const handleLogout = async () => {
-    if (!auth) return;
-    await signOut(auth);
-    toast({ title: "Signed Out", description: "Successfully logged out." });
   };
 
   const fetchDailyBriefing = async () => {
@@ -314,7 +309,8 @@ export default function DailyTaskTrack() {
       
       <header id="tour-header" className="w-full max-w-6xl flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 md:mb-12 shrink-0">
         <div className="flex items-center gap-5 min-w-0">
-          <div className="bg-primary text-primary-foreground p-3 rounded-2xl shadow-xl shadow-primary/20 shrink-0">
+          <UISidebarTrigger className="h-10 w-10 md:hidden" />
+          <div className="bg-primary text-primary-foreground p-3 rounded-2xl shadow-xl shadow-primary/20 shrink-0 hidden md:block">
             <CalendarIcon className="w-7 h-7" />
           </div>
           <div className="min-w-0 flex-1">
@@ -329,7 +325,7 @@ export default function DailyTaskTrack() {
             </div>
             <div className="mt-1 flex flex-col gap-1">
               {dailyBriefing ? (
-                <div className="flex items-start gap-2 bg-primary/5 p-2 rounded-xl border border-primary/10 animate-in slide-in-from-left-2">
+                <div className="flex items-start gap-2 bg-primary/5 p-2 rounded-xl border border-primary/10 animate-in slide-in-from-left-2 max-w-md">
                   <Sparkles className="w-3 h-3 text-primary mt-0.5 shrink-0" />
                   <p className="text-[10px] font-bold text-primary/80 leading-relaxed italic pr-8">{dailyBriefing}</p>
                 </div>
@@ -357,59 +353,6 @@ export default function DailyTaskTrack() {
           </Button>
           <FocusPlayer />
           <PomodoroTimer />
-          <div id="tour-nav" className="flex items-center gap-1 h-12 bg-card border px-2 rounded-2xl shadow-sm">
-            <LabelManager />
-            <Link href="/notes">
-              <Button variant="ghost" className="flex flex-col items-center justify-center gap-0 h-auto py-1 px-3 rounded-xl hover:bg-primary/5 group" title="Quick Notes">
-                <StickyNote className="w-4 h-4 text-primary transition-transform group-hover:scale-110" />
-                <span className="text-[8px] font-black uppercase tracking-tighter text-muted-foreground/60 mt-0.5">Notes</span>
-              </Button>
-            </Link>
-            <Link href="/mindfulness">
-              <Button variant="ghost" className="flex flex-col items-center justify-center gap-0 h-auto py-1 px-3 rounded-xl hover:bg-purple-50 dark:hover:bg-purple-900/20 group" title="Mindfulness Sanctuary">
-                <Sparkles className="w-4 h-4 text-purple-600 transition-transform group-hover:scale-110" />
-                <span className="text-[8px] font-black uppercase tracking-tighter text-muted-foreground/60 mt-0.5">Growth</span>
-              </Button>
-            </Link>
-            <Link href="/health">
-              <Button variant="ghost" className="flex flex-col items-center justify-center gap-0 h-auto py-1 px-3 rounded-xl hover:bg-sky-50 dark:hover:bg-sky-900/20 group" title="Health Tracker">
-                <Apple className="w-4 h-4 text-sky-600 transition-transform group-hover:scale-110" />
-                <span className="text-[8px] font-black uppercase tracking-tighter text-muted-foreground/60 mt-0.5">Health</span>
-              </Button>
-            </Link>
-            <Link href="/exercise">
-              <Button variant="ghost" className="flex flex-col items-center justify-center gap-0 h-auto py-1 px-3 rounded-xl hover:bg-orange-50 dark:hover:bg-orange-900/20 group" title="Exercise Tracker">
-                <Dumbbell className="w-4 h-4 text-orange-600 transition-transform group-hover:scale-110" />
-                <span className="text-[8px] font-black uppercase tracking-tighter text-muted-foreground/60 mt-0.5">Workout</span>
-              </Button>
-            </Link>
-            <Link href="/travel">
-              <Button variant="ghost" className="flex flex-col items-center justify-center gap-0 h-auto py-1 px-3 rounded-xl hover:bg-emerald-50 dark:hover:bg-emerald-900/20 group" title="Travel Goals">
-                <Compass className="w-4 h-4 text-emerald-600 transition-transform group-hover:scale-110" />
-                <span className="text-[8px] font-black uppercase tracking-tighter text-muted-foreground/60 mt-0.5">Travel</span>
-              </Button>
-            </Link>
-            <Link href="/expenses">
-              <Button variant="ghost" className="flex flex-col items-center justify-center gap-0 h-auto py-1 px-3 rounded-xl hover:bg-emerald-50 dark:hover:bg-emerald-900/20 group" title="Expense Tracker">
-                <Wallet className="w-4 h-4 text-emerald-600 transition-transform group-hover:scale-110" />
-                <span className="text-[8px] font-black uppercase tracking-tighter text-muted-foreground/60 mt-0.5">Wallet</span>
-              </Button>
-            </Link>
-            <Link href="/analytics">
-              <Button variant="ghost" className="flex flex-col items-center justify-center gap-0 h-auto py-1 px-3 rounded-xl hover:bg-primary/5 group" title="Analytics">
-                <BarChart2 className="w-4 h-4 text-primary transition-transform group-hover:scale-110" />
-                <span className="text-[8px] font-black uppercase tracking-tighter text-muted-foreground/60 mt-0.5">Stats</span>
-              </Button>
-            </Link>
-            <Button variant="ghost" onClick={handleLogout} className="flex flex-col items-center justify-center gap-0 h-auto py-1 px-3 rounded-xl hover:bg-destructive/5 group" title="Sign Out">
-              <LogOut className="w-4 h-4 text-muted-foreground group-hover:text-destructive transition-transform group-hover:scale-110" />
-              <span className="text-[8px] font-black uppercase tracking-tighter text-muted-foreground/60 mt-0.5">Exit</span>
-            </Button>
-          </div>
-          <Avatar className="h-12 w-12 border-2 border-background shadow-sm ring-2 ring-primary/10">
-            <AvatarImage src={user.photoURL || undefined} />
-            <AvatarFallback className="bg-primary/5 text-primary font-black">{user.displayName?.charAt(0)}</AvatarFallback>
-          </Avatar>
         </div>
       </header>
 
