@@ -15,7 +15,6 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
   format, 
   addMonths, 
@@ -33,37 +32,27 @@ import {
   ChevronRight, 
   Plus, 
   Calendar as CalendarIcon, 
-  BarChart2,
   Search,
   FilterX,
   Target,
   Trash2,
-  Clock,
   Quote,
   Trophy,
   Flame,
   Star,
-  LogOut,
   Layout,
   Loader2,
   AlertTriangle,
-  StickyNote,
-  Wallet,
   Moon,
   Sun,
-  Sparkles,
-  Apple,
-  Dumbbell,
-  Compass,
-  SidebarTrigger
+  Sparkles
 } from "lucide-react";
 import { Task, Priority } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import Link from "next/link";
 import { getRandomQuote } from "@/lib/quotes";
 import { useToast } from "@/hooks/use-toast";
 import { generateDailyBriefing } from "@/ai/flows/daily-briefing-flow";
-import { SidebarTrigger as UISidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 
 export default function DailyTaskTrack() {
   const auth = useAuth();
@@ -309,7 +298,7 @@ export default function DailyTaskTrack() {
       
       <header id="tour-header" className="w-full max-w-6xl flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 md:mb-12 shrink-0">
         <div className="flex items-center gap-5 min-w-0">
-          <UISidebarTrigger className="h-10 w-10 md:hidden" />
+          <SidebarTrigger className="h-10 w-10 text-primary border-border bg-card shadow-sm hover:bg-muted" />
           <div className="bg-primary text-primary-foreground p-3 rounded-2xl shadow-xl shadow-primary/20 shrink-0 hidden md:block">
             <CalendarIcon className="w-7 h-7" />
           </div>

@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useMemo } from "react";
@@ -36,16 +35,17 @@ import {
   CheckCircle2,
   ListTodo,
   Pencil,
-  Compass,
   Mountain,
   Palmtree,
   Ship,
-  X
+  X,
+  Compass
 } from "lucide-react";
 import Link from "next/link";
 import { format, parseISO } from "date-fns";
 import { cn } from "@/lib/utils";
 import { TravelGoal } from "@/lib/types";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 
 const TRAVEL_STATUSES = ["bucket-list", "planned", "completed"];
 
@@ -146,6 +146,7 @@ export default function TravelPage() {
     <div className="min-h-screen bg-background p-4 md:p-8 flex flex-col items-center">
       <header className="w-full max-w-6xl flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div className="flex items-center gap-3">
+          <SidebarTrigger className="h-10 w-10 text-primary border-border bg-card shadow-sm" />
           <Link href="/">
             <Button variant="ghost" size="icon" className="rounded-xl hover:bg-card shadow-sm border border-transparent hover:border-border">
               <ArrowLeft className="w-6 h-6" />

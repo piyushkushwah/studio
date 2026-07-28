@@ -1,11 +1,10 @@
-
 "use client";
 
 import { useMemo } from "react";
 import { useTasks } from "@/hooks/use-tasks";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts";
+import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { 
   ChartContainer, 
   ChartTooltip, 
@@ -13,10 +12,11 @@ import {
   ChartLegend, 
   ChartLegendContent 
 } from "@/components/ui/chart";
-import { ArrowLeft, PieChart as PieChartIcon, Info, Download, FileSpreadsheet, Zap, Flame, Calendar as CalendarIcon, Coffee } from "lucide-react";
+import { ArrowLeft, PieChart as PieChartIcon, Info, FileSpreadsheet, Flame, Calendar as CalendarIcon } from "lucide-react";
 import Link from "next/link";
-import { subDays, format, eachDayOfInterval, isSameDay, startOfMonth, endOfMonth } from "date-fns";
+import { format, eachDayOfInterval, subDays } from "date-fns";
 import { cn } from "@/lib/utils";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 
 export default function AnalyticsPage() {
   const { tasks, labels, isInitialized, sessions } = useTasks();
@@ -67,23 +67,6 @@ export default function AnalyticsPage() {
       { name: 'Break', value: breakTime, fill: 'hsl(var(--accent))' }
     ].filter(d => d.value > 0);
   }, [sessions]);
-
-  const weeklyTrendData = useMemo(() => {
-    const last7Days = eachDayOfInterval({
-      start: subDays(new Date(), 6),
-      end: new Date(),
-    });
-
-    return last7Days.map((date) => {
-      const dateStr = format(date, "yyyy-MM-dd");
-      const dayTasks = tasks.filter((t) => t.dueDate === dateStr);
-      return {
-        date: format(date, "EEE"),
-        completed: dayTasks.filter((t) => t.completed).length,
-        total: dayTasks.length,
-      };
-    });
-  }, [tasks]);
 
   const heatmapData = useMemo(() => {
     const days = eachDayOfInterval({
@@ -153,7 +136,7 @@ export default function AnalyticsPage() {
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-2">
           <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-          <p className="text-muted-foreground font-medium">Loading your stats...</p>
+          <p className="text-muted-foreground font-medium text-xs uppercase tracking-widest">Loading stats...</p>
         </div>
       </div>
     );
@@ -163,6 +146,7 @@ export default function AnalyticsPage() {
     <div className="min-h-screen bg-background p-4 md:p-8 flex flex-col items-center">
       <header className="w-full max-w-5xl flex items-center justify-between mb-8">
         <div className="flex items-center gap-3">
+          <SidebarTrigger className="h-10 w-10 text-primary border-border bg-card shadow-sm" />
           <Link href="/">
             <Button variant="ghost" size="icon" className="rounded-xl">
               <ArrowLeft className="w-6 h-6" />
@@ -199,7 +183,6 @@ export default function AnalyticsPage() {
                 {stats.rate}%
               </CardTitle>
             </CardHeader>
-          </Card>
           <Card className="shadow-sm border-border bg-card/50 backdrop-blur-sm">
             <CardHeader className="pb-2">
               <CardDescription className="font-black text-[10px] uppercase tracking-widest flex items-center gap-1">

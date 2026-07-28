@@ -28,7 +28,6 @@ import {
   Wallet, 
   Trash2, 
   Pencil, 
-  DollarSign,
   Calendar as CalendarIcon,
   Tag,
   Calculator as CalculatorIcon,
@@ -39,6 +38,7 @@ import { format, parseISO, startOfMonth, endOfMonth, isWithinInterval } from "da
 import { cn } from "@/lib/utils";
 import { Expense } from "@/lib/types";
 import { DraggableCalculator } from "@/components/draggable-calculator";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 
 const EXPENSE_CATEGORIES = [
   "Food & Drink",
@@ -161,6 +161,7 @@ export default function ExpensesPage() {
       
       <header className="w-full max-w-5xl flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div className="flex items-center gap-3">
+          <SidebarTrigger className="h-10 w-10 text-primary border-border bg-card shadow-sm" />
           <Link href="/">
             <Button variant="ghost" size="icon" className="rounded-xl hover:bg-card shadow-sm border border-transparent hover:border-border">
               <ArrowLeft className="w-6 h-6" />
