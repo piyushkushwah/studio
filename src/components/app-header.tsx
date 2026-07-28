@@ -102,41 +102,43 @@ export function AppHeader() {
 
   return (
     <header className="w-full max-w-7xl flex flex-col gap-6 p-4 md:p-8 shrink-0">
-      <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
-        <div className="flex items-center gap-5 min-w-0">
+      <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-8">
+        <div className="flex items-start gap-5">
           <Link href="/">
-            <div className="bg-primary text-primary-foreground p-3 rounded-2xl shadow-xl shadow-primary/20 shrink-0 hover:scale-105 transition-transform cursor-pointer">
+            <div className="bg-primary text-primary-foreground p-3 rounded-2xl shadow-xl shadow-primary/20 shrink-0 hover:scale-105 transition-transform cursor-pointer mt-1">
               <CalendarIcon className="w-7 h-7" />
             </div>
           </Link>
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2">
-              <h1 className="text-2xl md:text-3xl font-black tracking-tight text-primary leading-tight truncate">{greeting}, {user.displayName?.split(' ')[0]}</h1>
+          <div className="flex-1">
+            <div className="flex items-center flex-wrap gap-3">
+              <h1 className="text-2xl md:text-4xl font-black tracking-tight text-primary leading-tight whitespace-nowrap">
+                {greeting}, {user.displayName?.split(' ')[0]}
+              </h1>
               {streak > 0 && (
-                <div className="flex items-center gap-1 bg-orange-100 dark:bg-orange-900/30 text-orange-600 px-2 py-0.5 rounded-full text-xs font-bold border border-orange-200 dark:border-orange-800/30 shrink-0">
-                  <Flame className="w-3 h-3 fill-current" />
-                  {streak} Day Streak
+                <div className="flex items-center gap-1.5 bg-orange-100 dark:bg-orange-900/30 text-orange-600 px-3 py-1 rounded-full text-xs font-black border border-orange-200 dark:border-orange-800/30 shrink-0 shadow-sm">
+                  <Flame className="w-3.5 h-3.5 fill-current" />
+                  <span className="uppercase tracking-wider">{streak} Day Streak</span>
                 </div>
               )}
             </div>
-            <div className="mt-1 flex flex-col gap-1">
+            <div className="mt-2 flex flex-col gap-1">
               {dailyBriefing ? (
-                <div className="flex items-start gap-2 bg-primary/5 p-2 rounded-xl border border-primary/10 animate-in slide-in-from-left-2 max-w-md">
-                  <Sparkles className="w-3 h-3 text-primary mt-0.5 shrink-0" />
-                  <p className="text-[10px] font-bold text-primary/80 leading-relaxed italic pr-8">{dailyBriefing}</p>
+                <div className="flex items-start gap-2 bg-primary/5 p-3 rounded-xl border border-primary/10 animate-in slide-in-from-left-2 max-w-md">
+                  <Sparkles className="w-3.5 h-3.5 text-primary mt-0.5 shrink-0" />
+                  <p className="text-xs font-bold text-primary/80 leading-relaxed italic pr-8">{dailyBriefing}</p>
                 </div>
               ) : (
                 <div className="flex items-center gap-2">
-                  <Quote className="w-3 h-3 text-accent shrink-0" />
-                  {quote ? <p className="text-xs italic text-muted-foreground font-medium truncate">{quote}</p> : <Skeleton className="h-2 w-[180px]" />}
+                  <Quote className="w-3.5 h-3.5 text-accent shrink-0" />
+                  {quote ? <p className="text-xs font-bold text-muted-foreground tracking-tight">{quote}</p> : <Skeleton className="h-3 w-[200px]" />}
                   <Button 
                     variant="ghost" 
                     size="icon" 
-                    className="h-5 w-5 rounded-full hover:bg-primary/10" 
+                    className="h-6 w-6 rounded-full hover:bg-primary/10" 
                     onClick={fetchDailyBriefing}
                     disabled={isGeneratingBriefing}
                   >
-                    {isGeneratingBriefing ? <Loader2 className="w-3 h-3 animate-spin text-primary" /> : <Sparkles className="w-3 h-3 text-primary" />}
+                    {isGeneratingBriefing ? <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" /> : <Sparkles className="w-3.5 h-3.5 text-primary opacity-60 hover:opacity-100" />}
                   </Button>
                 </div>
               )}
@@ -144,52 +146,51 @@ export function AppHeader() {
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3 xl:ml-auto">
-          <FocusPlayer />
-          
-          <div className="flex items-center gap-1 p-1 bg-white backdrop-blur-sm border rounded-2xl shadow-sm h-14">
-            <LabelManager />
-            
-            <Link href="/time-tracking">
-              <Button variant="ghost" className="flex flex-col items-center justify-center gap-0.5 h-11 w-12 rounded-xl hover:bg-primary/5 group" title="Time Log">
-                <Clock className="w-4 h-4 text-primary transition-transform group-hover:scale-110" />
-                <span className="text-[8px] font-black uppercase tracking-tighter text-muted-foreground/60 leading-none">Logs</span>
+        <div className="flex flex-col items-end gap-3 xl:ml-auto">
+          {/* Top Row: Focus Radio & Navigation Modules */}
+          <div className="flex items-center gap-3">
+            <FocusPlayer />
+            <div className="flex items-center gap-1 p-1 bg-white dark:bg-card border rounded-2xl shadow-sm h-14 w-fit">
+              <LabelManager />
+              <Link href="/time-tracking">
+                <Button variant="ghost" className="flex flex-col items-center justify-center gap-0.5 h-11 w-12 rounded-xl hover:bg-primary/5 group" title="Time Log">
+                  <Clock className="w-4 h-4 text-primary transition-transform group-hover:scale-110" />
+                  <span className="text-[8px] font-black uppercase tracking-tighter text-muted-foreground/60 leading-none">Logs</span>
+                </Button>
+              </Link>
+              <Link href="/analytics">
+                <Button variant="ghost" className="flex flex-col items-center justify-center gap-0.5 h-11 w-12 rounded-xl hover:bg-primary/5 group" title="Analytics">
+                  <BarChart2 className="w-4 h-4 text-primary transition-transform group-hover:scale-110" />
+                  <span className="text-[8px] font-black uppercase tracking-tighter text-muted-foreground/60 leading-none">Stats</span>
+                </Button>
+              </Link>
+              <div className="w-px h-6 bg-border mx-1" />
+              <Button 
+                variant="ghost" 
+                className="flex flex-col items-center justify-center gap-0.5 h-11 w-12 rounded-xl hover:bg-destructive/5 text-muted-foreground hover:text-destructive group" 
+                onClick={handleLogout} 
+                title="Sign Out"
+              >
+                <LogOut className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+                <span className="text-[8px] font-black uppercase tracking-tighter text-current leading-none">Exit</span>
               </Button>
-            </Link>
-            
-            <Link href="/analytics">
-              <Button variant="ghost" className="flex flex-col items-center justify-center gap-0.5 h-11 w-12 rounded-xl hover:bg-primary/5 group" title="Analytics">
-                <BarChart2 className="w-4 h-4 text-primary transition-transform group-hover:scale-110" />
-                <span className="text-[8px] font-black uppercase tracking-tighter text-muted-foreground/60 leading-none">Stats</span>
-              </Button>
-            </Link>
-            
-            <div className="w-px h-6 bg-border mx-1" />
-            
-            <Button 
-              variant="ghost" 
-              className="flex flex-col items-center justify-center gap-0.5 h-11 w-12 rounded-xl hover:bg-destructive/5 text-muted-foreground hover:text-destructive group" 
-              onClick={handleLogout} 
-              title="Sign Out"
-            >
-              <LogOut className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
-              <span className="text-[8px] font-black uppercase tracking-tighter text-current leading-none">Exit</span>
-            </Button>
+            </div>
           </div>
 
-          <PomodoroTimer />
-          
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" onClick={toggleTheme} className="h-12 w-12 rounded-2xl bg-card border shadow-sm transition-all hover:border-primary/20">
-              {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-            </Button>
-
-            <Avatar className="h-12 w-12 border-2 border-background shadow-md ring-2 ring-primary/5">
-              <AvatarImage src={user.photoURL || undefined} />
-              <AvatarFallback className="bg-primary/5 text-primary text-xs font-black">
-                {user.displayName?.charAt(0)}
-              </AvatarFallback>
-            </Avatar>
+          {/* Bottom Row: Timers, Theme & Profile */}
+          <div className="flex items-center gap-3">
+            <PomodoroTimer />
+            <div className="flex items-center gap-2 pl-2">
+              <Button variant="ghost" size="icon" onClick={toggleTheme} className="h-12 w-12 rounded-2xl bg-white dark:bg-card border shadow-sm transition-all hover:border-primary/20">
+                {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+              </Button>
+              <Avatar className="h-12 w-12 border-2 border-background shadow-md ring-2 ring-primary/5">
+                <AvatarImage src={user.photoURL || undefined} />
+                <AvatarFallback className="bg-primary/5 text-primary text-xs font-black">
+                  {user.displayName?.charAt(0)}
+                </AvatarFallback>
+              </Avatar>
+            </div>
           </div>
         </div>
       </div>
