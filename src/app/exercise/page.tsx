@@ -140,6 +140,7 @@ export default function ExercisePage() {
                 {totalDuration} <span className="text-sm font-bold opacity-60">mins</span>
               </CardTitle>
             </CardHeader>
+          </Card>
           <Card className="shadow-xl shadow-primary/5 border-border bg-card backdrop-blur-sm">
             <CardHeader className="pb-2">
               <CardDescription className="font-black text-[10px] uppercase tracking-widest">Sessions Today</CardDescription>

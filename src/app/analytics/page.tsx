@@ -183,6 +183,7 @@ export default function AnalyticsPage() {
                 {stats.rate}%
               </CardTitle>
             </CardHeader>
+          </Card>
           <Card className="shadow-sm border-border bg-card/50 backdrop-blur-sm">
             <CardHeader className="pb-2">
               <CardDescription className="font-black text-[10px] uppercase tracking-widest flex items-center gap-1">
