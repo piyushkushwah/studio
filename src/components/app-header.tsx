@@ -146,51 +146,51 @@ export function AppHeader() {
           </div>
         </div>
 
-        <div className="flex flex-col items-start gap-3 xl:ml-auto">
-          {/* Top Row: Focus Radio & Navigation Modules */}
-          <div className="flex items-center gap-3">
-            <FocusPlayer />
-            <div className="flex items-center gap-1 p-1 bg-white dark:bg-card border rounded-2xl shadow-sm h-14 w-fit">
-              <LabelManager />
-              <Link href="/time-tracking">
-                <Button variant="ghost" className="flex flex-col items-center justify-center gap-0.5 h-11 w-12 rounded-xl hover:bg-primary/5 group" title="Time Log">
-                  <Clock className="w-4 h-4 text-primary transition-transform group-hover:scale-110" />
-                  <span className="text-[8px] font-black uppercase tracking-tighter text-muted-foreground/60 leading-none">Logs</span>
-                </Button>
-              </Link>
-              <Link href="/analytics">
-                <Button variant="ghost" className="flex flex-col items-center justify-center gap-0.5 h-11 w-12 rounded-xl hover:bg-primary/5 group" title="Analytics">
-                  <BarChart2 className="w-4 h-4 text-primary transition-transform group-hover:scale-110" />
-                  <span className="text-[8px] font-black uppercase tracking-tighter text-muted-foreground/60 leading-none">Stats</span>
-                </Button>
-              </Link>
-              <div className="w-px h-6 bg-border mx-1" />
-              <Button 
-                variant="ghost" 
-                className="flex flex-col items-center justify-center gap-0.5 h-11 w-12 rounded-xl hover:bg-destructive/5 text-muted-foreground hover:text-destructive group" 
-                onClick={handleLogout} 
-                title="Sign Out"
-              >
-                <LogOut className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
-                <span className="text-[8px] font-black uppercase tracking-tighter text-current leading-none">Exit</span>
+        <div className="flex items-center flex-wrap gap-4 xl:ml-auto">
+          {/* Focus Radio */}
+          <FocusPlayer />
+
+          {/* Navigation Bar */}
+          <div className="flex items-center gap-1 p-1 bg-white dark:bg-card border rounded-2xl shadow-sm h-14 w-fit">
+            <LabelManager />
+            <Link href="/time-tracking">
+              <Button variant="ghost" className="flex flex-col items-center justify-center gap-0.5 h-11 w-12 rounded-xl hover:bg-primary/5 group" title="Time Log">
+                <Clock className="w-4 h-4 text-primary transition-transform group-hover:scale-110" />
+                <span className="text-[8px] font-black uppercase tracking-tighter text-muted-foreground/60 leading-none">Logs</span>
               </Button>
-            </div>
+            </Link>
+            <Link href="/analytics">
+              <Button variant="ghost" className="flex flex-col items-center justify-center gap-0.5 h-11 w-12 rounded-xl hover:bg-primary/5 group" title="Analytics">
+                <BarChart2 className="w-4 h-4 text-primary transition-transform group-hover:scale-110" />
+                <span className="text-[8px] font-black uppercase tracking-tighter text-muted-foreground/60 leading-none">Stats</span>
+              </Button>
+            </Link>
+            <div className="w-px h-6 bg-border mx-1" />
+            <Button 
+              variant="ghost" 
+              className="flex flex-col items-center justify-center gap-0.5 h-11 w-12 rounded-xl hover:bg-destructive/5 text-muted-foreground hover:text-destructive group" 
+              onClick={handleLogout} 
+              title="Sign Out"
+            >
+              <LogOut className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+              <span className="text-[8px] font-black uppercase tracking-tighter text-current leading-none">Exit</span>
+            </Button>
           </div>
 
-          {/* Bottom Row: Timers, Theme & Profile */}
-          <div className="flex items-center gap-3">
-            <PomodoroTimer />
-            <div className="flex items-center gap-2 pl-2">
-              <Button variant="ghost" size="icon" onClick={toggleTheme} className="h-12 w-12 rounded-2xl bg-white dark:bg-card border shadow-sm transition-all hover:border-primary/20">
-                {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-              </Button>
-              <Avatar className="h-12 w-12 border-2 border-background shadow-md ring-2 ring-primary/5">
-                <AvatarImage src={user.photoURL || undefined} />
-                <AvatarFallback className="bg-primary/5 text-primary text-xs font-black">
-                  {user.displayName?.charAt(0)}
-                </AvatarFallback>
-              </Avatar>
-            </div>
+          {/* Timers */}
+          <PomodoroTimer />
+
+          {/* Theme & Profile */}
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="icon" onClick={toggleTheme} className="h-12 w-12 rounded-2xl bg-white dark:bg-card border shadow-sm transition-all hover:border-primary/20">
+              {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            </Button>
+            <Avatar className="h-12 w-12 border-2 border-background shadow-md ring-2 ring-primary/5">
+              <AvatarImage src={user.photoURL || undefined} />
+              <AvatarFallback className="bg-primary/5 text-primary text-xs font-black">
+                {user.displayName?.charAt(0)}
+              </AvatarFallback>
+            </Avatar>
           </div>
         </div>
       </div>
