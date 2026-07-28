@@ -52,7 +52,8 @@ import {
   Wallet,
   BarChart2,
   StickyNote,
-  LogOut
+  LogOut,
+  Clock
 } from "lucide-react";
 import Link from "next/link";
 import { Task, Priority } from "@/lib/types";
@@ -68,6 +69,7 @@ const NAV_ITEMS = [
   { title: "Workout", url: "/exercise", icon: Dumbbell, color: "text-orange-500" },
   { title: "Travel", url: "/travel", icon: Compass, color: "text-emerald-500" },
   { title: "Wallet", url: "/expenses", icon: Wallet, color: "text-emerald-600" },
+  { title: "Time Log", url: "/time-tracking", icon: Clock, color: "text-primary" },
   { title: "Stats", url: "/analytics", icon: BarChart2, color: "text-primary" },
 ];
 
@@ -319,7 +321,7 @@ export default function DailyTaskTrack() {
     <div className="min-h-screen bg-background p-4 md:p-8 flex flex-col items-center overflow-x-hidden animate-in fade-in duration-700">
       <AppTour />
       
-      <header id="tour-header" className="w-full max-w-6xl flex flex-col gap-8 mb-8 md:mb-12 shrink-0">
+      <header className="w-full max-w-6xl flex flex-col gap-8 mb-8 md:mb-12 shrink-0">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="flex items-center gap-5 min-w-0">
             <div className="bg-primary text-primary-foreground p-3 rounded-2xl shadow-xl shadow-primary/20 shrink-0 hidden md:block">
@@ -380,11 +382,14 @@ export default function DailyTaskTrack() {
               </Button>
             </Link>
           ))}
+          <div className="flex-1 min-w-[90px]">
+            <LabelManager />
+          </div>
         </div>
       </header>
 
       <main className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-12 gap-10 items-stretch flex-1 min-h-0">
-        <div id="tour-calendar" className="lg:col-span-7 flex flex-col gap-8 w-full">
+        <div className="lg:col-span-7 flex flex-col gap-8 w-full">
           <Card className="p-6 md:p-10 shadow-2xl shadow-primary/5 bg-card border-border rounded-[2rem] h-full">
             <div className="flex items-center justify-between mb-8 md:mb-10">
               <h2 className="text-2xl md:text-3xl font-black text-primary tracking-tight">{format(currentMonth, "MMMM yyyy")}</h2>
@@ -400,7 +405,7 @@ export default function DailyTaskTrack() {
           </Card>
         </div>
 
-        <div id="tour-tasks" className="lg:col-span-5 flex flex-col w-full h-[600px] lg:h-[calc(100vh-14rem)] lg:sticky lg:top-8 min-h-0">
+        <div className="lg:col-span-5 flex flex-col w-full h-[600px] lg:h-[calc(100vh-14rem)] lg:sticky lg:top-8 min-h-0">
           <Card className={cn("p-6 md:p-8 shadow-2xl transition-all duration-500 flex flex-col bg-card border-border rounded-[2rem] overflow-hidden h-full", goalMet ? "shadow-accent/10 border-accent/20 ring-1 ring-accent/10" : "shadow-primary/5")}>
             <div className="flex items-center justify-between mb-6 shrink-0">
               <div className="flex items-center gap-4">
@@ -416,7 +421,7 @@ export default function DailyTaskTrack() {
                   <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest mt-1">{format(selectedDate, "do MMMM")}</p>
                 </div>
               </div>
-              <Button id="tour-add-task" onClick={() => { setEditingTask(null); setIsTaskDialogOpen(true); }} size="icon" className="rounded-2xl h-12 w-12 shadow-xl shadow-primary/20 shrink-0"><Plus className="w-6 h-6" /></Button>
+              <Button onClick={() => { setEditingTask(null); setIsTaskDialogOpen(true); }} size="icon" className="rounded-2xl h-12 w-12 shadow-xl shadow-primary/20 shrink-0"><Plus className="w-6 h-6" /></Button>
             </div>
 
             <div className="space-y-4 mb-6 shrink-0">
@@ -434,7 +439,6 @@ export default function DailyTaskTrack() {
               <div className="flex flex-wrap gap-1.5 items-center">
                 <Button variant={activeLabelFilter === null ? "default" : "outline"} size="sm" onClick={() => setActiveLabelFilter(null)} className="h-7 px-3 text-[9px] font-black uppercase tracking-widest rounded-lg">All</Button>
                 {labels.map(l => (<Button key={l.id} variant={activeLabelFilter === l.name ? "default" : "outline"} size="sm" onClick={() => setActiveLabelFilter(l.name === activeLabelFilter ? null : l.name)} className={cn("h-7 px-3 text-[9px] font-black uppercase tracking-widest rounded-lg", activeLabelFilter === l.name ? l.color : "hover:border-primary/30")}>{l.name}</Button>))}
-                <LabelManager />
               </div>
             </div>
 
