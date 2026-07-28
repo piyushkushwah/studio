@@ -102,7 +102,7 @@ export function PomodoroTimer() {
       if (document.pictureInPictureElement) {
         await document.exitPictureInPicture();
       } else {
-        const stream = canvasRef.current.captureStream(10);
+        const stream = (canvasRef.current as any).captureStream(10);
         videoRef.current.srcObject = stream;
         videoRef.current.onloadedmetadata = () => {
           videoRef.current?.play();
@@ -115,34 +115,34 @@ export function PomodoroTimer() {
   };
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-3">
       <canvas ref={canvasRef} width="300" height="300" className="hidden" />
       <video ref={videoRef} className="hidden" muted playsInline />
 
       {/* Work Timer */}
-      <div className="flex items-center gap-2 bg-card border border-border shadow-sm rounded-2xl px-3 h-12 hover:border-primary/30 transition-all group">
-        <Brain className={cn("w-4 h-4 transition-colors", isWorkTimerActive ? "text-primary" : "text-muted-foreground")} />
-        <span className="text-sm font-black tabular-nums tracking-tighter w-12 text-center text-primary">{formatTime(workTimerLeft)}</span>
-        <div className="flex items-center gap-0.5 border-l pl-2 border-border">
-          <Button variant="ghost" size="icon" onClick={() => setWorkTimerActive(!isWorkTimerActive)} className="h-8 w-8 rounded-xl">
-            {isWorkTimerActive ? <Pause className="w-3.5 h-3.5 fill-current text-primary" /> : <Play className="w-3.5 h-3.5 fill-current text-primary" />}
+      <div className="flex items-center gap-4 bg-card border border-border shadow-sm rounded-2xl px-4 h-12 hover:border-primary/30 transition-all group">
+        <Brain className={cn("w-5 h-5 transition-colors", isWorkTimerActive ? "text-primary" : "text-muted-foreground")} />
+        <span className="text-sm font-black tabular-nums tracking-tighter w-14 text-center text-primary">{formatTime(workTimerLeft)}</span>
+        <div className="flex items-center gap-1">
+          <Button variant="ghost" size="icon" onClick={() => setWorkTimerActive(!isWorkTimerActive)} className="h-9 w-9 rounded-xl hover:bg-primary/5">
+            {isWorkTimerActive ? <Pause className="w-4 h-4 fill-current text-primary" /> : <Play className="w-4 h-4 fill-current text-primary" />}
           </Button>
-          <Button variant="ghost" size="icon" onClick={resetWorkTimer} className="h-8 w-8 rounded-xl text-muted-foreground hover:text-destructive">
-            <RotateCcw className="w-3 h-3" />
+          <Button variant="ghost" size="icon" onClick={resetWorkTimer} className="h-9 w-9 rounded-xl text-muted-foreground hover:text-destructive">
+            <RotateCcw className="w-4 h-4" />
           </Button>
         </div>
       </div>
 
       {/* Break Timer */}
-      <div className="flex items-center gap-2 bg-card border border-border shadow-sm rounded-2xl px-3 h-12 hover:border-accent/30 transition-all group">
-        <Coffee className={cn("w-4 h-4 transition-colors", isBreakTimerActive ? "text-accent" : "text-muted-foreground")} />
-        <span className="text-sm font-black tabular-nums tracking-tighter w-12 text-center text-accent">{formatTime(breakTimerLeft)}</span>
-        <div className="flex items-center gap-0.5 border-l pl-2 border-border">
-          <Button variant="ghost" size="icon" onClick={() => setBreakTimerActive(!isBreakTimerActive)} className="h-8 w-8 rounded-xl">
-            {isBreakTimerActive ? <Pause className="w-3.5 h-3.5 fill-current text-accent" /> : <Play className="w-3.5 h-3.5 fill-current text-accent" />}
+      <div className="flex items-center gap-4 bg-card border border-border shadow-sm rounded-2xl px-4 h-12 hover:border-accent/30 transition-all group">
+        <Coffee className={cn("w-5 h-5 transition-colors", isBreakTimerActive ? "text-accent" : "text-muted-foreground")} />
+        <span className="text-sm font-black tabular-nums tracking-tighter w-14 text-center text-accent">{formatTime(breakTimerLeft)}</span>
+        <div className="flex items-center gap-1">
+          <Button variant="ghost" size="icon" onClick={() => setBreakTimerActive(!isBreakTimerActive)} className="h-9 w-9 rounded-xl hover:bg-accent/5">
+            {isBreakTimerActive ? <Pause className="w-4 h-4 fill-current text-accent" /> : <Play className="w-4 h-4 fill-current text-accent" />}
           </Button>
-          <Button variant="ghost" size="icon" onClick={resetBreakTimer} className="h-8 w-8 rounded-xl text-muted-foreground hover:text-destructive">
-            <RotateCcw className="w-3 h-3" />
+          <Button variant="ghost" size="icon" onClick={resetBreakTimer} className="h-9 w-9 rounded-xl text-muted-foreground hover:text-destructive">
+            <RotateCcw className="w-4 h-4" />
           </Button>
         </div>
       </div>
@@ -156,7 +156,7 @@ export function PomodoroTimer() {
           className="h-12 w-12 bg-card border-border rounded-2xl shadow-sm text-muted-foreground hover:text-primary transition-all"
           title="Pop out active timer"
         >
-          <ExternalLink className="w-4 h-4" />
+          <ExternalLink className="w-5 h-5" />
         </Button>
       )}
     </div>

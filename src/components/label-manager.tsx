@@ -47,33 +47,34 @@ export function LabelManager() {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" className="flex items-center justify-center gap-2 h-9 px-3 rounded-xl hover:bg-primary/5 group w-full" title="Manage Labels">
-          <Tag className="w-3.5 h-3.5 text-primary transition-transform group-hover:scale-110 shrink-0" />
-          <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60 hidden sm:inline">Labels</span>
+        <Button variant="ghost" className="flex flex-col items-center justify-center gap-0.5 h-9 w-12 rounded-xl hover:bg-primary/5 group" title="Manage Labels">
+          <Tag className="w-4 h-4 text-primary transition-transform group-hover:scale-110 shrink-0" />
+          <span className="text-[9px] font-black uppercase tracking-tighter text-muted-foreground/60 leading-none">Labels</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] rounded-[2rem]">
         <DialogHeader>
-          <DialogTitle>Manage Task Labels</DialogTitle>
+          <DialogTitle className="text-xl font-black text-primary">Manage Categories</DialogTitle>
         </DialogHeader>
         
         <div className="space-y-6 py-4">
-          <form onSubmit={handleAdd} className="space-y-4 bg-muted/30 p-4 rounded-xl border border-dashed">
+          <form onSubmit={handleAdd} className="space-y-4 bg-muted/30 p-5 rounded-2xl border border-dashed border-border/50">
             <div className="space-y-2">
-              <Label htmlFor="label-name">New Label Name</Label>
+              <Label htmlFor="label-name" className="text-[10px] font-black uppercase tracking-widest text-primary/60">New Label Name</Label>
               <Input
                 id="label-name"
                 placeholder="e.g. Fitness, Study, Work"
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
                 maxLength={20}
+                className="rounded-xl h-11"
               />
             </div>
             
             <div className="space-y-2">
-              <Label className="flex items-center gap-2">
-                <Palette className="w-4 h-4" />
-                Select High Contrast Color
+              <Label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-primary/60">
+                <Palette className="w-3.5 h-3.5" />
+                Category Color
               </Label>
               <div className="flex flex-wrap gap-2">
                 {COLOR_PRESETS.map((color) => (
@@ -91,25 +92,25 @@ export function LabelManager() {
               </div>
             </div>
 
-            <Button type="submit" className="w-full" disabled={!newName.trim()}>
+            <Button type="submit" className="w-full h-11 rounded-xl font-black uppercase text-xs" disabled={!newName.trim()}>
               <Plus className="w-4 h-4 mr-2" />
-              Add Label
+              Create Label
             </Button>
           </form>
 
           <div className="space-y-3">
-            <Label>Existing Labels</Label>
-            <div className="flex flex-wrap gap-2 max-h-[200px] overflow-y-auto pr-2">
+            <Label className="text-[10px] font-black uppercase tracking-widest text-primary/60">Existing Labels</Label>
+            <div className="flex flex-wrap gap-2 max-h-[160px] overflow-y-auto pr-2 custom-scrollbar">
               {labels.map((label) => (
                 <div key={label.id} className="group relative">
-                  <Badge className={cn("px-3 py-1 text-xs font-bold uppercase tracking-wider shadow-sm", label.color)}>
+                  <Badge className={cn("px-4 py-1.5 text-[10px] font-black uppercase tracking-wider shadow-sm rounded-xl", label.color)}>
                     {label.name}
                   </Badge>
                   <button
                     onClick={() => deleteLabel(label.id)}
-                    className="absolute -top-1.5 -right-1.5 bg-background border rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive hover:text-destructive-foreground shadow-sm"
+                    className="absolute -top-1.5 -right-1.5 bg-background border rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive hover:text-destructive-foreground shadow-md"
                   >
-                    <X className="w-3 h-3" />
+                    <X className="w-2.5 h-2.5" />
                   </button>
                 </div>
               ))}
@@ -118,7 +119,7 @@ export function LabelManager() {
         </div>
         
         <DialogFooter>
-          <Button onClick={() => setIsOpen(false)}>Done</Button>
+          <Button onClick={() => setIsOpen(false)} className="w-full h-12 rounded-xl font-black uppercase text-sm bg-muted text-primary hover:bg-muted/80">Done</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

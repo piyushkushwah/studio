@@ -52,7 +52,6 @@ export function FocusPlayer() {
   const [hasError, setHasError] = useState(false);
   const [volume, setVolume] = useState([40]);
   
-  // New Song Form State
   const [newSongLabel, setNewSongLabel] = useState("");
   const [newSongUrl, setNewSongUrl] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
@@ -132,40 +131,40 @@ export function FocusPlayer() {
       
       <Popover>
         <PopoverTrigger asChild>
-          <div className="flex items-center gap-1 bg-card border border-border shadow-sm rounded-2xl px-2 h-12 hover:border-primary/30 transition-all cursor-pointer group">
+          <div className="flex items-center gap-3 bg-card border border-border shadow-sm rounded-2xl px-4 h-12 hover:border-primary/30 transition-all cursor-pointer group">
             <Button
               variant="ghost" size="icon"
               className={cn("h-9 w-9 rounded-xl", isPlaying && "text-primary bg-primary/5", hasError && "text-destructive")}
             >
-              {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Music className={cn("w-4 h-4", isPlaying && "animate-pulse")} />}
+              {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Music className={cn("w-5 h-5", isPlaying && "animate-pulse")} />}
             </Button>
-            <div className="hidden md:flex flex-col pr-2">
-              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground leading-none mb-0.5">Focus Radio</span>
-              <span className="text-xs font-bold truncate max-w-[70px] text-primary">{activeSoundId ? activeSoundLabel : "Off"}</span>
+            <div className="flex flex-col pr-2">
+              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground leading-none mb-1">Focus Radio</span>
+              <span className="text-xs font-black truncate max-w-[80px] text-primary">{activeSoundId ? activeSoundLabel : "Off"}</span>
             </div>
           </div>
         </PopoverTrigger>
-        <PopoverContent className="w-80 p-4 rounded-[1.5rem] shadow-2xl border-primary/10 bg-card">
-          <div className="space-y-4">
+        <PopoverContent className="w-80 p-5 rounded-[2rem] shadow-2xl border-primary/10 bg-card">
+          <div className="space-y-5">
             <div className="flex items-center justify-between">
-              <h4 className="font-black text-primary text-sm uppercase tracking-widest">Focus Radio</h4>
+              <h4 className="font-black text-primary text-sm uppercase tracking-widest">Atmosphere</h4>
               <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={() => setShowAddForm(!showAddForm)}>
-                <Plus className="w-4 h-4" />
+                <Plus className="w-5 h-5" />
               </Button>
             </div>
 
             {showAddForm && (
-              <div className="bg-muted/30 p-3 rounded-xl space-y-2 border border-dashed border-border">
-                <Input placeholder="Track Name" value={newSongLabel} onChange={e => setNewSongLabel(e.target.value)} className="h-8 text-xs bg-background" />
-                <Input placeholder="MP3 URL" value={newSongUrl} onChange={e => setNewSongUrl(e.target.value)} className="h-8 text-xs bg-background" />
+              <div className="bg-muted/30 p-4 rounded-2xl space-y-3 border border-dashed border-border">
+                <Input placeholder="Track Name" value={newSongLabel} onChange={e => setNewSongLabel(e.target.value)} className="h-9 text-xs bg-background rounded-xl" />
+                <Input placeholder="MP3 URL" value={newSongUrl} onChange={e => setNewSongUrl(e.target.value)} className="h-9 text-xs bg-background rounded-xl" />
                 <div className="flex gap-2">
-                  <Button size="sm" className="flex-1 h-8 text-[10px] uppercase font-bold" onClick={handleAddSong}>Save</Button>
-                  <Button size="sm" variant="ghost" className="h-8 text-[10px] uppercase font-bold" onClick={() => setShowAddForm(false)}>Cancel</Button>
+                  <Button size="sm" className="flex-1 h-9 text-[10px] uppercase font-black rounded-xl" onClick={handleAddSong}>Save</Button>
+                  <Button size="sm" variant="ghost" className="h-9 text-[10px] uppercase font-black rounded-xl" onClick={() => setShowAddForm(false)}>Cancel</Button>
                 </div>
               </div>
             )}
 
-            <div className="grid grid-cols-2 gap-2 max-h-[180px] overflow-y-auto pr-1">
+            <div className="grid grid-cols-2 gap-3 max-h-[220px] overflow-y-auto pr-2">
               {allSounds.map((sound) => {
                 const Icon = sound.icon;
                 const isActive = activeSoundId === sound.id;
@@ -175,20 +174,20 @@ export function FocusPlayer() {
                     <Button
                       variant={isActive ? "default" : "outline"}
                       className={cn(
-                        "h-16 w-full flex flex-col gap-1 rounded-xl transition-all p-2",
+                        "h-20 w-full flex flex-col gap-2 rounded-2xl transition-all p-3 border-border/50",
                         isActive && isPlaying ? "ring-2 ring-primary ring-offset-2" : ""
                       )}
                       onClick={() => toggleSound(sound.id)}
                     >
-                      <Icon className="w-4 h-4" />
-                      <span className="text-[10px] font-bold uppercase tracking-tighter truncate w-full">{sound.label}</span>
+                      <Icon className="w-5 h-5" />
+                      <span className="text-[10px] font-black uppercase tracking-tighter truncate w-full text-center">{sound.label}</span>
                     </Button>
                     {isCustom && (
                       <button 
-                        className="absolute -top-1 -right-1 bg-destructive text-white rounded-full p-0.5 opacity-0 group-hover/item:opacity-100 transition-opacity"
+                        className="absolute -top-1.5 -right-1.5 bg-destructive text-white rounded-full p-1 shadow-lg opacity-0 group-hover/item:opacity-100 transition-opacity"
                         onClick={(e) => { e.stopPropagation(); removeCustomSong(sound.id); }}
                       >
-                        <Trash2 className="w-2.5 h-2.5" />
+                        <Trash2 className="w-3 h-3" />
                       </button>
                     )}
                   </div>
@@ -196,13 +195,13 @@ export function FocusPlayer() {
               })}
             </div>
 
-            <div className="space-y-3 pt-2 border-t border-border">
+            <div className="space-y-4 pt-4 border-t border-border">
               <div className="flex items-center justify-between text-[10px] font-black text-muted-foreground uppercase tracking-widest">
-                <span>Volume</span>
+                <span>Volume Control</span>
                 <span>{volume[0]}%</span>
               </div>
-              <div className="flex items-center gap-3">
-                {volume[0] === 0 ? <VolumeX className="w-4 h-4 text-muted-foreground" /> : <Volume2 className="w-4 h-4 text-primary" />}
+              <div className="flex items-center gap-4">
+                {volume[0] === 0 ? <VolumeX className="w-5 h-5 text-muted-foreground" /> : <Volume2 className="w-5 h-5 text-primary" />}
                 <Slider value={volume} onValueChange={setVolume} max={100} step={1} className="flex-1" />
               </div>
             </div>
