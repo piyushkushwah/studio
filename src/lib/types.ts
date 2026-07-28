@@ -72,6 +72,17 @@ export interface Exercise {
   createdAt: number;
 }
 
+export interface TravelGoal {
+  id: string;
+  destination: string;
+  plannedDate?: string; // YYYY-MM-DD
+  budget?: number;
+  status: 'planned' | 'bucket-list' | 'completed';
+  notes?: string;
+  packingList?: string[];
+  createdAt: number;
+}
+
 export interface DailyGoal {
   date: string; // YYYY-MM-DD
   targetTasks: number;
@@ -95,6 +106,7 @@ export interface TaskContextType {
   diet: DietEntry[];
   water: WaterEntry[];
   exercises: Exercise[];
+  travelGoals: TravelGoal[];
   dailyGoals: Record<string, number>;
   waterGoal: number;
   calorieGoal: number;
@@ -145,6 +157,11 @@ export interface TaskContextType {
   // Exercise Actions
   addExercise: (exercise: Omit<Exercise, 'id' | 'createdAt'>) => void;
   deleteExercise: (id: string) => void;
+
+  // Travel Actions
+  addTravelGoal: (goal: Omit<TravelGoal, 'id' | 'createdAt'>) => void;
+  updateTravelGoal: (id: string, updates: Partial<TravelGoal>) => void;
+  deleteTravelGoal: (id: string) => void;
   
   // Timer Actions
   setWorkTimerActive: (active: boolean) => void;

@@ -54,7 +54,8 @@ import {
   Sun,
   Sparkles,
   Apple,
-  Dumbbell
+  Dumbbell,
+  Compass
 } from "lucide-react";
 import { Task, Priority } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -374,6 +375,12 @@ export default function DailyTaskTrack() {
               <Button variant="ghost" className="flex flex-col items-center justify-center gap-0 h-auto py-1 px-3 rounded-xl hover:bg-orange-50 dark:hover:bg-orange-900/20 group" title="Exercise Tracker">
                 <Dumbbell className="w-4 h-4 text-orange-600 transition-transform group-hover:scale-110" />
                 <span className="text-[8px] font-black uppercase tracking-tighter text-muted-foreground/60 mt-0.5">Workout</span>
+              </Button>
+            </Link>
+            <Link href="/travel">
+              <Button variant="ghost" className="flex flex-col items-center justify-center gap-0 h-auto py-1 px-3 rounded-xl hover:bg-emerald-50 dark:hover:bg-emerald-900/20 group" title="Travel Goals">
+                <Compass className="w-4 h-4 text-emerald-600 transition-transform group-hover:scale-110" />
+                <span className="text-[8px] font-black uppercase tracking-tighter text-muted-foreground/60 mt-0.5">Travel</span>
               </Button>
             </Link>
             <Link href="/expenses">

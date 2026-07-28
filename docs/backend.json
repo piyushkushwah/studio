@@ -112,6 +112,22 @@
       },
       "required": ["name", "durationMinutes", "caloriesBurned", "type", "date", "createdAt"]
     },
+    "TravelGoal": {
+      "title": "Travel Goal",
+      "description": "A travel destination and planning details",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "destination": { "type": "string" },
+        "plannedDate": { "type": "string", "format": "date" },
+        "budget": { "type": "number" },
+        "status": { "type": "string", "enum": ["planned", "bucket-list", "completed"] },
+        "notes": { "type": "string" },
+        "packingList": { "type": "array", "items": { "type": "string" } },
+        "createdAt": { "type": "number" }
+      },
+      "required": ["destination", "status", "createdAt"]
+    },
     "UserPreference": {
       "title": "User Preference",
       "description": "User specific settings including custom songs and goals",
@@ -174,6 +190,10 @@
     "/users/{userId}/exercises/{exerciseId}": {
       "schema": { "$ref": "#/backend/entities/Exercise" },
       "description": "User physical activity log"
+    },
+    "/users/{userId}/travelGoals/{goalId}": {
+      "schema": { "$ref": "#/backend/entities/TravelGoal" },
+      "description": "User travel planning and goals"
     },
     "/users/{userId}/preferences/main": {
       "schema": { "$ref": "#/backend/entities/UserPreference" },

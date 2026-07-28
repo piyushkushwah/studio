@@ -2,7 +2,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo, useCallback } from 'react';
-import { Task, Label, Session, Note, Expense, DietEntry, WaterEntry, Exercise, TaskContextType, CustomSong } from '@/lib/types';
+import { Task, Label, Session, Note, Expense, DietEntry, WaterEntry, Exercise, TravelGoal, TaskContextType, CustomSong } from '@/lib/types';
 import { format, subDays, isSameDay } from 'date-fns';
 import { useUser, useFirestore } from '@/firebase';
 import { 
@@ -51,6 +51,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
   const [diet, setDiet] = useState<DietEntry[]>([]);
   const [water, setWater] = useState<WaterEntry[]>([]);
   const [exercises, setExercises] = useState<Exercise[]>([]);
+  const [travelGoals, setTravelGoals] = useState<TravelGoal[]>([]);
   const [dailyGoals, setDailyGoals] = useState<Record<string, number>>({});
   const [waterGoal, setWaterGoalLocal] = useState(2000);
   const [calorieGoal, setCalorieGoalLocal] = useState(2000);
@@ -450,6 +451,59 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     }
   }, [user, firestore]);
 
+  const addTravelGoal = useCallback((goalData: Omit<TravelGoal, 'id' | 'createdAt'>) => {
+    const id = generateId();
+    const newGoal: TravelGoal = { ...goalData, id, createdAt: Date.now() };
+    
+    if (user && firestore) {
+      const docRef = doc(firestore, 'users', user.uid, 'travelGoals', id);
+      setDoc(docRef, newGoal).catch((err) => {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+          path: docRef.path,
+          operation: 'create',
+          requestResourceData: newGoal
+        }));
+      });
+    } else {
+      setTravelGoals(prev => [newGoal, ...prev].sort((a, b) => b.createdAt - a.createdAt));
+      const stored = JSON.parse(localStorage.getItem('daily_task_track_travel') || '[]');
+      syncLocal('daily_task_track_travel', [newGoal, ...stored]);
+    }
+  }, [user, firestore]);
+
+  const updateTravelGoal = useCallback((id: string, updates: Partial<TravelGoal>) => {
+    if (user && firestore) {
+      const docRef = doc(firestore, 'users', user.uid, 'travelGoals', id);
+      updateDoc(docRef, updates).catch((err) => {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+          path: docRef.path,
+          operation: 'update',
+          requestResourceData: updates
+        }));
+      });
+    } else {
+      setTravelGoals(prev => prev.map(g => g.id === id ? { ...g, ...updates } : g));
+      const stored = JSON.parse(localStorage.getItem('daily_task_track_travel') || '[]');
+      syncLocal('daily_task_track_travel', stored.map((g: TravelGoal) => g.id === id ? { ...g, ...updates } : g));
+    }
+  }, [user, firestore]);
+
+  const deleteTravelGoal = useCallback((id: string) => {
+    if (user && firestore) {
+      const docRef = doc(firestore, 'users', user.uid, 'travelGoals', id);
+      deleteDoc(docRef).catch((err) => {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+          path: docRef.path,
+          operation: 'delete'
+        }));
+      });
+    } else {
+      setTravelGoals(prev => prev.filter(g => g.id !== id));
+      const stored = JSON.parse(localStorage.getItem('daily_task_track_travel') || '[]');
+      syncLocal('daily_task_track_travel', stored.filter((g: TravelGoal) => g.id !== id));
+    }
+  }, [user, firestore]);
+
   const setDailyGoal = useCallback((date: string, target: number) => {
     const newGoals = { ...dailyGoals, [date]: target };
     if (user && firestore) {
@@ -558,6 +612,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
         const storedDiet = localStorage.getItem('daily_task_track_diet');
         const storedWater = localStorage.getItem('daily_task_track_water');
         const storedExercises = localStorage.getItem('daily_task_track_exercises');
+        const storedTravel = localStorage.getItem('daily_task_track_travel');
         const storedPrefs = localStorage.getItem('daily_task_track_prefs');
 
         if (storedTasks) setTasks(JSON.parse(storedTasks).sort((a: any, b: any) => b.createdAt - a.createdAt));
@@ -569,6 +624,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
         if (storedDiet) setDiet(JSON.parse(storedDiet));
         if (storedWater) setWater(JSON.parse(storedWater));
         if (storedExercises) setExercises(JSON.parse(storedExercises).sort((a: any, b: any) => b.createdAt - a.createdAt));
+        if (storedTravel) setTravelGoals(JSON.parse(storedTravel).sort((a: any, b: any) => b.createdAt - a.createdAt));
         if (storedPrefs) {
           const prefs = JSON.parse(storedPrefs);
           setDailyGoals(prefs.dailyGoals || {});
@@ -650,6 +706,14 @@ export function TaskProvider({ children }: { children: ReactNode }) {
       );
     }));
 
+    const travelRef = collection(firestore, 'users', userId, 'travelGoals');
+    unsubs.push(onSnapshot(travelRef, (snapshot) => {
+      setTravelGoals(snapshot.docs
+        .map(doc => ({ ...doc.data(), id: doc.id } as TravelGoal))
+        .sort((a, b) => b.createdAt - a.createdAt)
+      );
+    }));
+
     unsubs.push(onSnapshot(doc(firestore, 'users', userId, 'preferences', 'main'), (docSnap) => {
       if (docSnap.exists()) {
         const data = docSnap.data();
@@ -701,7 +765,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
 
   return (
     <TaskContext.Provider value={{ 
-      tasks, labels, sessions, notes, expenses, diet, water, exercises, dailyGoals, customSongs, streak,
+      tasks, labels, sessions, notes, expenses, diet, water, exercises, travelGoals, dailyGoals, customSongs, streak,
       waterGoal, calorieGoal, height, weight,
       workTimerLeft, breakTimerLeft, isWorkTimerActive, isBreakTimerActive,
       addTask, updateTask, deleteTask, toggleTask, addLabel, deleteLabel, 
@@ -710,6 +774,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
       addExpense, updateExpense, deleteExpense,
       addDietEntry, deleteDietEntry, addWaterEntry, deleteWaterEntry,
       addExercise, deleteExercise,
+      addTravelGoal, updateTravelGoal, deleteTravelGoal,
       setDailyGoal, setWaterGoal, setCalorieGoal, setPhysicalProfile, addCustomSong, removeCustomSong,
       setWorkTimerActive: (a) => { if(a) setBreakTimerActive(false); setWorkTimerActive(a); },
       setBreakTimerActive: (a) => { if(a) setWorkTimerActive(false); setBreakTimerActive(a); },
