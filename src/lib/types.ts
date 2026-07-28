@@ -62,6 +62,16 @@ export interface WaterEntry {
   createdAt: number;
 }
 
+export interface Exercise {
+  id: string;
+  name: string;
+  durationMinutes: number;
+  caloriesBurned: number;
+  type: 'cardio' | 'strength' | 'flexibility' | 'other';
+  date: string; // YYYY-MM-DD
+  createdAt: number;
+}
+
 export interface DailyGoal {
   date: string; // YYYY-MM-DD
   targetTasks: number;
@@ -84,6 +94,7 @@ export interface TaskContextType {
   expenses: Expense[];
   diet: DietEntry[];
   water: WaterEntry[];
+  exercises: Exercise[];
   dailyGoals: Record<string, number>;
   waterGoal: number;
   calorieGoal: number;
@@ -130,6 +141,10 @@ export interface TaskContextType {
   deleteDietEntry: (id: string) => void;
   addWaterEntry: (amount: number, date?: string) => void;
   deleteWaterEntry: (id: string) => void;
+
+  // Exercise Actions
+  addExercise: (exercise: Omit<Exercise, 'id' | 'createdAt'>) => void;
+  deleteExercise: (id: string) => void;
   
   // Timer Actions
   setWorkTimerActive: (active: boolean) => void;

@@ -97,6 +97,21 @@
       },
       "required": ["amount", "date", "createdAt"]
     },
+    "Exercise": {
+      "title": "Exercise",
+      "description": "A record of physical activity",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "durationMinutes": { "type": "number" },
+        "caloriesBurned": { "type": "number" },
+        "type": { "type": "string", "enum": ["cardio", "strength", "flexibility", "other"] },
+        "date": { "type": "string", "format": "date" },
+        "createdAt": { "type": "number" }
+      },
+      "required": ["name", "durationMinutes", "caloriesBurned", "type", "date", "createdAt"]
+    },
     "UserPreference": {
       "title": "User Preference",
       "description": "User specific settings including custom songs and goals",
@@ -155,6 +170,10 @@
     "/users/{userId}/water/{waterId}": {
       "schema": { "$ref": "#/backend/entities/WaterEntry" },
       "description": "User daily water intake log"
+    },
+    "/users/{userId}/exercises/{exerciseId}": {
+      "schema": { "$ref": "#/backend/entities/Exercise" },
+      "description": "User physical activity log"
     },
     "/users/{userId}/preferences/main": {
       "schema": { "$ref": "#/backend/entities/UserPreference" },

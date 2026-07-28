@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useMemo, useEffect, useCallback } from "react";
@@ -52,7 +53,8 @@ import {
   Moon,
   Sun,
   Sparkles,
-  Apple
+  Apple,
+  Dumbbell
 } from "lucide-react";
 import { Task, Priority } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -309,7 +311,7 @@ export default function DailyTaskTrack() {
     <div className="min-h-screen bg-background p-4 md:p-8 flex flex-col items-center overflow-x-hidden animate-in fade-in duration-700">
       <AppTour />
       
-      <header id="tour-header" className="w-full max-6xl flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 md:mb-12 shrink-0">
+      <header id="tour-header" className="w-full max-w-6xl flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 md:mb-12 shrink-0">
         <div className="flex items-center gap-5 min-w-0">
           <div className="bg-primary text-primary-foreground p-3 rounded-2xl shadow-xl shadow-primary/20 shrink-0">
             <CalendarIcon className="w-7 h-7" />
@@ -366,6 +368,12 @@ export default function DailyTaskTrack() {
               <Button variant="ghost" className="flex flex-col items-center justify-center gap-0 h-auto py-1 px-3 rounded-xl hover:bg-sky-50 dark:hover:bg-sky-900/20 group" title="Health Tracker">
                 <Apple className="w-4 h-4 text-sky-600 transition-transform group-hover:scale-110" />
                 <span className="text-[8px] font-black uppercase tracking-tighter text-muted-foreground/60 mt-0.5">Health</span>
+              </Button>
+            </Link>
+            <Link href="/exercise">
+              <Button variant="ghost" className="flex flex-col items-center justify-center gap-0 h-auto py-1 px-3 rounded-xl hover:bg-orange-50 dark:hover:bg-orange-900/20 group" title="Exercise Tracker">
+                <Dumbbell className="w-4 h-4 text-orange-600 transition-transform group-hover:scale-110" />
+                <span className="text-[8px] font-black uppercase tracking-tighter text-muted-foreground/60 mt-0.5">Workout</span>
               </Button>
             </Link>
             <Link href="/expenses">
