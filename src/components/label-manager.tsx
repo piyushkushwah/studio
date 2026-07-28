@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useCallback } from "react";
@@ -47,9 +46,9 @@ export function LabelManager() {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" className="flex flex-col items-center justify-center gap-0.5 h-9 w-12 rounded-xl hover:bg-primary/5 group" title="Manage Labels">
+        <Button variant="ghost" className="flex flex-col items-center justify-center gap-0.5 h-11 w-12 rounded-xl hover:bg-primary/5 group" title="Manage Labels">
           <Tag className="w-4 h-4 text-primary transition-transform group-hover:scale-110 shrink-0" />
-          <span className="text-[9px] font-black uppercase tracking-tighter text-muted-foreground/60 leading-none">Labels</span>
+          <span className="text-[8px] font-black uppercase tracking-tighter text-muted-foreground/60 leading-none">Labels</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px] rounded-[2rem]">
