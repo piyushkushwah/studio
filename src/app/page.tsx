@@ -352,7 +352,7 @@ export default function DailyTaskTrack() {
           <div className="flex flex-wrap items-center gap-3 xl:ml-auto">
             <FocusPlayer />
             
-            <div className="flex items-center gap-1 p-1 bg-card/50 backdrop-blur-sm border rounded-2xl shadow-sm h-14">
+            <div className="flex items-center gap-1 p-1 bg-white backdrop-blur-sm border rounded-2xl shadow-sm h-14">
               <LabelManager />
               
               <Link href="/time-tracking">
@@ -484,4 +484,3 @@ export default function DailyTaskTrack() {
     </div>
   );
 }
-
