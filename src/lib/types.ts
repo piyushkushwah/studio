@@ -1,3 +1,4 @@
+
 export type Priority = 'low' | 'medium' | 'high';
 
 export interface Label {
@@ -86,6 +87,8 @@ export interface TaskContextType {
   dailyGoals: Record<string, number>;
   waterGoal: number;
   calorieGoal: number;
+  height: number;
+  weight: number;
   customSongs: CustomSong[];
   streak: number;
   
@@ -108,6 +111,7 @@ export interface TaskContextType {
   setDailyGoal: (date: string, target: number) => void;
   setWaterGoal: (target: number) => void;
   setCalorieGoal: (target: number) => void;
+  setPhysicalProfile: (height: number, weight: number) => void;
   addCustomSong: (label: string, url: string) => void;
   removeCustomSong: (id: string) => void;
   

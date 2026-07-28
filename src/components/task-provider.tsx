@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo, useCallback } from 'react';
@@ -52,6 +53,8 @@ export function TaskProvider({ children }: { children: ReactNode }) {
   const [dailyGoals, setDailyGoals] = useState<Record<string, number>>({});
   const [waterGoal, setWaterGoalLocal] = useState(2000);
   const [calorieGoal, setCalorieGoalLocal] = useState(2000);
+  const [height, setHeightLocal] = useState(170);
+  const [weight, setWeightLocal] = useState(70);
   const [customSongs, setCustomSongs] = useState<CustomSong[]>([]);
   
   const [workTimerLeft, setWorkTimerLeft] = useState(TIMER_CONFIG.work);
@@ -444,6 +447,18 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     }
   }, [user, firestore]);
 
+  const setPhysicalProfile = useCallback((h: number, w: number) => {
+    if (user && firestore) {
+      const docRef = doc(firestore, 'users', user.uid, 'preferences', 'main');
+      setDoc(docRef, { height: h, weight: w }, { merge: true });
+    } else {
+      setHeightLocal(h);
+      setWeightLocal(w);
+      const stored = JSON.parse(localStorage.getItem('daily_task_track_prefs') || '{}');
+      syncLocal('daily_task_track_prefs', { ...stored, height: h, weight: w });
+    }
+  }, [user, firestore]);
+
   const addCustomSong = useCallback((label: string, url: string) => {
     const newSong = { id: generateId(), label, url };
     const newSongs = [...customSongs, newSong];
@@ -520,6 +535,8 @@ export function TaskProvider({ children }: { children: ReactNode }) {
           setDailyGoals(prefs.dailyGoals || {});
           setWaterGoalLocal(prefs.waterGoal || 2000);
           setCalorieGoalLocal(prefs.calorieGoal || 2000);
+          setHeightLocal(prefs.height || 170);
+          setWeightLocal(prefs.weight || 70);
           setCustomSongs(prefs.customSongs || []);
         }
       } catch (e) {
@@ -592,6 +609,8 @@ export function TaskProvider({ children }: { children: ReactNode }) {
         setDailyGoals(data.dailyGoals || {});
         setWaterGoalLocal(data.waterGoal || 2000);
         setCalorieGoalLocal(data.calorieGoal || 2000);
+        setHeightLocal(data.height || 170);
+        setWeightLocal(data.weight || 70);
         setCustomSongs(data.customSongs || []);
       }
     }));
@@ -636,14 +655,14 @@ export function TaskProvider({ children }: { children: ReactNode }) {
   return (
     <TaskContext.Provider value={{ 
       tasks, labels, sessions, notes, expenses, diet, water, dailyGoals, customSongs, streak,
-      waterGoal, calorieGoal,
+      waterGoal, calorieGoal, height, weight,
       workTimerLeft, breakTimerLeft, isWorkTimerActive, isBreakTimerActive,
       addTask, updateTask, deleteTask, toggleTask, addLabel, deleteLabel, 
       addSession, updateSession, deleteSession, 
       addNote, updateNote, deleteNote,
       addExpense, updateExpense, deleteExpense,
       addDietEntry, deleteDietEntry, addWaterEntry, deleteWaterEntry,
-      setDailyGoal, setWaterGoal, setCalorieGoal, addCustomSong, removeCustomSong,
+      setDailyGoal, setWaterGoal, setCalorieGoal, setPhysicalProfile, addCustomSong, removeCustomSong,
       setWorkTimerActive: (a) => { if(a) setBreakTimerActive(false); setWorkTimerActive(a); },
       setBreakTimerActive: (a) => { if(a) setWorkTimerActive(false); setBreakTimerActive(a); },
       resetWorkTimer, resetBreakTimer,
