@@ -143,7 +143,7 @@ export default function AnalyticsPage() {
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-8 flex flex-col items-center">
-      <header className="w-full max-w-5xl flex items-center justify-between mb-8">
+      <header className="w-full max-w-7xl flex items-center justify-between mb-8">
         <div className="flex items-center gap-3">
           <Link href="/">
             <Button variant="ghost" size="icon" className="rounded-xl">
@@ -166,7 +166,7 @@ export default function AnalyticsPage() {
         </Button>
       </header>
 
-      <main className="w-full max-w-5xl space-y-6">
+      <main className="w-full max-w-7xl space-y-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card className="shadow-sm border-border bg-card/50 backdrop-blur-sm">
             <CardHeader className="pb-2">

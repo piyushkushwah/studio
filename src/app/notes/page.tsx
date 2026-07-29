@@ -114,7 +114,7 @@ export default function NotesPage() {
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-8 flex flex-col items-center">
-      <header className="w-full max-w-6xl flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+      <header className="w-full max-w-7xl flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div className="flex items-center gap-3">
           <Link href="/">
             <Button variant="ghost" size="icon" className="rounded-xl hover:bg-card shadow-sm border border-transparent hover:border-border">
@@ -165,7 +165,7 @@ export default function NotesPage() {
         </div>
       </header>
 
-      <main className="w-full max-w-6xl flex-1">
+      <main className="w-full max-w-7xl flex-1">
         {notes.length === 0 ? (
           <div className="h-[60vh] flex flex-col items-center justify-center text-center gap-6">
             <div className="w-24 h-24 bg-primary/5 rounded-[2rem] flex items-center justify-center text-primary/20 border-2 border-dashed border-primary/10">

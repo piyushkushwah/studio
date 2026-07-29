@@ -177,7 +177,7 @@ export default function HealthPage() {
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-8 flex flex-col items-center">
-      <header className="w-full max-w-6xl flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+      <header className="w-full max-w-7xl flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div className="flex items-center gap-3">
           <Link href="/">
             <Button variant="ghost" size="icon" className="rounded-xl hover:bg-card shadow-sm border border-transparent hover:border-border">
@@ -216,7 +216,7 @@ export default function HealthPage() {
         </div>
       </header>
 
-      <main className="w-full max-w-6xl space-y-8">
+      <main className="w-full max-w-7xl space-y-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           
           {/* Physical Stats / BMI Card */}

@@ -32,7 +32,7 @@ export default function RootLayout({
           <TaskProvider>
             <div className="min-h-screen flex flex-col items-center">
               <AppHeader />
-              <main className="w-full flex-1 flex flex-col items-center">
+              <main className="w-full flex-1 flex flex-col">
                 {children}
               </main>
               <AppTour />
