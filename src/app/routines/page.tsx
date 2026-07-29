@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useMemo } from "react";
@@ -107,20 +106,38 @@ export default function RoutinesPage() {
     setIsGenerating(true);
     try {
       const result = await suggestRoutines({ goal: aiGoal });
-      result.routines.forEach(r => {
-        addRoutine({
-          title: r.title,
-          description: r.description,
-          time: r.time,
-          frequency: r.frequency,
-          active: true
+      
+      if (result && result.routines && result.routines.length > 0) {
+        result.routines.forEach(r => {
+          addRoutine({
+            title: r.title,
+            description: r.description,
+            time: r.time,
+            frequency: r.frequency,
+            active: true
+          });
         });
+        toast({ title: "Routines Generated", description: `Added ${result.routines.length} routines to your schedule.` });
+        setIsAiDialogOpen(false);
+        setAiGoal("");
+      } else {
+        throw new Error('NO_ROUTINES_RETURNED');
+      }
+    } catch (error: any) {
+      console.error("AI Routine Error:", error);
+      let message = "Could not generate routine suggestions. Please try again or be more specific.";
+      
+      if (error.message === 'QUOTA_EXCEEDED') {
+        message = "AI limit reached for today. Please try again later or add routines manually.";
+      } else if (error.message === 'MISSING_API_KEY') {
+        message = "AI service is not configured correctly. Missing API Key.";
+      }
+
+      toast({ 
+        variant: "destructive", 
+        title: "AI Architect Busy", 
+        description: message 
       });
-      toast({ title: "Routines Generated", description: `Added ${result.routines.length} routines to your schedule.` });
-      setIsAiDialogOpen(false);
-      setAiGoal("");
-    } catch (error) {
-      toast({ variant: "destructive", title: "AI Error", description: "Could not generate routine suggestions." });
     } finally {
       setIsGenerating(false);
     }
@@ -383,6 +400,7 @@ export default function RoutinesPage() {
                 placeholder="e.g. Master the mornings, Deep focus at work"
                 className="h-12 rounded-xl bg-muted/30 border-transparent font-medium"
                 onKeyDown={(e) => e.key === 'Enter' && handleAiSuggest()}
+                disabled={isGenerating}
               />
             </div>
           </div>
@@ -390,7 +408,7 @@ export default function RoutinesPage() {
             <Button 
               onClick={handleAiSuggest} 
               disabled={isGenerating || !aiGoal.trim()}
-              className="w-full h-14 rounded-2xl font-black bg-blue-600 hover:bg-blue-700 shadow-xl shadow-blue-200 flex items-center gap-2"
+              className="w-full h-14 rounded-2xl font-black bg-blue-600 hover:bg-blue-700 shadow-xl shadow-blue-200 flex items-center justify-center gap-2"
             >
               {isGenerating ? (
                 <>
