@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "Task": {
@@ -15,6 +16,22 @@
         "priority": { "type": "string", "enum": ["low", "medium", "high"] }
       },
       "required": ["description", "dueDate", "completed", "createdAt"]
+    },
+    "Routine": {
+      "title": "Routine",
+      "description": "A recurring set of activities or habits",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "time": { "type": "string" },
+        "frequency": { "type": "string", "enum": ["daily", "weekly", "weekdays", "weekends"] },
+        "days": { "type": "array", "items": { "type": "string" } },
+        "active": { "type": "boolean" },
+        "createdAt": { "type": "number" }
+      },
+      "required": ["title", "frequency", "active", "createdAt"]
     },
     "Label": {
       "title": "Label",
@@ -175,6 +192,10 @@
     "/users/{userId}/tasks/{taskId}": {
       "schema": { "$ref": "#/backend/entities/Task" },
       "description": "Individual tasks for the user"
+    },
+    "/users/{userId}/routines/{routineId}": {
+      "schema": { "$ref": "#/backend/entities/Routine" },
+      "description": "Recurring routines for the user"
     },
     "/users/{userId}/labels/{labelId}": {
       "schema": { "$ref": "#/backend/entities/Label" },

@@ -2,7 +2,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo, useCallback } from 'react';
-import { Task, Label, Session, Note, GrowthNote, Expense, DietEntry, WaterEntry, Exercise, TravelGoal, TaskContextType, CustomSong } from '@/lib/types';
+import { Task, Label, Session, Note, GrowthNote, Expense, DietEntry, WaterEntry, Exercise, TravelGoal, Routine, TaskContextType, CustomSong } from '@/lib/types';
 import { format, subDays, isSameDay } from 'date-fns';
 import { useUser, useFirestore } from '@/firebase';
 import { 
@@ -44,6 +44,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
   const firestore = useFirestore();
 
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [routines, setRoutines] = useState<Routine[]>([]);
   const [labels, setLabels] = useState<Label[]>(DEFAULT_LABELS);
   const [sessions, setSessions] = useState<Session[]>([]);
   const [notes, setNotes] = useState<Note[]>([]);
@@ -123,6 +124,59 @@ export function TaskProvider({ children }: { children: ReactNode }) {
       setTasks(prev => prev.filter(t => t.id !== id));
       const stored = JSON.parse(localStorage.getItem('daily_task_track_tasks') || '[]');
       syncLocal('daily_task_track_tasks', stored.filter((t: Task) => t.id !== id));
+    }
+  }, [user, firestore]);
+
+  const addRoutine = useCallback((routineData: Omit<Routine, 'id' | 'createdAt'>) => {
+    const id = generateId();
+    const newRoutine: Routine = { ...routineData, id, createdAt: Date.now() };
+    
+    if (user && firestore) {
+      const docRef = doc(firestore, 'users', user.uid, 'routines', id);
+      setDoc(docRef, newRoutine).catch((err) => {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+          path: docRef.path,
+          operation: 'create',
+          requestResourceData: newRoutine
+        }));
+      });
+    } else {
+      setRoutines(prev => [...prev, newRoutine].sort((a, b) => b.createdAt - a.createdAt));
+      const stored = JSON.parse(localStorage.getItem('daily_task_track_routines') || '[]');
+      syncLocal('daily_task_track_routines', [...stored, newRoutine]);
+    }
+  }, [user, firestore]);
+
+  const updateRoutine = useCallback((id: string, updates: Partial<Routine>) => {
+    if (user && firestore) {
+      const docRef = doc(firestore, 'users', user.uid, 'routines', id);
+      updateDoc(docRef, updates).catch((err) => {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+          path: docRef.path,
+          operation: 'update',
+          requestResourceData: updates
+        }));
+      });
+    } else {
+      setRoutines(prev => prev.map(r => r.id === id ? { ...r, ...updates } : r));
+      const stored = JSON.parse(localStorage.getItem('daily_task_track_routines') || '[]');
+      syncLocal('daily_task_track_routines', stored.map((r: Routine) => r.id === id ? { ...r, ...updates } : r));
+    }
+  }, [user, firestore]);
+
+  const deleteRoutine = useCallback((id: string) => {
+    if (user && firestore) {
+      const docRef = doc(firestore, 'users', user.uid, 'routines', id);
+      deleteDoc(docRef).catch((err) => {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+          path: docRef.path,
+          operation: 'delete'
+        }));
+      });
+    } else {
+      setRoutines(prev => prev.filter(r => r.id !== id));
+      const stored = JSON.parse(localStorage.getItem('daily_task_track_routines') || '[]');
+      syncLocal('daily_task_track_routines', stored.filter((r: Routine) => r.id !== id));
     }
   }, [user, firestore]);
 
@@ -659,6 +713,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     if (!user) {
       try {
         const storedTasks = localStorage.getItem('daily_task_track_tasks');
+        const storedRoutines = localStorage.getItem('daily_task_track_routines');
         const storedLabels = localStorage.getItem('daily_task_track_labels');
         const storedSessions = localStorage.getItem('daily_task_track_sessions');
         const storedNotes = localStorage.getItem('daily_task_track_notes');
@@ -671,6 +726,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
         const storedPrefs = localStorage.getItem('daily_task_track_prefs');
 
         if (storedTasks) setTasks(JSON.parse(storedTasks).sort((a: any, b: any) => b.createdAt - a.createdAt));
+        if (storedRoutines) setRoutines(JSON.parse(storedRoutines).sort((a: any, b: any) => b.createdAt - a.createdAt));
         if (storedLabels) setLabels(JSON.parse(storedLabels));
         else setLabels(DEFAULT_LABELS);
         if (storedSessions) setSessions(JSON.parse(storedSessions).sort((a: any, b: any) => b.startTime - a.startTime));
@@ -712,6 +768,14 @@ export function TaskProvider({ children }: { children: ReactNode }) {
       );
       setIsInitialized(true);
       clearTimeout(initTimer);
+    }));
+
+    const routinesRef = collection(firestore, 'users', userId, 'routines');
+    unsubs.push(onSnapshot(routinesRef, (snapshot) => {
+      setRoutines(snapshot.docs
+        .map(doc => ({ ...doc.data(), id: doc.id } as Routine))
+        .sort((a, b) => b.createdAt - a.createdAt)
+      );
     }));
 
     const labelsRef = collection(firestore, 'users', userId, 'labels');
@@ -829,10 +893,12 @@ export function TaskProvider({ children }: { children: ReactNode }) {
 
   return (
     <TaskContext.Provider value={{ 
-      tasks, labels, sessions, notes, growthNotes, expenses, diet, water, exercises, travelGoals, dailyGoals, customSongs, streak,
+      tasks, routines, labels, sessions, notes, growthNotes, expenses, diet, water, exercises, travelGoals, dailyGoals, customSongs, streak,
       waterGoal, calorieGoal, height, weight,
       workTimerLeft, breakTimerLeft, isWorkTimerActive, isBreakTimerActive,
-      addTask, updateTask, deleteTask, toggleTask, addLabel, deleteLabel, 
+      addTask, updateTask, deleteTask, toggleTask, 
+      addRoutine, updateRoutine, deleteRoutine,
+      addLabel, deleteLabel, 
       addSession, updateSession, deleteSession, 
       addNote, updateNote, deleteNote,
       addGrowthNote, updateGrowthNote, deleteGrowthNote,

@@ -27,6 +27,19 @@ export interface Task {
   priority?: Priority;
 }
 
+export type RoutineFrequency = 'daily' | 'weekly' | 'weekdays' | 'weekends';
+
+export interface Routine {
+  id: string;
+  title: string;
+  description?: string;
+  time?: string; // HH:MM
+  frequency: RoutineFrequency;
+  days?: string[]; // e.g. ["Monday", "Wednesday"]
+  active: boolean;
+  createdAt: number;
+}
+
 export interface Note {
   id: string;
   title?: string;
@@ -110,6 +123,7 @@ export type TimerMode = "work" | "short";
 export interface TaskContextType {
   // Data
   tasks: Task[];
+  routines: Routine[];
   labels: Label[];
   sessions: Session[];
   notes: Note[];
@@ -120,12 +134,13 @@ export interface TaskContextType {
   exercises: Exercise[];
   travelGoals: TravelGoal[];
   dailyGoals: Record<string, number>;
+  customSongs: CustomSong[];
+  streak: number;
+  
   waterGoal: number;
   calorieGoal: number;
   height: number;
   weight: number;
-  customSongs: CustomSong[];
-  streak: number;
   
   // Timer State (Separated)
   workTimerLeft: number;
@@ -138,6 +153,11 @@ export interface TaskContextType {
   updateTask: (id: string, updates: Partial<Task>) => void;
   deleteTask: (id: string) => void;
   toggleTask: (id: string) => void;
+  
+  addRoutine: (routineData: Omit<Routine, 'id' | 'createdAt'>) => void;
+  updateRoutine: (id: string, updates: Partial<Routine>) => void;
+  deleteRoutine: (id: string) => void;
+  
   addLabel: (name: string, color: string) => void;
   deleteLabel: (id: string) => void;
   addSession: (duration: number, type: 'work' | 'short' | 'manual', note?: string, date?: string) => void;

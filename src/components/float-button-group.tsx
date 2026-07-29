@@ -12,12 +12,14 @@ import {
   Dumbbell, 
   Compass, 
   Wallet,
-  LayoutGrid
+  LayoutGrid,
+  CalendarDays
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 const FLOAT_ITEMS = [
+  { title: "Routines", url: "/routines", icon: CalendarDays },
   { title: "Notes", url: "/notes", icon: StickyNote },
   { title: "Growth", url: "/mindfulness", icon: Sparkles },
   { title: "Health", url: "/health", icon: Apple },
@@ -45,7 +47,7 @@ export function FloatButtonGroup() {
                 <Link href={item.url}>
                   <Button 
                     variant="ghost"
-                    className="h-12 px-6 gap-3 rounded-[1.25rem] shadow-lg bg-white text-slate-600 hover:text-primary hover:bg-slate-50 border border-primary/10 transition-all font-black uppercase tracking-widest text-[10px]"
+                    className="h-12 px-6 gap-3 rounded-[1.25rem] shadow-lg bg-white text-slate-600 hover:text-blue-600 hover:bg-slate-50 border border-primary/10 transition-all font-black uppercase tracking-widest text-[10px]"
                   >
                     <item.icon className="w-5 h-5 transition-colors" />
                     <span>{item.title}</span>
@@ -62,9 +64,8 @@ export function FloatButtonGroup() {
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
           "w-16 h-16 rounded-[2rem] shadow-2xl transition-all duration-300 active:scale-90 ring-4 ring-background text-white",
-          isOpen 
-            ? "bg-blue-600 hover:bg-blue-700 rotate-90" 
-            : "bg-blue-600 hover:bg-blue-700 hover:shadow-blue-600/40"
+          "bg-blue-600 hover:bg-blue-700",
+          isOpen && "rotate-90"
         )}
       >
         {isOpen ? <X className="w-8 h-8" /> : <LayoutGrid className="w-8 h-8" />}

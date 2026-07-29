@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -14,7 +15,8 @@ import {
   Calendar,
   Settings,
   ChevronRight,
-  User
+  User,
+  CalendarDays
 } from "lucide-react";
 import {
   Sidebar,
@@ -40,6 +42,7 @@ import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
+  { title: "Routines", url: "/routines", icon: CalendarDays, color: "text-blue-500" },
   { title: "Quick Notes", url: "/notes", icon: StickyNote },
   { title: "Mindfulness", url: "/mindfulness", icon: Sparkles, color: "text-purple-500" },
   { title: "Health Tracker", url: "/health", icon: Apple, color: "text-sky-500" },
