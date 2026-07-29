@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
@@ -172,13 +171,13 @@ export default function DailyTaskTrack() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-[#020617] text-white flex flex-col items-center justify-center overflow-hidden relative selection:bg-primary/30 selection:text-white">
-        {/* Animated Mesh Gradients */}
+      <div className="min-h-screen bg-white text-slate-900 flex flex-col items-center justify-center overflow-hidden relative selection:bg-primary/20 selection:text-primary">
+        {/* Animated Mesh Gradients - Light Blue Theme */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-[-20%] left-[-10%] w-[70%] h-[70%] bg-blue-600/20 rounded-full blur-[120px] animate-pulse" />
-          <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-indigo-600/20 rounded-full blur-[120px] animate-pulse delay-700" />
-          <div className="absolute top-[30%] right-[10%] w-[30%] h-[30%] bg-purple-600/10 rounded-full blur-[100px] animate-bounce duration-[10s]" />
-          <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay" />
+          <div className="absolute top-[-20%] left-[-10%] w-[70%] h-[70%] bg-blue-400/10 rounded-full blur-[120px] animate-pulse" />
+          <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-sky-400/10 rounded-full blur-[120px] animate-pulse delay-700" />
+          <div className="absolute top-[30%] right-[10%] w-[30%] h-[30%] bg-primary/5 rounded-full blur-[100px] animate-bounce duration-[10s]" />
+          <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] mix-blend-overlay" />
         </div>
 
         <div className="container max-w-7xl px-4 md:px-8 z-10">
@@ -187,13 +186,13 @@ export default function DailyTaskTrack() {
               <div className="bg-primary p-2 rounded-xl shadow-lg shadow-primary/20 transition-transform group-hover:scale-110">
                 <Layout className="w-5 h-5 text-white" />
               </div>
-              <span className="text-lg font-black tracking-tighter text-white/90">DailyTaskTrack</span>
+              <span className="text-lg font-black tracking-tighter text-primary">DailyTaskTrack</span>
             </div>
             <div className="hidden md:flex items-center gap-6">
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40">Status: Operational</span>
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Status: Operational</span>
               <div className="flex items-center gap-2">
                 <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-400">Cloud Connected</span>
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-600">Cloud Connected</span>
               </div>
             </div>
           </header>
@@ -206,28 +205,28 @@ export default function DailyTaskTrack() {
               className="space-y-12"
             >
               <div className="space-y-6">
-                <Badge className="bg-white/5 text-primary border-white/10 px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.3em] w-fit backdrop-blur-md">
+                <Badge className="bg-primary/5 text-primary border-primary/10 px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.3em] w-fit">
                   Version 2.0.4 Release
                 </Badge>
-                <h1 className="text-6xl md:text-7xl xl:text-8xl font-black tracking-tight leading-[0.9] text-white">
+                <h1 className="text-6xl md:text-7xl xl:text-8xl font-black tracking-tight leading-[0.9] text-slate-900">
                   Design your <br />
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">success path.</span>
+                  <span className="text-primary">success path.</span>
                 </h1>
-                <p className="text-lg md:text-xl text-white/50 font-medium max-w-lg leading-relaxed">
+                <p className="text-lg md:text-xl text-slate-500 font-medium max-w-lg leading-relaxed">
                   A high-performance workspace engineered for clarity. Sync your missions, master your focus, and track your evolution in real-time.
                 </p>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {[
-                  { icon: Clock, title: "Precision Focus", color: "text-blue-400" },
-                  { icon: Globe, title: "Global Sync", color: "text-emerald-400" },
-                  { icon: BarChart2, title: "Insight Engine", color: "text-indigo-400" },
-                  { icon: ShieldCheck, title: "Secure Core", color: "text-purple-400" }
+                  { icon: Clock, title: "Precision Focus", color: "text-blue-600" },
+                  { icon: Globe, title: "Global Sync", color: "text-sky-600" },
+                  { icon: BarChart2, title: "Insight Engine", color: "text-indigo-600" },
+                  { icon: ShieldCheck, title: "Secure Core", color: "text-blue-700" }
                 ].map((item, i) => (
-                  <div key={i} className="flex items-center gap-4 p-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/[0.08] transition-colors group">
+                  <div key={i} className="flex items-center gap-4 p-4 rounded-2xl bg-white border border-slate-100 shadow-sm hover:border-primary/20 transition-colors group">
                     <item.icon className={cn("w-5 h-5", item.color)} />
-                    <span className="text-sm font-bold text-white/80">{item.title}</span>
+                    <span className="text-sm font-bold text-slate-700">{item.title}</span>
                   </div>
                 ))}
               </div>
@@ -239,24 +238,24 @@ export default function DailyTaskTrack() {
               transition={{ duration: 0.8, delay: 0.2 }}
               className="relative"
             >
-              {/* Login Card with Glassmorphism */}
-              <Card className="relative bg-white/[0.03] border-white/10 backdrop-blur-3xl shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)] p-8 md:p-12 rounded-[2.5rem] overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
+              {/* Login Card - Blue & White Theme */}
+              <Card className="relative bg-white border-slate-100 shadow-[0_32px_64px_-16px_rgba(37,99,235,0.1)] p-8 md:p-12 rounded-[2.5rem] overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary to-transparent" />
                 
                 <div className="space-y-10">
                   <div className="text-center space-y-4">
-                    <div className="inline-flex items-center justify-center p-4 bg-primary/10 rounded-3xl mb-4 border border-primary/20">
+                    <div className="inline-flex items-center justify-center p-4 bg-primary/5 rounded-3xl mb-4 border border-primary/10">
                       <Layout className="w-10 h-10 text-primary" />
                     </div>
-                    <h2 className="text-3xl font-black tracking-tight text-white">Welcome Back</h2>
-                    <p className="text-white/40 text-sm font-medium">Log in to your command center to resume your daily mission.</p>
+                    <h2 className="text-3xl font-black tracking-tight text-slate-900">Welcome Back</h2>
+                    <p className="text-slate-400 text-sm font-medium">Log in to your command center to resume your daily mission.</p>
                   </div>
 
                   <div className="space-y-4">
                     <Button 
                       onClick={handleLogin}
                       disabled={isAuthProcessing || !auth}
-                      className="w-full h-16 rounded-2xl text-lg font-bold bg-white text-black hover:bg-white/90 shadow-xl transition-all active:scale-[0.98] flex items-center justify-center gap-4 group"
+                      className="w-full h-16 rounded-2xl text-lg font-bold bg-primary text-white hover:bg-primary/90 shadow-xl shadow-primary/20 transition-all active:scale-[0.98] flex items-center justify-center gap-4 group"
                     >
                       {isAuthProcessing ? (
                         <Loader2 className="w-6 h-6 animate-spin" />
@@ -275,35 +274,35 @@ export default function DailyTaskTrack() {
                     </Button>
 
                     {authError && (
-                      <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-2xl animate-in slide-in-from-top-4">
-                        <div className="flex items-center gap-2 text-red-400 font-bold text-xs uppercase tracking-widest">
+                      <div className="p-4 bg-destructive/5 border border-destructive/10 rounded-2xl animate-in slide-in-from-top-4">
+                        <div className="flex items-center gap-2 text-destructive font-bold text-xs uppercase tracking-widest">
                           <AlertTriangle className="w-3.5 h-3.5" />
                           Configuration Error
                         </div>
-                        <p className="text-[10px] text-white/50 mt-1 leading-relaxed uppercase tracking-wider">
+                        <p className="text-[10px] text-slate-500 mt-1 leading-relaxed uppercase tracking-wider">
                           Domain <strong>{authError}</strong> is unauthorized. Please add it to your Firebase Console.
                         </p>
                       </div>
                     )}
                   </div>
 
-                  <div className="pt-8 border-t border-white/5 flex items-center justify-between">
+                  <div className="pt-8 border-t border-slate-50 flex items-center justify-between">
                     <div className="flex flex-col gap-1">
-                      <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/30">Privacy First</span>
-                      <span className="text-[10px] font-bold text-white/60">Encrypted Cloud</span>
+                      <span className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-300">Privacy First</span>
+                      <span className="text-[10px] font-bold text-slate-600">Encrypted Cloud</span>
                     </div>
-                    <div className="w-px h-8 bg-white/5" />
+                    <div className="w-px h-8 bg-slate-100" />
                     <div className="flex flex-col gap-1 text-right">
-                      <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/30">Built For</span>
-                      <span className="text-[10px] font-bold text-white/60">High Performers</span>
+                      <span className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-300">Built For</span>
+                      <span className="text-[10px] font-bold text-slate-600">High Performers</span>
                     </div>
                   </div>
                 </div>
               </Card>
 
               {/* Decorative elements around card */}
-              <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary/20 rounded-full blur-[80px] -z-10" />
-              <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-indigo-500/20 rounded-full blur-[80px] -z-10" />
+              <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary/10 rounded-full blur-[80px] -z-10" />
+              <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-sky-500/10 rounded-full blur-[80px] -z-10" />
             </motion.div>
           </div>
         </div>
