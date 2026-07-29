@@ -100,11 +100,10 @@ export function AppHeader() {
     return () => clearInterval(intervalId);
   }, [fetchNewQuote]);
 
-  // Only show the header on the dashboard route
   if (pathname !== "/" || authLoading || !user) return null;
 
   return (
-    <header className="w-full max-w-7xl flex flex-col gap-6 p-4 md:p-8 shrink-0 animate-in fade-in slide-in-from-top-4 duration-500">
+    <header className="w-full flex flex-col gap-6 p-4 md:p-8 shrink-0 animate-in fade-in slide-in-from-top-4 duration-500">
       <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-8">
         <div className="flex items-start gap-5 min-w-0">
           <Link href="/">
@@ -114,7 +113,7 @@ export function AppHeader() {
           </Link>
           <div className="min-w-0 flex-1">
             <div className="flex items-center flex-wrap gap-3">
-              <h1 className="text-2xl md:text-4xl font-black tracking-tight text-primary leading-tight whitespace-nowrap">
+              <h1 className="text-2xl md:text-3xl font-black tracking-tight text-primary leading-tight whitespace-nowrap">
                 {greeting}, {user.displayName?.split(' ')[0]}
               </h1>
               {streak > 0 && (
@@ -150,10 +149,7 @@ export function AppHeader() {
         </div>
 
         <div className="flex items-center flex-wrap gap-4 xl:ml-auto">
-          {/* Focus Radio */}
           <FocusPlayer />
-
-          {/* Navigation Bar */}
           <div className="flex items-center gap-1 p-1 bg-white dark:bg-card border rounded-2xl shadow-sm h-14 w-fit">
             <LabelManager />
             <Link href="/time-tracking">
@@ -179,11 +175,7 @@ export function AppHeader() {
               <span className="text-[8px] font-black uppercase tracking-tighter text-current leading-none">Exit</span>
             </Button>
           </div>
-
-          {/* Timers */}
           <PomodoroTimer />
-
-          {/* Theme & Profile */}
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="icon" onClick={toggleTheme} className="h-12 w-12 rounded-2xl bg-white dark:bg-card border shadow-sm transition-all hover:border-primary/20">
               {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}

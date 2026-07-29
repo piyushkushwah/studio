@@ -97,8 +97,8 @@ export default function ExercisePage() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-4 md:p-8 flex flex-col items-center">
-      <header className="w-full max-w-7xl flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+    <div className="min-h-screen bg-background p-4 md:p-8 flex flex-col">
+      <header className="w-full flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div className="flex items-center gap-3">
           <Link href="/">
             <Button variant="ghost" size="icon" className="rounded-xl hover:bg-card shadow-sm border border-transparent hover:border-border">
@@ -119,7 +119,7 @@ export default function ExercisePage() {
         </Button>
       </header>
 
-      <main className="w-full max-w-7xl space-y-8">
+      <main className="w-full space-y-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <Card className="shadow-2xl shadow-orange-100 dark:shadow-orange-950/20 border-border bg-card backdrop-blur-sm">
             <CardHeader className="pb-2">

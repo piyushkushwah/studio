@@ -30,7 +30,7 @@ export default function RootLayout({
       <body className="font-body antialiased">
         <FirebaseClientProvider>
           <TaskProvider>
-            <div className="min-h-screen flex flex-col items-center">
+            <div className="min-h-screen flex flex-col">
               <AppHeader />
               <main className="w-full flex-1 flex flex-col">
                 {children}

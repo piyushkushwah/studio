@@ -222,7 +222,7 @@ export default function DailyTaskTrack() {
   }
 
   return (
-    <div className="w-full max-w-7xl px-4 md:px-8 pb-12 overflow-x-hidden animate-in fade-in duration-700">
+    <div className="w-full px-4 md:px-8 pb-12 overflow-x-hidden animate-in fade-in duration-700">
       <main className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
         <div className="lg:col-span-7 w-full">
           <Card className="p-8 md:p-12 shadow-2xl shadow-primary/5 bg-card border-border rounded-[2.5rem]">
