@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -17,6 +16,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { useUser } from "@/firebase";
 
 const FLOAT_ITEMS = [
   { title: "Routines", url: "/routines", icon: CalendarDays },
@@ -29,7 +29,11 @@ const FLOAT_ITEMS = [
 ];
 
 export function FloatButtonGroup() {
+  const { user, loading } = useUser();
   const [isOpen, setIsOpen] = useState(false);
+
+  // Do not render anything if the user is not authenticated or auth is still loading
+  if (loading || !user) return null;
 
   return (
     <div className="fixed bottom-8 right-8 z-[100] flex flex-col items-end gap-4">
