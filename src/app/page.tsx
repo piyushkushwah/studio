@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { motion } from "framer-motion";
 import { 
   format, 
   addMonths, 
@@ -39,7 +40,9 @@ import {
   Clock,
   BarChart2,
   ShieldCheck,
-  Zap
+  Zap,
+  Globe,
+  ArrowRight
 } from "lucide-react";
 import { Task, Priority } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -169,112 +172,139 @@ export default function DailyTaskTrack() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-6 relative overflow-hidden">
-        {/* Decorative background elements */}
-        <div className="absolute top-0 left-0 w-full h-full overflow-hidden -z-10 opacity-40">
-          <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-primary/10 rounded-full blur-[120px] animate-pulse" />
-          <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-accent/10 rounded-full blur-[120px] animate-pulse" />
+      <div className="min-h-screen bg-[#020617] text-white flex flex-col items-center justify-center overflow-hidden relative selection:bg-primary/30 selection:text-white">
+        {/* Animated Mesh Gradients */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-[-20%] left-[-10%] w-[70%] h-[70%] bg-blue-600/20 rounded-full blur-[120px] animate-pulse" />
+          <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-indigo-600/20 rounded-full blur-[120px] animate-pulse delay-700" />
+          <div className="absolute top-[30%] right-[10%] w-[30%] h-[30%] bg-purple-600/10 rounded-full blur-[100px] animate-bounce duration-[10s]" />
+          <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay" />
         </div>
 
-        <div className="max-w-6xl w-full grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-          <div className="hidden lg:flex flex-col space-y-10 animate-in fade-in slide-in-from-left-8 duration-700">
-            <div className="space-y-6">
-              <Badge className="bg-primary/10 text-primary hover:bg-primary/20 border-none px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] w-fit">
-                New v2.0 Platform
-              </Badge>
-              <h1 className="text-6xl xl:text-7xl font-black text-primary tracking-tight leading-[1.05]">
-                Master your day, <br />
-                <span className="text-muted-foreground/60">one mission at a time.</span>
-              </h1>
-              <p className="text-xl text-muted-foreground font-medium max-w-lg leading-relaxed">
-                The professional command center for high-performance productivity. Focused, cloud-synced, and designed for speed.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-2 gap-6">
-              {[
-                { icon: Layout, title: "Mission Control", desc: "Interactive calendar planning" },
-                { icon: Clock, title: "Focus Suite", desc: "Pomodoro & curated beats" },
-                { icon: BarChart2, title: "Deep Insights", desc: "Productivity visualizer" },
-                { icon: Zap, title: "Instant Sync", desc: "Real-time cloud database" }
-              ].map((feat, i) => (
-                <div key={i} className="flex items-start gap-4 p-5 rounded-[1.5rem] bg-card/40 border border-border/50 backdrop-blur-sm shadow-sm">
-                  <div className="p-2.5 bg-primary/10 rounded-xl text-primary shrink-0">
-                    <feat.icon className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h4 className="font-black text-primary text-sm tracking-tight">{feat.title}</h4>
-                    <p className="text-xs text-muted-foreground font-medium leading-normal mt-0.5">{feat.desc}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="w-full flex justify-center lg:justify-end animate-in fade-in slide-in-from-right-8 duration-700 delay-200">
-            <Card className="max-w-md w-full p-8 md:p-12 text-center space-y-10 shadow-2xl rounded-[3rem] border-border bg-card/80 backdrop-blur-xl relative">
-              <div className="bg-primary/10 w-24 h-24 rounded-[2.5rem] flex items-center justify-center mx-auto text-primary shadow-inner mb-2">
-                <Layout className="w-12 h-12" />
+        <div className="container max-w-7xl px-4 md:px-8 z-10">
+          <header className="absolute top-0 left-0 w-full p-8 flex items-center justify-between">
+            <div className="flex items-center gap-2 group cursor-default">
+              <div className="bg-primary p-2 rounded-xl shadow-lg shadow-primary/20 transition-transform group-hover:scale-110">
+                <Layout className="w-5 h-5 text-white" />
               </div>
-              <div className="space-y-3">
-                <h2 className="text-4xl font-black text-primary tracking-tight lg:hidden">DailyTaskTrack</h2>
-                <h3 className="text-2xl font-black text-primary tracking-tight">Access Command Center</h3>
-                <p className="text-muted-foreground font-medium px-6 text-sm leading-relaxed">Sign in to securely sync your missions and focus data across all your workstations.</p>
+              <span className="text-lg font-black tracking-tighter text-white/90">DailyTaskTrack</span>
+            </div>
+            <div className="hidden md:flex items-center gap-6">
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40">Status: Operational</span>
+              <div className="flex items-center gap-2">
+                <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-400">Cloud Connected</span>
               </div>
-              
-              <div className="space-y-4">
-                <Button 
-                  onClick={handleLogin}
-                  className="w-full h-16 rounded-2xl text-lg font-bold shadow-2xl shadow-primary/20 gap-4 group transition-all active:scale-[0.98] bg-primary hover:bg-primary/90"
-                  disabled={isAuthProcessing || !auth}
-                >
-                  {isAuthProcessing ? (
-                    <Loader2 className="w-6 h-6 animate-spin" />
-                  ) : (
-                    <>
-                      <svg className="w-6 h-6" viewBox="0 0 24 24">
-                        <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                        <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                        <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" />
-                        <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.66l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-                      </svg>
-                      Continue with Google
-                    </>
-                  )}
-                </Button>
+            </div>
+          </header>
 
-                {authError && (
-                  <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-2xl text-left space-y-2 animate-in slide-in-from-top-4">
-                    <div className="flex items-center gap-2 text-destructive font-bold text-sm">
-                      <AlertTriangle className="w-4 h-4" />
-                      Whitelisting Required
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-center pt-20 pb-12">
+            <motion.div 
+              initial={{ opacity: 0, x: -30 }} 
+              animate={{ opacity: 1, x: 0 }} 
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              className="space-y-12"
+            >
+              <div className="space-y-6">
+                <Badge className="bg-white/5 text-primary border-white/10 px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.3em] w-fit backdrop-blur-md">
+                  Version 2.0.4 Release
+                </Badge>
+                <h1 className="text-6xl md:text-7xl xl:text-8xl font-black tracking-tight leading-[0.9] text-white">
+                  Design your <br />
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">success path.</span>
+                </h1>
+                <p className="text-lg md:text-xl text-white/50 font-medium max-w-lg leading-relaxed">
+                  A high-performance workspace engineered for clarity. Sync your missions, master your focus, and track your evolution in real-time.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {[
+                  { icon: Clock, title: "Precision Focus", color: "text-blue-400" },
+                  { icon: Globe, title: "Global Sync", color: "text-emerald-400" },
+                  { icon: BarChart2, title: "Insight Engine", color: "text-indigo-400" },
+                  { icon: ShieldCheck, title: "Secure Core", color: "text-purple-400" }
+                ].map((item, i) => (
+                  <div key={i} className="flex items-center gap-4 p-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/[0.08] transition-colors group">
+                    <item.icon className={cn("w-5 h-5", item.color)} />
+                    <span className="text-sm font-bold text-white/80">{item.title}</span>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }} 
+              animate={{ opacity: 1, scale: 1 }} 
+              transition={{ duration: 0.8, delay: 0.2 }}
+              className="relative"
+            >
+              {/* Login Card with Glassmorphism */}
+              <Card className="relative bg-white/[0.03] border-white/10 backdrop-blur-3xl shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)] p-8 md:p-12 rounded-[2.5rem] overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
+                
+                <div className="space-y-10">
+                  <div className="text-center space-y-4">
+                    <div className="inline-flex items-center justify-center p-4 bg-primary/10 rounded-3xl mb-4 border border-primary/20">
+                      <Layout className="w-10 h-10 text-primary" />
                     </div>
-                    <p className="text-xs text-muted-foreground leading-relaxed">
-                      The domain <strong>{authError}</strong> is not authorized. Go to Firebase Console &gt; Authentication &gt; Settings and add it to the &quot;Authorized Domains&quot; list.
-                    </p>
+                    <h2 className="text-3xl font-black tracking-tight text-white">Welcome Back</h2>
+                    <p className="text-white/40 text-sm font-medium">Log in to your command center to resume your daily mission.</p>
                   </div>
-                )}
-              </div>
-              
-              <div className="pt-6 border-t border-border/50">
-                <div className="flex items-center justify-between opacity-50 px-2">
-                  <div className="flex flex-col items-center gap-1">
-                    <ShieldCheck className="w-4 h-4 text-primary" />
-                    <span className="text-[8px] font-black uppercase tracking-widest">Secure</span>
+
+                  <div className="space-y-4">
+                    <Button 
+                      onClick={handleLogin}
+                      disabled={isAuthProcessing || !auth}
+                      className="w-full h-16 rounded-2xl text-lg font-bold bg-white text-black hover:bg-white/90 shadow-xl transition-all active:scale-[0.98] flex items-center justify-center gap-4 group"
+                    >
+                      {isAuthProcessing ? (
+                        <Loader2 className="w-6 h-6 animate-spin" />
+                      ) : (
+                        <>
+                          <svg className="w-6 h-6" viewBox="0 0 24 24">
+                            <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                            <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                            <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" />
+                            <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.66l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+                          </svg>
+                          Continue with Google
+                          <ArrowRight className="w-5 h-5 ml-auto opacity-0 group-hover:opacity-100 transition-all -translate-x-4 group-hover:translate-x-0" />
+                        </>
+                      )}
+                    </Button>
+
+                    {authError && (
+                      <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-2xl animate-in slide-in-from-top-4">
+                        <div className="flex items-center gap-2 text-red-400 font-bold text-xs uppercase tracking-widest">
+                          <AlertTriangle className="w-3.5 h-3.5" />
+                          Configuration Error
+                        </div>
+                        <p className="text-[10px] text-white/50 mt-1 leading-relaxed uppercase tracking-wider">
+                          Domain <strong>{authError}</strong> is unauthorized. Please add it to your Firebase Console.
+                        </p>
+                      </div>
+                    )}
                   </div>
-                  <div className="w-px h-6 bg-border" />
-                  <div className="flex flex-col items-center gap-1">
-                    <Star className="w-4 h-4 text-primary" />
-                    <span className="text-[8px] font-black uppercase tracking-widest">Cloud</span>
-                  </div>
-                  <div className="w-px h-6 bg-border" />
-                  <div className="flex flex-col items-center gap-1">
-                    <Zap className="w-4 h-4 text-primary" />
-                    <span className="text-[8px] font-black uppercase tracking-widest">Realtime</span>
+
+                  <div className="pt-8 border-t border-white/5 flex items-center justify-between">
+                    <div className="flex flex-col gap-1">
+                      <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/30">Privacy First</span>
+                      <span className="text-[10px] font-bold text-white/60">Encrypted Cloud</span>
+                    </div>
+                    <div className="w-px h-8 bg-white/5" />
+                    <div className="flex flex-col gap-1 text-right">
+                      <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/30">Built For</span>
+                      <span className="text-[10px] font-bold text-white/60">High Performers</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </Card>
+              </Card>
+
+              {/* Decorative elements around card */}
+              <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary/20 rounded-full blur-[80px] -z-10" />
+              <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-indigo-500/20 rounded-full blur-[80px] -z-10" />
+            </motion.div>
           </div>
         </div>
       </div>
@@ -367,4 +397,3 @@ export default function DailyTaskTrack() {
     </div>
   );
 }
-
