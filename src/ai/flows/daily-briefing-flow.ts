@@ -23,14 +23,20 @@ export async function generateDailyBriefing(input: DailyBriefingInput): Promise<
   const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENAI_API_KEY;
   if (!apiKey) throw new Error('MISSING_API_KEY');
 
-  return dailyBriefingFlow(input);
+  try {
+    return await dailyBriefingFlow(input);
+  } catch (error: any) {
+    console.error('DAILY_BRIEFING_FAILED:', error);
+    throw new Error(error.message || 'AI_BRIEFING_FAILED');
+  }
 }
 
 const briefingPrompt = ai.definePrompt({
   name: 'briefingPrompt',
+  model: 'googleai/gemini-1.5-flash',
   input: { schema: DailyBriefingInputSchema },
   output: { schema: DailyBriefingOutputSchema },
-  config: { model: 'googleai/gemini-1.5-flash' },
+  config: { temperature: 0.8 },
   system: `You are a high-performance productivity coach. Look at the user's tasks and context, and give them a punchy, 2-sentence morning briefing that inspires focus.`,
   prompt: `
     User: {{userName}}
@@ -50,6 +56,7 @@ const dailyBriefingFlow = ai.defineFlow(
   },
   async (input) => {
     const { output } = await briefingPrompt(input);
-    return output!;
+    if (!output) throw new Error('No output from model');
+    return output;
   }
 );

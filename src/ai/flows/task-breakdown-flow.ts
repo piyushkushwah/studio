@@ -24,15 +24,16 @@ export async function breakdownTask(input: TaskBreakdownInput): Promise<TaskBrea
     return await taskBreakdownFlow(input);
   } catch (error: any) {
     console.error('TASK_BREAKDOWN_FAILED:', error);
-    throw new Error('AI_DECOMPOSITION_FAILED');
+    throw new Error(error.message || 'AI_DECOMPOSITION_FAILED');
   }
 }
 
 const breakdownPrompt = ai.definePrompt({
   name: 'breakdownPrompt',
+  model: 'googleai/gemini-1.5-flash',
   input: { schema: TaskBreakdownInputSchema },
   output: { schema: TaskBreakdownOutputSchema },
-  config: { model: 'googleai/gemini-1.5-flash' },
+  config: { temperature: 0.5 },
   system: `You are an expert project manager. Break down the provided task into exactly 3 to 5 clear, actionable sub-steps. Keep each step concise and action-oriented.`,
   prompt: `Task: "{{taskDescription}}"\n\nSuggest sub-steps:`,
 });

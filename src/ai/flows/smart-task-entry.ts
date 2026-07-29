@@ -29,7 +29,6 @@ export type SmartTaskEntryOutput = z.infer<typeof SmartTaskEntryOutputSchema>;
  * Server action to extract task details from natural language.
  */
 export async function extractTaskDetails(input: SmartTaskEntryInput): Promise<SmartTaskEntryOutput> {
-  // Check for API key in environment
   const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENAI_API_KEY;
   
   if (!apiKey) {
@@ -42,26 +41,20 @@ export async function extractTaskDetails(input: SmartTaskEntryInput): Promise<Sm
   } catch (error: any) {
     console.error('AI_FLOW_EXECUTION_FAILED:', error);
     
-    // Check for specific error codes from the Gemini API
     const errorMsg = error.message?.toLowerCase() || '';
     if (errorMsg.includes('429') || errorMsg.includes('quota')) {
       throw new Error('QUOTA_EXCEEDED');
     }
-    if (errorMsg.includes('403') || errorMsg.includes('invalid api key')) {
-      throw new Error('INVALID_API_KEY');
-    }
     
-    throw new Error('AI_PARSING_FAILED');
+    throw new Error(error.message || 'AI_PARSING_FAILED');
   }
 }
 
 const taskPrompt = ai.definePrompt({
   name: 'taskPrompt',
+  model: 'googleai/gemini-1.5-flash',
   input: { schema: SmartTaskEntryInputSchema },
   output: { schema: SmartTaskEntryOutputSchema },
-  config: {
-    model: 'googleai/gemini-1.5-flash',
-  },
   system: `You are a professional productivity assistant. Your goal is to extract structured task data from messy natural language input.
     
     RULES:
@@ -84,7 +77,6 @@ const smartTaskEntryFlow = ai.defineFlow(
     outputSchema: SmartTaskEntryOutputSchema,
   },
   async (input) => {
-    // Default to today if no date provided to help AI resolve relative terms
     const currentDate = input.currentDate || new Date().toISOString().split('T')[0];
     
     const { output } = await taskPrompt({
