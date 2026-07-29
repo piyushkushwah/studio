@@ -200,7 +200,7 @@ export default function AnalyticsPage() {
                 {stats.completed}
               </CardTitle>
             </CardHeader>
-          </div>
+          </Card>
         </div>
 
         <Card className="shadow-xl shadow-primary/5 border-border bg-card/50 backdrop-blur-sm">
