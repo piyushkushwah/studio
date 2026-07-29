@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -52,7 +53,8 @@ export default function RoutinesPage() {
   const [formData, setFormData] = useState({
     title: "",
     description: "",
-    time: "",
+    startTime: "",
+    endTime: "",
     frequency: "daily" as RoutineFrequency,
     active: true
   });
@@ -63,7 +65,8 @@ export default function RoutinesPage() {
       setFormData({
         title: routine.title,
         description: routine.description || "",
-        time: routine.time || "",
+        startTime: routine.startTime || "",
+        endTime: routine.endTime || "",
         frequency: routine.frequency,
         active: routine.active
       });
@@ -72,7 +75,8 @@ export default function RoutinesPage() {
       setFormData({
         title: "",
         description: "",
-        time: "",
+        startTime: "",
+        endTime: "",
         frequency: "daily",
         active: true
       });
@@ -206,10 +210,10 @@ export default function RoutinesPage() {
                             <span className="text-[10px] font-black uppercase tracking-widest bg-muted px-2 py-0.5 rounded-full text-muted-foreground capitalize">
                               {routine.frequency}
                             </span>
-                            {routine.time && (
+                            {(routine.startTime || routine.endTime) && (
                               <span className="text-[10px] font-bold text-muted-foreground/60 flex items-center gap-1">
                                 <Clock className="w-3 h-3" />
-                                {routine.time}
+                                {routine.startTime || "--:--"} to {routine.endTime || "--:--"}
                               </span>
                             )}
                           </div>
@@ -283,15 +287,27 @@ export default function RoutinesPage() {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-2">
-                  <UILabel htmlFor="time" className="text-[10px] font-black uppercase tracking-widest text-primary/60">Preferred Time</UILabel>
-                  <Input
-                    id="time"
-                    type="time"
-                    value={formData.time}
-                    onChange={(e) => setFormData(prev => ({ ...prev, time: e.target.value }))}
-                    className="h-12 rounded-xl bg-muted/30 border-transparent"
-                  />
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-2">
+                    <UILabel htmlFor="startTime" className="text-[10px] font-black uppercase tracking-widest text-primary/60">Start</UILabel>
+                    <Input
+                      id="startTime"
+                      type="time"
+                      value={formData.startTime}
+                      onChange={(e) => setFormData(prev => ({ ...prev, startTime: e.target.value }))}
+                      className="h-12 rounded-xl bg-muted/30 border-transparent"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <UILabel htmlFor="endTime" className="text-[10px] font-black uppercase tracking-widest text-primary/60">End</UILabel>
+                    <Input
+                      id="endTime"
+                      type="time"
+                      value={formData.endTime}
+                      onChange={(e) => setFormData(prev => ({ ...prev, endTime: e.target.value }))}
+                      className="h-12 rounded-xl bg-muted/30 border-transparent"
+                    />
+                  </div>
                 </div>
               </div>
 

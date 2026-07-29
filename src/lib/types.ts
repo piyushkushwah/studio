@@ -33,7 +33,8 @@ export interface Routine {
   id: string;
   title: string;
   description?: string;
-  time?: string; // HH:MM
+  startTime?: string; // HH:MM
+  endTime?: string; // HH:MM
   frequency: RoutineFrequency;
   days?: string[]; // e.g. ["Monday", "Wednesday"]
   active: boolean;
