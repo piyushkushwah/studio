@@ -28,8 +28,10 @@ import { getRandomQuote } from "@/lib/quotes";
 import { useToast } from "@/hooks/use-toast";
 import { generateDailyBriefing } from "@/ai/flows/daily-briefing-flow";
 import { cn } from "@/lib/utils";
+import { usePathname } from "next/navigation";
 
 export function AppHeader() {
+  const pathname = usePathname();
   const { user, loading: authLoading } = useUser();
   const auth = useAuth();
   const { tasks, streak } = useTasks();
@@ -98,18 +100,19 @@ export function AppHeader() {
     return () => clearInterval(intervalId);
   }, [fetchNewQuote]);
 
-  if (authLoading || !user) return null;
+  // Only show the header on the dashboard route
+  if (pathname !== "/" || authLoading || !user) return null;
 
   return (
-    <header className="w-full max-w-7xl flex flex-col gap-6 p-4 md:p-8 shrink-0">
+    <header className="w-full max-w-7xl flex flex-col gap-6 p-4 md:p-8 shrink-0 animate-in fade-in slide-in-from-top-4 duration-500">
       <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-8">
-        <div className="flex items-start gap-5">
+        <div className="flex items-start gap-5 min-w-0">
           <Link href="/">
             <div className="bg-primary text-primary-foreground p-3 rounded-2xl shadow-xl shadow-primary/20 shrink-0 hover:scale-105 transition-transform cursor-pointer mt-1">
               <CalendarIcon className="w-7 h-7" />
             </div>
           </Link>
-          <div className="flex-1">
+          <div className="min-w-0 flex-1">
             <div className="flex items-center flex-wrap gap-3">
               <h1 className="text-2xl md:text-4xl font-black tracking-tight text-primary leading-tight whitespace-nowrap">
                 {greeting}, {user.displayName?.split(' ')[0]}
