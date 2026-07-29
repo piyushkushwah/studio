@@ -142,11 +142,11 @@ export default function AnalyticsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-4 md:p-8 flex flex-col">
+    <div className="w-full bg-background p-4 md:p-8 flex flex-col">
       <header className="w-full flex items-center justify-between mb-8">
         <div className="flex items-center gap-3">
           <Link href="/">
-            <Button variant="ghost" size="icon" className="rounded-xl">
+            <Button variant="ghost" size="icon" className="rounded-xl text-primary hover:bg-primary/5 hover:text-primary transition-colors">
               <ArrowLeft className="w-6 h-6" />
             </Button>
           </Link>
@@ -200,7 +200,7 @@ export default function AnalyticsPage() {
                 {stats.completed}
               </CardTitle>
             </CardHeader>
-          </Card>
+          </div>
         </div>
 
         <Card className="shadow-xl shadow-primary/5 border-border bg-card/50 backdrop-blur-sm">

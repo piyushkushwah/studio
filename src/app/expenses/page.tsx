@@ -155,13 +155,13 @@ export default function ExpensesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-4 md:p-8 flex flex-col">
+    <div className="w-full bg-background p-4 md:p-8 flex flex-col">
       {isCalculatorOpen && <DraggableCalculator onClose={() => setIsCalculatorOpen(false)} />}
       
       <header className="w-full flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div className="flex items-center gap-3">
           <Link href="/">
-            <Button variant="ghost" size="icon" className="rounded-xl hover:bg-card shadow-sm border border-transparent hover:border-border">
+            <Button variant="ghost" size="icon" className="rounded-xl text-primary hover:bg-primary/5 hover:text-primary transition-colors">
               <ArrowLeft className="w-6 h-6" />
             </Button>
           </Link>
