@@ -31,11 +31,13 @@ import {
   Clock, 
   CheckCircle2,
   Pencil,
-  Zap
+  Zap,
+  AlertCircle
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Routine, RoutineFrequency } from "@/lib/types";
+import { useToast } from "@/hooks/use-toast";
 
 const FREQUENCIES: { value: RoutineFrequency; label: string }[] = [
   { value: "daily", label: "Every Day" },
@@ -46,6 +48,7 @@ const FREQUENCIES: { value: RoutineFrequency; label: string }[] = [
 
 export default function RoutinesPage() {
   const { routines, addRoutine, updateRoutine, deleteRoutine, isInitialized } = useTasks();
+  const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingRoutine, setEditingRoutine] = useState<Routine | null>(null);
   
@@ -58,7 +61,10 @@ export default function RoutinesPage() {
     active: true
   });
 
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
   const handleOpenDialog = (routine: Routine | null = null) => {
+    setErrors({});
     if (routine) {
       setEditingRoutine(routine);
       setFormData({
@@ -83,8 +89,32 @@ export default function RoutinesPage() {
     setIsDialogOpen(true);
   };
 
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+    
+    if (!formData.title.trim()) {
+      newErrors.title = "A title is required for your routine.";
+    }
+
+    if (formData.startTime && formData.endTime) {
+      if (formData.endTime <= formData.startTime) {
+        newErrors.time = "End time must be after the start time.";
+      }
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSave = () => {
-    if (!formData.title.trim()) return;
+    if (!validateForm()) {
+      toast({
+        variant: "destructive",
+        title: "Wait a moment...",
+        description: "Please correct the errors in the routine form."
+      });
+      return;
+    }
 
     if (editingRoutine) {
       updateRoutine(editingRoutine.id, formData);
@@ -262,14 +292,15 @@ export default function RoutinesPage() {
 
             <div className="space-y-6">
               <div className="space-y-2">
-                <UILabel htmlFor="title" className="text-[10px] font-black uppercase tracking-widest text-primary/60">Routine Title</UILabel>
+                <UILabel htmlFor="title" className={cn("text-[10px] font-black uppercase tracking-widest text-primary/60", errors.title && "text-destructive")}>Routine Title</UILabel>
                 <Input
                   id="title"
                   value={formData.title}
                   onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
                   placeholder="e.g. 5AM Morning Flow, Weekly Review"
-                  className="h-12 rounded-xl bg-muted/30 border-transparent text-lg font-bold"
+                  className={cn("h-12 rounded-xl bg-muted/30 border-transparent text-lg font-bold transition-all", errors.title && "border-destructive/50 bg-destructive/5")}
                 />
+                {errors.title && <p className="text-[10px] font-bold text-destructive flex items-center gap-1"><AlertCircle className="w-3 h-3" /> {errors.title}</p>}
               </div>
 
               <div className="space-y-2">
@@ -286,27 +317,30 @@ export default function RoutinesPage() {
                 </Select>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <UILabel htmlFor="startTime" className="text-[10px] font-black uppercase tracking-widest text-primary/60">Start Time</UILabel>
-                  <Input
-                    id="startTime"
-                    type="time"
-                    value={formData.startTime}
-                    onChange={(e) => setFormData(prev => ({ ...prev, startTime: e.target.value }))}
-                    className="h-12 rounded-xl bg-muted/30 border-transparent font-bold"
-                  />
+              <div className="space-y-2">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <UILabel htmlFor="startTime" className={cn("text-[10px] font-black uppercase tracking-widest text-primary/60", errors.time && "text-destructive")}>Start Time</UILabel>
+                    <Input
+                      id="startTime"
+                      type="time"
+                      value={formData.startTime}
+                      onChange={(e) => setFormData(prev => ({ ...prev, startTime: e.target.value }))}
+                      className={cn("h-12 rounded-xl bg-muted/30 border-transparent font-bold", errors.time && "border-destructive/30")}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <UILabel htmlFor="endTime" className={cn("text-[10px] font-black uppercase tracking-widest text-primary/60", errors.time && "text-destructive")}>End Time</UILabel>
+                    <Input
+                      id="endTime"
+                      type="time"
+                      value={formData.endTime}
+                      onChange={(e) => setFormData(prev => ({ ...prev, endTime: e.target.value }))}
+                      className={cn("h-12 rounded-xl bg-muted/30 border-transparent font-bold", errors.time && "border-destructive/30")}
+                    />
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <UILabel htmlFor="endTime" className="text-[10px] font-black uppercase tracking-widest text-primary/60">End Time</UILabel>
-                  <Input
-                    id="endTime"
-                    type="time"
-                    value={formData.endTime}
-                    onChange={(e) => setFormData(prev => ({ ...prev, endTime: e.target.value }))}
-                    className="h-12 rounded-xl bg-muted/30 border-transparent font-bold"
-                  />
-                </div>
+                {errors.time && <p className="text-[10px] font-bold text-destructive flex items-center gap-1 mt-1"><AlertCircle className="w-3 h-3" /> {errors.time}</p>}
               </div>
 
               <div className="space-y-2">
@@ -327,7 +361,6 @@ export default function RoutinesPage() {
               </Button>
               <Button 
                 onClick={handleSave} 
-                disabled={!formData.title.trim()}
                 className="h-12 px-8 rounded-xl font-bold bg-blue-600 hover:bg-blue-700 shadow-xl shadow-blue-200 flex-1"
               >
                 {editingRoutine ? "Update Template" : "Confirm Routine"}
