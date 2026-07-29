@@ -146,7 +146,8 @@ export default function ExercisePage() {
                 {todayExercises.length}
               </CardTitle>
             </CardHeader>
-          </div>
+          </Card>
+        </div>
 
         <Card className="shadow-2xl shadow-primary/5 border-border bg-card/80 backdrop-blur-xl rounded-[2rem] overflow-hidden">
           <CardHeader className="border-b bg-card/50">
