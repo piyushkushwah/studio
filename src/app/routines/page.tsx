@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -273,41 +272,40 @@ export default function RoutinesPage() {
                 />
               </div>
 
+              <div className="space-y-2">
+                <UILabel className="text-[10px] font-black uppercase tracking-widest text-primary/60">Frequency</UILabel>
+                <Select value={formData.frequency} onValueChange={(val: any) => setFormData(prev => ({ ...prev, frequency: val }))}>
+                  <SelectTrigger className="h-12 rounded-xl bg-muted/30 border-transparent font-bold">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {FREQUENCIES.map(freq => (
+                      <SelectItem key={freq.value} value={freq.value}>{freq.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <UILabel className="text-[10px] font-black uppercase tracking-widest text-primary/60">Frequency</UILabel>
-                  <Select value={formData.frequency} onValueChange={(val: any) => setFormData(prev => ({ ...prev, frequency: val }))}>
-                    <SelectTrigger className="h-12 rounded-xl bg-muted/30 border-transparent font-bold">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {FREQUENCIES.map(freq => (
-                        <SelectItem key={freq.value} value={freq.value}>{freq.label}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <UILabel htmlFor="startTime" className="text-[10px] font-black uppercase tracking-widest text-primary/60">Start Time</UILabel>
+                  <Input
+                    id="startTime"
+                    type="time"
+                    value={formData.startTime}
+                    onChange={(e) => setFormData(prev => ({ ...prev, startTime: e.target.value }))}
+                    className="h-12 rounded-xl bg-muted/30 border-transparent font-bold"
+                  />
                 </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="space-y-2">
-                    <UILabel htmlFor="startTime" className="text-[10px] font-black uppercase tracking-widest text-primary/60">Start</UILabel>
-                    <Input
-                      id="startTime"
-                      type="time"
-                      value={formData.startTime}
-                      onChange={(e) => setFormData(prev => ({ ...prev, startTime: e.target.value }))}
-                      className="h-12 rounded-xl bg-muted/30 border-transparent"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <UILabel htmlFor="endTime" className="text-[10px] font-black uppercase tracking-widest text-primary/60">End</UILabel>
-                    <Input
-                      id="endTime"
-                      type="time"
-                      value={formData.endTime}
-                      onChange={(e) => setFormData(prev => ({ ...prev, endTime: e.target.value }))}
-                      className="h-12 rounded-xl bg-muted/30 border-transparent"
-                    />
-                  </div>
+                <div className="space-y-2">
+                  <UILabel htmlFor="endTime" className="text-[10px] font-black uppercase tracking-widest text-primary/60">End Time</UILabel>
+                  <Input
+                    id="endTime"
+                    type="time"
+                    value={formData.endTime}
+                    onChange={(e) => setFormData(prev => ({ ...prev, endTime: e.target.value }))}
+                    className="h-12 rounded-xl bg-muted/30 border-transparent font-bold"
+                  />
                 </div>
               </div>
 
