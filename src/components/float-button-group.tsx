@@ -19,20 +19,19 @@ import { cn } from "@/lib/utils";
 import { useUser } from "@/firebase";
 
 const FLOAT_ITEMS = [
-  { title: "Routines", url: "/routines", icon: CalendarDays },
-  { title: "Notes", url: "/notes", icon: StickyNote },
-  { title: "Growth", url: "/mindfulness", icon: Sparkles },
-  { title: "Health", url: "/health", icon: Apple },
-  { title: "Workout", url: "/exercise", icon: Dumbbell },
-  { title: "Travel", url: "/travel", icon: Compass },
-  { title: "Wallet", url: "/expenses", icon: Wallet },
+  { title: "Routines", url: "/routines", icon: CalendarDays, color: "text-blue-500", hoverBg: "hover:text-blue-600" },
+  { title: "Notes", url: "/notes", icon: StickyNote, color: "text-amber-500", hoverBg: "hover:text-amber-600" },
+  { title: "Growth", url: "/mindfulness", icon: Sparkles, color: "text-purple-500", hoverBg: "hover:text-purple-600" },
+  { title: "Health", url: "/health", icon: Apple, color: "text-sky-500", hoverBg: "hover:text-sky-600" },
+  { title: "Workout", url: "/exercise", icon: Dumbbell, color: "text-orange-500", hoverBg: "hover:text-orange-600" },
+  { title: "Travel", url: "/travel", icon: Compass, color: "text-emerald-500", hoverBg: "hover:text-emerald-600" },
+  { title: "Wallet", url: "/expenses", icon: Wallet, color: "text-emerald-600", hoverBg: "hover:text-emerald-700" },
 ];
 
 export function FloatButtonGroup() {
   const { user, loading } = useUser();
   const [isOpen, setIsOpen] = useState(false);
 
-  // Do not render anything if the user is not authenticated or auth is still loading
   if (loading || !user) return null;
 
   return (
@@ -51,9 +50,12 @@ export function FloatButtonGroup() {
                 <Link href={item.url}>
                   <Button 
                     variant="ghost"
-                    className="h-12 px-6 gap-3 rounded-[1.25rem] shadow-lg bg-white text-slate-600 hover:text-blue-600 hover:bg-slate-50 border border-primary/10 transition-all font-black uppercase tracking-widest text-[10px]"
+                    className={cn(
+                      "h-12 px-6 gap-3 rounded-[1.25rem] shadow-lg bg-white text-slate-600 border border-primary/10 transition-all font-black uppercase tracking-widest text-[10px]",
+                      item.hoverBg
+                    )}
                   >
-                    <item.icon className="w-5 h-5 transition-colors" />
+                    <item.icon className={cn("w-5 h-5 transition-colors", item.color)} />
                     <span>{item.title}</span>
                   </Button>
                 </Link>

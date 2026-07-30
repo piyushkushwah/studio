@@ -179,7 +179,7 @@ export default function ExpensesPage() {
             onClick={() => setIsCalculatorOpen(!isCalculatorOpen)}
             className={cn("h-12 rounded-xl px-4 gap-2 border-primary/20 hover:bg-primary/5 transition-all", isCalculatorOpen && "bg-primary/10 border-primary text-primary")}
           >
-            <CalculatorIcon className="w-5 h-5" />
+            <CalculatorIcon className="w-5 h-5 text-emerald-600" />
             <span className="hidden sm:inline">Calc</span>
           </Button>
           <Button onClick={() => handleOpenDialog()} className="h-12 rounded-xl px-6 gap-2 bg-emerald-600 hover:bg-emerald-700 shadow-xl shadow-emerald-200 dark:shadow-emerald-900/20">
@@ -265,7 +265,7 @@ export default function ExpensesPage() {
                               {expense.category}
                             </span>
                             <span className="text-[10px] font-bold text-muted-foreground/60 flex items-center gap-1">
-                              <CalendarIcon className="w-3 h-3" />
+                              <CalendarIcon className="w-3 h-3 text-slate-400" />
                               {format(parseISO(expense.date), "MMM d, yyyy")}
                             </span>
                           </div>
@@ -284,7 +284,7 @@ export default function ExpensesPage() {
                             className="h-9 w-9 rounded-xl hover:bg-background"
                             onClick={() => handleOpenDialog(expense)}
                           >
-                            <Pencil className="w-4 h-4 text-primary" />
+                            <Pencil className="w-4 h-4 text-emerald-600" />
                           </Button>
                           <Button 
                             variant="ghost" 

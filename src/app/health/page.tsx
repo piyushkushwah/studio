@@ -104,7 +104,6 @@ export default function HealthPage() {
   const waterProgress = Math.min((totalWater / waterGoal) * 100, 100);
   const calorieProgress = Math.min((totalCalories / calorieGoal) * 100, 100);
 
-  // BMI Calculation
   const bmi = useMemo(() => {
     if (!height || !weight) return 0;
     const heightInMeters = height / 100;
@@ -118,15 +117,13 @@ export default function HealthPage() {
     return { label: "Obese", color: "text-destructive", bg: "bg-destructive/10" };
   }, [bmi]);
 
-  // BMR Calculation (Mifflin-St Jeor Equation - simplified to a gender-neutral average)
   const bmr = useMemo(() => {
     if (!height || !weight) return 2000;
-    // Base BMR for moderate activity
     return Math.round((10 * weight) + (6.25 * height) - (5 * 30) + 5); 
   }, [height, weight]);
 
   const recommendedGoals = useMemo(() => {
-    const maintenance = bmr * 1.375; // Moderate activity factor
+    const maintenance = bmr * 1.375;
     return [
       { name: "Fat Loss", value: Math.round(maintenance - 500), color: "hsl(var(--destructive))" },
       { name: "Maintain", value: Math.round(maintenance), color: "hsl(var(--primary))" },
@@ -198,7 +195,7 @@ export default function HealthPage() {
             onClick={() => setIsProfileDialogOpen(true)}
             className="h-12 rounded-xl px-4 gap-2 border-primary/20 hover:bg-primary/5"
           >
-            <User className="w-5 h-5" />
+            <User className="w-5 h-5 text-sky-500" />
             <span className="hidden sm:inline">Body Profile</span>
           </Button>
           <Button 
@@ -206,7 +203,7 @@ export default function HealthPage() {
             onClick={() => setIsGoalDialogOpen(true)}
             className="h-12 rounded-xl px-4 gap-2 border-primary/20 hover:bg-primary/5"
           >
-            <Settings className="w-5 h-5" />
+            <Settings className="w-5 h-5 text-slate-500" />
             <span className="hidden sm:inline">Set Targets</span>
           </Button>
           <Button onClick={() => setIsDietDialogOpen(true)} className="h-12 rounded-xl px-6 gap-2 bg-sky-600 hover:bg-sky-700 shadow-xl shadow-sky-200 dark:shadow-sky-900/20">
@@ -218,8 +215,6 @@ export default function HealthPage() {
 
       <main className="w-full max-w-7xl space-y-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          
-          {/* Physical Stats / BMI Card */}
           <Card className="lg:col-span-4 shadow-2xl border-border bg-card/80 backdrop-blur-sm rounded-[2rem] overflow-hidden">
             <CardHeader className="bg-primary/5 border-b pb-6">
               <div className="flex items-center gap-2">
@@ -280,12 +275,11 @@ export default function HealthPage() {
             </CardContent>
           </Card>
 
-          {/* Calorie Goal & Chart */}
           <Card className="lg:col-span-8 shadow-2xl border-border bg-card/80 backdrop-blur-sm rounded-[2rem] overflow-hidden">
             <CardHeader className="bg-emerald-50/50 dark:bg-emerald-900/10 border-b pb-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Flame className="w-5 h-5 text-emerald-600" />
+                  <Flame className="w-5 h-5 text-orange-600" />
                   <CardTitle className="text-lg font-black text-emerald-900 dark:text-emerald-100">Daily Calorie Consumption</CardTitle>
                 </div>
                 <div className="text-right">
@@ -336,8 +330,10 @@ export default function HealthPage() {
                         <div key={entry.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-xl group border border-transparent hover:border-emerald-200 dark:hover:border-emerald-800 transition-colors">
                           <div className="flex items-center gap-3">
                             <div className={cn(
-                              "w-10 h-10 rounded-xl flex items-center justify-center text-emerald-600",
-                              "bg-emerald-100/50 dark:bg-emerald-900/20"
+                              "w-10 h-10 rounded-xl flex items-center justify-center",
+                              entry.mealType === 'breakfast' ? "bg-amber-100 text-amber-600" : 
+                              entry.mealType === 'snack' ? "bg-sky-100 text-sky-600" : 
+                              "bg-emerald-100 text-emerald-600"
                             )}>
                               {entry.mealType === 'breakfast' ? <Coffee className="w-5 h-5" /> : 
                                entry.mealType === 'snack' ? <Apple className="w-5 h-5" /> : 
@@ -368,7 +364,6 @@ export default function HealthPage() {
             </CardContent>
           </Card>
 
-          {/* Hydration Card */}
           <Card className="lg:col-span-12 shadow-2xl border-border bg-card/80 backdrop-blur-sm rounded-[2rem] overflow-hidden">
             <CardHeader className="bg-sky-50/50 dark:bg-sky-900/10 border-b pb-6">
               <div className="flex items-center justify-between">
@@ -391,7 +386,7 @@ export default function HealthPage() {
                     onClick={() => addWaterEntry(amount)}
                     className="h-20 flex flex-col gap-1 rounded-2xl border-sky-100 hover:bg-sky-50 dark:border-sky-800 dark:hover:bg-sky-900/20 shadow-sm"
                   >
-                    <span className="text-lg font-black">{amount}</span>
+                    <span className="text-lg font-black text-sky-600">{amount}</span>
                     <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">ML</span>
                   </Button>
                 ))}
@@ -406,7 +401,7 @@ export default function HealthPage() {
                         <div className="w-8 h-8 rounded-lg bg-sky-100 dark:bg-sky-900/30 flex items-center justify-center text-sky-600">
                           <Droplets className="w-4 h-4" />
                         </div>
-                        <span className="text-sm font-black text-primary">+{log.amount}ml</span>
+                        <span className="text-sm font-black text-sky-700">+{log.amount}ml</span>
                         <Button 
                           variant="ghost" 
                           size="icon" 
@@ -425,7 +420,6 @@ export default function HealthPage() {
         </div>
       </main>
 
-      {/* Goal Settings Dialog */}
       <Dialog open={isGoalDialogOpen} onOpenChange={setIsGoalDialogOpen}>
         <DialogContent className="sm:max-w-[400px] rounded-[2.5rem] p-8">
           <DialogHeader>
@@ -460,7 +454,6 @@ export default function HealthPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Profile Settings Dialog */}
       <Dialog open={isProfileDialogOpen} onOpenChange={setIsProfileDialogOpen}>
         <DialogContent className="sm:max-w-[400px] rounded-[2.5rem] p-8">
           <DialogHeader>
@@ -495,7 +488,6 @@ export default function HealthPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Meal Log Dialog */}
       <Dialog open={isDietDialogOpen} onOpenChange={setIsDietDialogOpen}>
         <DialogContent className="sm:max-w-[425px] rounded-[2.5rem] p-8">
           <DialogHeader>
@@ -504,7 +496,7 @@ export default function HealthPage() {
           </DialogHeader>
           <div className="space-y-6 py-4">
             <div className="space-y-2">
-              <UILabel className="text-[10px] font-black uppercase tracking-widest text-primary/60">Food / Drink Name</UILabel>
+              <UILabel htmlFor="name" className="text-[10px] font-black uppercase tracking-widest text-primary/60">Food / Drink Name</UILabel>
               <Input 
                 value={dietForm.name}
                 onChange={e => setDietForm(prev => ({ ...prev, name: e.target.value }))}

@@ -1,4 +1,3 @@
-
 "use client";
 
 import * as React from "react";
@@ -41,15 +40,15 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
-  { title: "Dashboard", url: "/", icon: LayoutDashboard },
+  { title: "Dashboard", url: "/", icon: LayoutDashboard, color: "text-primary" },
   { title: "Routines", url: "/routines", icon: CalendarDays, color: "text-blue-500" },
-  { title: "Quick Notes", url: "/notes", icon: StickyNote },
+  { title: "Quick Notes", url: "/notes", icon: StickyNote, color: "text-amber-500" },
   { title: "Mindfulness", url: "/mindfulness", icon: Sparkles, color: "text-purple-500" },
   { title: "Health Tracker", url: "/health", icon: Apple, color: "text-sky-500" },
   { title: "Workout Log", url: "/exercise", icon: Dumbbell, color: "text-orange-500" },
   { title: "Travel Goals", url: "/travel", icon: Compass, color: "text-emerald-500" },
   { title: "Expense Wallet", url: "/expenses", icon: Wallet, color: "text-emerald-600" },
-  { title: "Analytics", url: "/analytics", icon: BarChart2 },
+  { title: "Analytics", url: "/analytics", icon: BarChart2, color: "text-indigo-500" },
 ];
 
 export function AppSidebar() {
@@ -99,7 +98,7 @@ export function AppSidebar() {
                     )}
                   >
                     <Link href={item.url} className="flex items-center gap-3">
-                      <item.icon className={cn("w-5 h-5 shrink-0", item.color || "text-primary")} />
+                      <item.icon className={cn("w-5 h-5 shrink-0 transition-colors", item.color)} />
                       <span className="font-bold text-sm">{item.title}</span>
                     </Link>
                   </SidebarMenuButton>

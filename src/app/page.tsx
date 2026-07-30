@@ -172,7 +172,6 @@ export default function DailyTaskTrack() {
   if (!user) {
     return (
       <div className="min-h-screen bg-white text-slate-900 flex flex-col items-center justify-center overflow-hidden relative selection:bg-primary/20 selection:text-primary">
-        {/* Animated Mesh Gradients - Light Blue Theme */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-[-20%] left-[-10%] w-[70%] h-[70%] bg-blue-400/10 rounded-full blur-[120px] animate-pulse" />
           <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-sky-400/10 rounded-full blur-[120px] animate-pulse delay-700" />
@@ -221,8 +220,8 @@ export default function DailyTaskTrack() {
                 {[
                   { icon: Clock, title: "Precision Focus", color: "text-blue-600" },
                   { icon: Globe, title: "Global Sync", color: "text-sky-600" },
-                  { icon: BarChart2, title: "Insight Engine", color: "text-indigo-600" },
-                  { icon: ShieldCheck, title: "Secure Core", color: "text-blue-700" }
+                  { icon: BarChart2, title: "Insight Engine", color: "text-purple-600" },
+                  { icon: ShieldCheck, title: "Secure Core", color: "text-emerald-600" }
                 ].map((item, i) => (
                   <div key={i} className="flex items-center gap-4 p-4 rounded-2xl bg-white border border-slate-100 shadow-sm hover:border-primary/20 transition-colors group">
                     <item.icon className={cn("w-5 h-5", item.color)} />
@@ -238,7 +237,6 @@ export default function DailyTaskTrack() {
               transition={{ duration: 0.8, delay: 0.2 }}
               className="relative"
             >
-              {/* Login Card - Blue & White Theme */}
               <Card className="relative bg-white border-slate-100 shadow-[0_32px_64px_-16px_rgba(37,99,235,0.1)] p-8 md:p-12 rounded-[2.5rem] overflow-hidden">
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary to-transparent" />
                 
@@ -300,7 +298,6 @@ export default function DailyTaskTrack() {
                 </div>
               </Card>
 
-              {/* Decorative elements around card */}
               <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary/10 rounded-full blur-[80px] -z-10" />
               <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-sky-500/10 rounded-full blur-[80px] -z-10" />
             </motion.div>
