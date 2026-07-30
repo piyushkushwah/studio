@@ -143,7 +143,7 @@ export default function RoutinesPage() {
             <Button 
               variant="ghost" 
               size="icon" 
-              className="rounded-xl text-primary hover:bg-primary/5 hover:text-primary transition-colors"
+              className="rounded-xl text-primary hover:bg-muted/50 hover:text-primary transition-colors"
             >
               <ArrowLeft className="w-6 h-6" />
             </Button>
@@ -212,7 +212,7 @@ export default function RoutinesPage() {
                     <h3 className="text-xl font-black text-primary">No Routines Defined</h3>
                     <p className="text-muted-foreground text-sm font-medium max-w-[280px]">Automate your recurring success by defining your first routine today.</p>
                   </div>
-                  <Button onClick={() => handleOpenDialog()} variant="outline" className="rounded-xl border-dashed">
+                  <Button onClick={() => handleOpenDialog()} variant="outline" className="rounded-xl border-dashed hover:bg-muted/50 transition-colors">
                     Add First Routine
                   </Button>
                 </div>
@@ -259,11 +259,11 @@ export default function RoutinesPage() {
                             onCheckedChange={(val) => updateRoutine(routine.id, { active: val })} 
                           />
                         </div>
-                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl hover:bg-primary/5" onClick={() => handleOpenDialog(routine)}>
-                            <Pencil className="w-4 h-4 text-primary" />
+                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                          <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl hover:bg-blue-50 text-blue-600" onClick={() => handleOpenDialog(routine)}>
+                            <Pencil className="w-4 h-4" />
                           </Button>
-                          <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl hover:bg-destructive/5 hover:text-destructive" onClick={() => deleteRoutine(routine.id)}>
+                          <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl hover:bg-destructive/10 text-muted-foreground hover:text-destructive" onClick={() => deleteRoutine(routine.id)}>
                             <Trash2 className="w-4 h-4" />
                           </Button>
                         </div>

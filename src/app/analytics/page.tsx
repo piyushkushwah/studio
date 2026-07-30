@@ -146,7 +146,7 @@ export default function AnalyticsPage() {
       <header className="w-full flex items-center justify-between mb-8">
         <div className="flex items-center gap-3">
           <Link href="/">
-            <Button variant="ghost" size="icon" className="rounded-xl text-primary hover:bg-primary/5 hover:text-primary transition-colors">
+            <Button variant="ghost" size="icon" className="rounded-xl text-primary hover:bg-muted/50 hover:text-primary transition-colors">
               <ArrowLeft className="w-6 h-6" />
             </Button>
           </Link>
@@ -159,7 +159,7 @@ export default function AnalyticsPage() {
           variant="outline" 
           onClick={exportToCSV} 
           disabled={tasks.length === 0}
-          className="rounded-xl shadow-sm gap-2 border-indigo-100 hover:bg-indigo-50 hover:text-indigo-600"
+          className="rounded-xl shadow-sm gap-2 border-indigo-100 hover:bg-indigo-50/50 hover:text-indigo-600 transition-colors"
         >
           <FileSpreadsheet className="w-4 h-4" />
           Export Data
@@ -200,7 +200,7 @@ export default function AnalyticsPage() {
                 {stats.completed}
               </CardTitle>
             </CardHeader>
-          </div>
+          </Card>
         </div>
 
         <Card className="shadow-xl shadow-primary/5 border-border bg-card/50 backdrop-blur-sm">
@@ -239,27 +239,25 @@ export default function AnalyticsPage() {
             <CardContent className="h-[300px] flex items-center justify-center">
               {sessions.length > 0 ? (
                 <ChartContainer config={chartConfig} className="h-full w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={timeAllocationData}
-                        dataKey="value"
-                        nameKey="name"
-                        cx="50%"
-                        cy="50%"
-                        outerRadius="80%"
-                        innerRadius="50%"
-                        paddingAngle={5}
-                        strokeWidth={0}
-                      >
-                        {timeAllocationData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.fill} />
-                        ))}
-                      </Pie>
-                      <ChartTooltip content={<ChartTooltipContent hideLabel />} />
-                      <ChartLegend content={<ChartLegendContent />} />
-                    </PieChart>
-                  </ResponsiveContainer>
+                  <PieChart>
+                    <Pie
+                      data={timeAllocationData}
+                      dataKey="value"
+                      nameKey="name"
+                      cx="50%"
+                      cy="50%"
+                      outerRadius="80%"
+                      innerRadius="50%"
+                      paddingAngle={5}
+                      strokeWidth={0}
+                    >
+                      {timeAllocationData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.fill} />
+                      ))}
+                    </Pie>
+                    <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+                    <ChartLegend content={<ChartLegendContent />} />
+                  </PieChart>
                 </ChartContainer>
               ) : (
                 <EmptyState />
@@ -275,27 +273,25 @@ export default function AnalyticsPage() {
             <CardContent className="h-[300px] flex items-center justify-center">
               {tasks.length > 0 ? (
                 <ChartContainer config={chartConfig} className="h-full w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={labelData}
-                        dataKey="value"
-                        nameKey="name"
-                        cx="50%"
-                        cy="50%"
-                        outerRadius="80%"
-                        innerRadius="50%"
-                        paddingAngle={5}
-                        strokeWidth={0}
-                      >
-                        {labelData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.fill} />
-                        ))}
-                      </Pie>
-                      <ChartTooltip content={<ChartTooltipContent hideLabel />} />
-                      <ChartLegend content={<ChartLegendContent />} className="flex-wrap" />
-                    </PieChart>
-                  </ResponsiveContainer>
+                  <PieChart>
+                    <Pie
+                      data={labelData}
+                      dataKey="value"
+                      nameKey="name"
+                      cx="50%"
+                      cy="50%"
+                      outerRadius="80%"
+                      innerRadius="50%"
+                      paddingAngle={5}
+                      strokeWidth={0}
+                    >
+                      {labelData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.fill} />
+                      ))}
+                    </Pie>
+                    <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+                    <ChartLegend content={<ChartLegendContent />} className="flex-wrap" />
+                  </PieChart>
                 </ChartContainer>
               ) : (
                 <EmptyState />

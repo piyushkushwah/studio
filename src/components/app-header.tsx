@@ -136,11 +136,11 @@ export function AppHeader() {
                   <Button 
                     variant="ghost" 
                     size="icon" 
-                    className="h-6 w-6 rounded-full hover:bg-primary/10 hover:text-primary transition-colors" 
+                    className="h-6 w-6 rounded-full text-primary opacity-60 hover:opacity-100 hover:bg-primary/5 transition-all" 
                     onClick={fetchDailyBriefing}
                     disabled={isGeneratingBriefing}
                   >
-                    {isGeneratingBriefing ? <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" /> : <Sparkles className="w-3.5 h-3.5 text-primary opacity-60 hover:opacity-100" />}
+                    {isGeneratingBriefing ? <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" /> : <Sparkles className="w-3.5 h-3.5" />}
                   </Button>
                 </div>
               )}
@@ -153,13 +153,13 @@ export function AppHeader() {
           <div className="flex items-center gap-1 p-1 bg-white dark:bg-card border rounded-2xl shadow-sm h-14 w-fit">
             <LabelManager />
             <Link href="/time-tracking">
-              <Button variant="ghost" className="flex flex-col items-center justify-center gap-0.5 h-11 w-12 rounded-xl hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/10 group" title="Time Log">
+              <Button variant="ghost" className="flex flex-col items-center justify-center gap-0.5 h-11 w-12 rounded-xl hover:bg-blue-50/50 hover:text-blue-600 dark:hover:bg-blue-900/10 group transition-all" title="Time Log">
                 <Clock className="w-4 h-4 text-blue-600 transition-transform group-hover:scale-110" />
                 <span className="text-[8px] font-black uppercase tracking-tighter text-muted-foreground/60 leading-none">Logs</span>
               </Button>
             </Link>
             <Link href="/analytics">
-              <Button variant="ghost" className="flex flex-col items-center justify-center gap-0.5 h-11 w-12 rounded-xl hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-indigo-900/10 group" title="Analytics">
+              <Button variant="ghost" className="flex flex-col items-center justify-center gap-0.5 h-11 w-12 rounded-xl hover:bg-indigo-50/50 hover:text-indigo-600 dark:hover:bg-indigo-900/10 group transition-all" title="Analytics">
                 <BarChart2 className="w-4 h-4 text-indigo-600 transition-transform group-hover:scale-110" />
                 <span className="text-[8px] font-black uppercase tracking-tighter text-muted-foreground/60 leading-none">Stats</span>
               </Button>
@@ -167,7 +167,7 @@ export function AppHeader() {
             <div className="w-px h-6 bg-border mx-1" />
             <Button 
               variant="ghost" 
-              className="flex flex-col items-center justify-center gap-0.5 h-11 w-12 rounded-xl hover:bg-red-50 text-red-500 hover:text-red-500 group transition-colors" 
+              className="flex flex-col items-center justify-center gap-0.5 h-11 w-12 rounded-xl hover:bg-red-50 text-red-500 hover:text-red-600 group transition-all" 
               onClick={handleLogout} 
               title="Sign Out"
             >
@@ -177,7 +177,7 @@ export function AppHeader() {
           </div>
           <PomodoroTimer />
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" onClick={toggleTheme} className="h-12 w-12 rounded-2xl bg-white dark:bg-card border shadow-sm transition-all hover:border-primary/20">
+            <Button variant="ghost" size="icon" onClick={toggleTheme} className="h-12 w-12 rounded-2xl bg-white dark:bg-card border shadow-sm transition-all hover:bg-muted/50">
               {isDarkMode ? <Sun className="w-5 h-5 text-amber-500" /> : <Moon className="w-5 h-5 text-indigo-600" />}
             </Button>
             <Avatar className="h-12 w-12 border-2 border-background shadow-md ring-2 ring-primary/5">

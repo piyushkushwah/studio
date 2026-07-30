@@ -130,10 +130,10 @@ export function FocusPlayer() {
       
       <Popover>
         <PopoverTrigger asChild>
-          <div className="flex items-center gap-3 bg-card border border-border shadow-sm rounded-2xl px-4 h-12 hover:border-indigo-400 hover:bg-indigo-50/30 transition-all cursor-pointer group">
+          <div className="flex items-center gap-3 bg-card border border-border shadow-sm rounded-2xl px-4 h-12 hover:border-indigo-400 hover:bg-indigo-50/50 transition-all cursor-pointer group">
             <Button
               variant="ghost" size="icon"
-              className={cn("h-9 w-9 rounded-xl", isPlaying && "text-indigo-600 bg-indigo-50", hasError && "text-red-500")}
+              className={cn("h-9 w-9 rounded-xl transition-colors", isPlaying && "text-indigo-600 bg-indigo-50/80", hasError && "text-red-500")}
             >
               {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Music className={cn("w-5 h-5 text-indigo-600", isPlaying && "animate-pulse")} />}
             </Button>
@@ -147,7 +147,7 @@ export function FocusPlayer() {
           <div className="space-y-5">
             <div className="flex items-center justify-between">
               <h4 className="font-black text-indigo-700 text-sm uppercase tracking-widest">Atmosphere</h4>
-              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-indigo-50" onClick={() => setShowAddForm(!showAddForm)}>
+              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-indigo-50/50" onClick={() => setShowAddForm(!showAddForm)}>
                 <Plus className="w-5 h-5 text-indigo-600" />
               </Button>
             </div>
@@ -158,7 +158,7 @@ export function FocusPlayer() {
                 <Input placeholder="MP3 URL" value={newSongUrl} onChange={e => setNewSongUrl(e.target.value)} className="h-9 text-xs bg-background rounded-xl" />
                 <div className="flex gap-2">
                   <Button size="sm" className="flex-1 h-9 text-[10px] uppercase font-black rounded-xl bg-indigo-600 hover:bg-indigo-700" onClick={handleAddSong}>Save</Button>
-                  <Button size="sm" variant="ghost" className="h-9 text-[10px] uppercase font-black rounded-xl" onClick={() => setShowAddForm(false)}>Cancel</Button>
+                  <Button size="sm" variant="ghost" className="h-9 text-[10px] uppercase font-black rounded-xl hover:bg-muted" onClick={() => setShowAddForm(false)}>Cancel</Button>
                 </div>
               </div>
             )}
@@ -174,7 +174,7 @@ export function FocusPlayer() {
                       variant={isActive ? "default" : "outline"}
                       className={cn(
                         "h-20 w-full flex flex-col gap-2 rounded-2xl transition-all p-3 border-border/50",
-                        isActive ? "bg-indigo-600 text-white" : "hover:border-indigo-300 hover:bg-indigo-50/50",
+                        isActive ? "bg-indigo-600 text-white hover:bg-indigo-700" : "hover:border-indigo-300 hover:bg-indigo-50/50",
                         isActive && isPlaying ? "ring-2 ring-indigo-400 ring-offset-2" : ""
                       )}
                       onClick={() => toggleSound(sound.id)}
@@ -184,7 +184,7 @@ export function FocusPlayer() {
                     </Button>
                     {isCustom && (
                       <button 
-                        className="absolute -top-1.5 -right-1.5 bg-red-500 text-white rounded-full p-1 shadow-lg opacity-0 group-hover/item:opacity-100 transition-opacity"
+                        className="absolute -top-1.5 -right-1.5 bg-red-500 text-white rounded-full p-1 shadow-lg opacity-0 group-hover/item:opacity-100 transition-all hover:bg-red-600"
                         onClick={(e) => { e.stopPropagation(); removeCustomSong(sound.id); }}
                       >
                         <Trash2 className="w-3 h-3" />

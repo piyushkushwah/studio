@@ -112,7 +112,7 @@ export default function TimeTrackingPage() {
       <header className="w-full max-w-7xl flex items-center justify-between mb-8">
         <div className="flex items-center gap-3">
           <Link href="/">
-            <Button variant="ghost" size="icon" className="rounded-xl text-blue-600 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/10 transition-colors">
+            <Button variant="ghost" size="icon" className="rounded-xl text-blue-600 hover:bg-muted/50 hover:text-blue-600 transition-colors">
               <ArrowLeft className="w-6 h-6" />
             </Button>
           </Link>
@@ -161,7 +161,7 @@ export default function TimeTrackingPage() {
                 {sessions.length}
               </CardTitle>
             </CardHeader>
-          </Card>
+          </div>
         </div>
 
         <Card className="shadow-xl shadow-blue-100/50 border-border bg-card/50 backdrop-blur-sm">
@@ -218,11 +218,11 @@ export default function TimeTrackingPage() {
                                 )}>
                                   {session.durationMinutes}m
                                 </span>
-                                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-blue-600" onClick={() => handleOpenDialog(session)}>
+                                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:bg-blue-50 hover:text-blue-600" onClick={() => handleOpenDialog(session)}>
                                     <Pencil className="w-3.5 h-3.5" />
                                   </Button>
-                                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={() => deleteSession(session.id)}>
+                                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:bg-destructive/10 hover:text-destructive" onClick={() => deleteSession(session.id)}>
                                     <Trash2 className="w-3.5 h-3.5" />
                                   </Button>
                                 </div>
@@ -246,7 +246,7 @@ export default function TimeTrackingPage() {
       </main>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[425px] rounded-[2.5rem] p-8">
           <DialogHeader>
             <DialogTitle>{editingSession ? "Edit Session" : "Log Manual Time"}</DialogTitle>
             <DialogDescription>Record your deep work or break sessions manually. All data is saved to your cloud database.</DialogDescription>
@@ -260,7 +260,7 @@ export default function TimeTrackingPage() {
                 value={formData.duration}
                 onChange={(e) => setFormData(prev => ({ ...prev, duration: e.target.value }))}
                 placeholder="25"
-                className="bg-card border-border"
+                className="h-12 rounded-xl bg-muted/30 border-transparent font-bold"
               />
             </div>
             <div className="grid gap-2">
@@ -270,7 +270,7 @@ export default function TimeTrackingPage() {
                 <Input
                   id="date"
                   type="date"
-                  className="pl-10 bg-card border-border"
+                  className="h-12 pl-10 rounded-xl bg-muted/30 border-transparent"
                   value={formData.date}
                   onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
                 />
@@ -283,7 +283,7 @@ export default function TimeTrackingPage() {
                 value={formData.note}
                 onChange={(e) => setFormData(prev => ({ ...prev, note: e.target.value }))}
                 placeholder="What did you focus on?"
-                className="bg-card border-border"
+                className="h-12 rounded-xl bg-muted/30 border-transparent"
               />
             </div>
             <div className="grid gap-2">
@@ -293,7 +293,7 @@ export default function TimeTrackingPage() {
                   type="button"
                   variant={formData.type === 'manual' || formData.type === 'work' ? 'default' : 'outline'}
                   size="sm"
-                  className="flex-1 rounded-xl"
+                  className="flex-1 h-12 rounded-xl font-bold"
                   onClick={() => setFormData(prev => ({ ...prev, type: 'manual' }))}
                 >
                   Work
@@ -302,7 +302,7 @@ export default function TimeTrackingPage() {
                   type="button"
                   variant={formData.type === 'short' ? 'default' : 'outline'}
                   size="sm"
-                  className="flex-1 rounded-xl"
+                  className="flex-1 h-12 rounded-xl font-bold"
                   onClick={() => setFormData(prev => ({ ...prev, type: 'short' }))}
                 >
                   Break
@@ -310,9 +310,9 @@ export default function TimeTrackingPage() {
               </div>
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
-            <Button onClick={handleSave} disabled={!formData.duration || parseInt(formData.duration) <= 0} className="bg-blue-600 hover:bg-blue-700">
+          <DialogFooter className="flex gap-3">
+            <Button variant="ghost" className="h-12 rounded-xl flex-1 hover:bg-muted/50" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleSave} disabled={!formData.duration || parseInt(formData.duration) <= 0} className="h-12 rounded-xl flex-1 bg-blue-600 hover:bg-blue-700">
               {editingSession ? "Update Log" : "Add Log"}
             </Button>
           </DialogFooter>

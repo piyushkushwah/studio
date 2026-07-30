@@ -177,7 +177,7 @@ export default function HealthPage() {
       <header className="w-full max-w-7xl flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div className="flex items-center gap-3">
           <Link href="/">
-            <Button variant="ghost" size="icon" className="rounded-xl text-primary hover:bg-primary/5 hover:text-primary transition-colors">
+            <Button variant="ghost" size="icon" className="rounded-xl text-primary hover:bg-muted/50 hover:text-primary transition-colors">
               <ArrowLeft className="w-6 h-6" />
             </Button>
           </Link>
@@ -193,7 +193,7 @@ export default function HealthPage() {
           <Button 
             variant="outline" 
             onClick={() => setIsProfileDialogOpen(true)}
-            className="h-12 rounded-xl px-4 gap-2 border-primary/20 hover:bg-primary/5"
+            className="h-12 rounded-xl px-4 gap-2 border-primary/20 hover:bg-sky-50 transition-colors"
           >
             <User className="w-5 h-5 text-sky-500" />
             <span className="hidden sm:inline">Body Profile</span>
@@ -201,7 +201,7 @@ export default function HealthPage() {
           <Button 
             variant="outline" 
             onClick={() => setIsGoalDialogOpen(true)}
-            className="h-12 rounded-xl px-4 gap-2 border-primary/20 hover:bg-primary/5"
+            className="h-12 rounded-xl px-4 gap-2 border-primary/20 hover:bg-muted/50 transition-colors"
           >
             <Settings className="w-5 h-5 text-slate-500" />
             <span className="hidden sm:inline">Set Targets</span>
@@ -350,7 +350,7 @@ export default function HealthPage() {
                               variant="ghost" 
                               size="icon" 
                               onClick={() => deleteDietEntry(entry.id)}
-                              className="h-8 w-8 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity hover:text-destructive"
+                              className="h-8 w-8 text-muted-foreground opacity-0 group-hover:opacity-100 transition-all hover:bg-destructive/10 hover:text-destructive"
                             >
                               <Trash2 className="w-4 h-4" />
                             </Button>
@@ -384,7 +384,7 @@ export default function HealthPage() {
                     key={amount}
                     variant="outline"
                     onClick={() => addWaterEntry(amount)}
-                    className="h-20 flex flex-col gap-1 rounded-2xl border-sky-100 hover:bg-sky-50 dark:border-sky-800 dark:hover:bg-sky-900/20 shadow-sm"
+                    className="h-20 flex flex-col gap-1 rounded-2xl border-sky-100 hover:bg-sky-50 dark:border-sky-800 dark:hover:bg-sky-900/20 shadow-sm transition-all active:scale-95"
                   >
                     <span className="text-lg font-black text-sky-600">{amount}</span>
                     <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">ML</span>
@@ -406,7 +406,7 @@ export default function HealthPage() {
                           variant="ghost" 
                           size="icon" 
                           onClick={() => deleteWaterEntry(log.id)}
-                          className="h-6 w-6 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity hover:text-destructive"
+                          className="h-6 w-6 text-muted-foreground opacity-0 group-hover:opacity-100 transition-all hover:bg-destructive/10 hover:text-destructive"
                         >
                           <Trash2 className="w-3 h-3" />
                         </Button>

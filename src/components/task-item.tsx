@@ -68,7 +68,7 @@ export function TaskItem({ task, onToggle, onDelete, onEdit }: TaskItemProps) {
                   variant="ghost" 
                   size="icon" 
                   onClick={() => setIsExpanded(!isExpanded)}
-                  className="h-6 w-6 p-0 text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-full"
+                  className="h-6 w-6 p-0 text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-full transition-colors"
                 >
                   {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
                 </Button>
@@ -84,7 +84,7 @@ export function TaskItem({ task, onToggle, onDelete, onEdit }: TaskItemProps) {
           </div>
         </div>
 
-        <div className="flex items-center gap-0.5 md:gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+        <div className="flex items-center gap-0.5 md:gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-all">
           <Button
             variant="ghost"
             size="icon"
@@ -97,7 +97,7 @@ export function TaskItem({ task, onToggle, onDelete, onEdit }: TaskItemProps) {
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 md:h-10 md:w-10 text-muted-foreground hover:text-destructive hover:bg-destructive/5 rounded-full"
+            className="h-8 w-8 md:h-10 md:w-10 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full"
             onClick={() => onDelete(task.id)}
             title="Delete Task"
           >

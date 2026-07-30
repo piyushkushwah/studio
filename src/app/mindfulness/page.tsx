@@ -138,7 +138,7 @@ export default function MindfulnessPage() {
       <header className="w-full max-w-7xl flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div className="flex items-center gap-3">
           <Link href="/">
-            <Button variant="ghost" size="icon" className="rounded-xl text-primary hover:bg-primary/5 hover:text-primary transition-colors">
+            <Button variant="ghost" size="icon" className="rounded-xl text-primary hover:bg-muted/50 hover:text-primary transition-colors">
               <ArrowLeft className="w-6 h-6" />
             </Button>
           </Link>
@@ -193,7 +193,7 @@ export default function MindfulnessPage() {
                 </div>
                 <h3 className="text-xl font-black text-primary mb-2">A Clear Mind</h3>
                 <p className="text-muted-foreground text-sm font-medium max-w-sm mb-8">Start recording your thoughts, gratitudes, and affirmations to build a more mindful and improved version of yourself.</p>
-                <Button onClick={() => handleOpenDialog()} variant="outline" className="rounded-xl border-dashed">
+                <Button onClick={() => handleOpenDialog()} variant="outline" className="rounded-xl border-dashed hover:bg-muted/50 transition-colors">
                   Write Your First Reflection
                 </Button>
               </Card>
@@ -217,11 +217,11 @@ export default function MindfulnessPage() {
                               </div>
                             </div>
                           </div>
-                          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => handleOpenDialog(note)}>
+                          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hover:bg-purple-50 text-purple-600" onClick={() => handleOpenDialog(note)}>
                               <Pencil className="w-3.5 h-3.5" />
                             </Button>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hover:text-destructive" onClick={() => deleteGrowthNote(note.id)}>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive" onClick={() => deleteGrowthNote(note.id)}>
                               <Trash2 className="w-3.5 h-3.5" />
                             </Button>
                           </div>
@@ -349,7 +349,7 @@ export default function MindfulnessPage() {
             </div>
 
             <DialogFooter className="flex gap-3 pt-4">
-              <Button variant="ghost" className="h-12 px-6 rounded-xl font-bold uppercase text-[10px] tracking-widest" onClick={() => setIsDialogOpen(false)}>
+              <Button variant="ghost" className="h-12 px-6 rounded-xl font-bold uppercase text-[10px] tracking-widest hover:bg-muted/50" onClick={() => setIsDialogOpen(false)}>
                 Discard
               </Button>
               <Button 

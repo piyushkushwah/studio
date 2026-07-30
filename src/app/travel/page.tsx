@@ -146,7 +146,7 @@ export default function TravelPage() {
       <header className="w-full flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div className="flex items-center gap-3">
           <Link href="/">
-            <Button variant="ghost" size="icon" className="rounded-xl text-primary hover:bg-primary/5 hover:text-primary transition-colors">
+            <Button variant="ghost" size="icon" className="rounded-xl text-primary hover:bg-muted/50 hover:text-primary transition-colors">
               <ArrowLeft className="w-6 h-6" />
             </Button>
           </Link>
@@ -192,7 +192,7 @@ export default function TravelPage() {
                 {stats.completed}
               </CardTitle>
             </CardHeader>
-          </Card>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
@@ -204,7 +204,7 @@ export default function TravelPage() {
                 </div>
                 <h3 className="text-xl font-black text-primary mb-2">Adventure Awaits</h3>
                 <p className="text-muted-foreground text-sm font-medium max-w-sm mb-8">Start your travel journal by adding destinations you dream of visiting or trips you're currently planning.</p>
-                <Button onClick={() => handleOpenDialog()} variant="outline" className="rounded-xl border-dashed">
+                <Button onClick={() => handleOpenDialog()} variant="outline" className="rounded-xl border-dashed hover:bg-muted/50 transition-colors">
                   Add First Destination
                 </Button>
               </Card>
@@ -229,11 +229,11 @@ export default function TravelPage() {
                             {goal.status.replace('-', ' ')}
                           </Badge>
                         </div>
-                        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => handleOpenDialog(goal)}>
+                        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hover:bg-emerald-50 text-emerald-600" onClick={() => handleOpenDialog(goal)}>
                             <Pencil className="w-3.5 h-3.5" />
                           </Button>
-                          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hover:text-destructive" onClick={() => deleteTravelGoal(goal.id)}>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive" onClick={() => deleteTravelGoal(goal.id)}>
                             <Trash2 className="w-3.5 h-3.5" />
                           </Button>
                         </div>
@@ -288,7 +288,7 @@ export default function TravelPage() {
                       travelGoals.filter(g => g.status === 'bucket-list').slice(0, 5).map(g => (
                         <div key={g.id} className="flex items-center justify-between p-3 rounded-xl bg-muted/20 border border-transparent hover:border-border transition-colors">
                           <span className="text-sm font-bold text-primary">{g.destination}</span>
-                          <Button variant="ghost" size="sm" className="h-7 px-2 text-[10px] font-black uppercase" onClick={() => updateTravelGoal(g.id, { status: 'planned' })}>
+                          <Button variant="ghost" size="sm" className="h-7 px-2 text-[10px] font-black uppercase hover:bg-primary/10" onClick={() => updateTravelGoal(g.id, { status: 'planned' })}>
                             Plan Now
                           </Button>
                         </div>
@@ -430,7 +430,7 @@ export default function TravelPage() {
               </div>
 
               <DialogFooter className="flex gap-3 pt-4">
-                <Button variant="ghost" className="h-12 px-6 rounded-xl font-bold uppercase text-[10px] tracking-widest" onClick={() => setIsDialogOpen(false)}>
+                <Button variant="ghost" className="h-12 px-6 rounded-xl font-bold uppercase text-[10px] tracking-widest hover:bg-muted/50" onClick={() => setIsDialogOpen(false)}>
                   Discard
                 </Button>
                 <Button 

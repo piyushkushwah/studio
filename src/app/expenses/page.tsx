@@ -161,7 +161,7 @@ export default function ExpensesPage() {
       <header className="w-full flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div className="flex items-center gap-3">
           <Link href="/">
-            <Button variant="ghost" size="icon" className="rounded-xl text-primary hover:bg-primary/5 hover:text-primary transition-colors">
+            <Button variant="ghost" size="icon" className="rounded-xl text-primary hover:bg-muted/50 hover:text-primary transition-colors">
               <ArrowLeft className="w-6 h-6" />
             </Button>
           </Link>
@@ -252,7 +252,7 @@ export default function ExpensesPage() {
                   {expenses.map((expense) => (
                     <div 
                       key={expense.id} 
-                      className="group flex items-center justify-between p-4 md:p-6 hover:bg-muted/50 transition-colors"
+                      className="group flex items-center justify-between p-4 md:p-6 hover:bg-muted/30 transition-colors"
                     >
                       <div className="flex items-center gap-4">
                         <div className="bg-background p-3 rounded-2xl shadow-sm border border-border group-hover:border-emerald-200 dark:group-hover:border-emerald-800 transition-colors">
@@ -277,19 +277,19 @@ export default function ExpensesPage() {
                             -{getCurrencySymbol(expense.currency)}{expense.amount.toFixed(2)}
                           </span>
                         </div>
-                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all">
                           <Button 
                             variant="ghost" 
                             size="icon" 
-                            className="h-9 w-9 rounded-xl hover:bg-background"
+                            className="h-9 w-9 rounded-xl hover:bg-emerald-50 text-emerald-600 hover:text-emerald-700"
                             onClick={() => handleOpenDialog(expense)}
                           >
-                            <Pencil className="w-4 h-4 text-emerald-600" />
+                            <Pencil className="w-4 h-4" />
                           </Button>
                           <Button 
                             variant="ghost" 
                             size="icon" 
-                            className="h-9 w-9 rounded-xl hover:bg-destructive/10 hover:text-destructive"
+                            className="h-9 w-9 rounded-xl hover:bg-destructive/10 text-muted-foreground hover:text-destructive"
                             onClick={() => deleteExpense(expense.id)}
                           >
                             <Trash2 className="w-4 h-4" />
@@ -399,7 +399,7 @@ export default function ExpensesPage() {
             </div>
 
             <DialogFooter className="flex gap-3 pt-4">
-              <Button variant="ghost" className="h-12 px-6 rounded-xl font-bold uppercase text-[10px] tracking-widest" onClick={() => setIsDialogOpen(false)}>
+              <Button variant="ghost" className="h-12 px-6 rounded-xl font-bold uppercase text-[10px] tracking-widest hover:bg-muted/50" onClick={() => setIsDialogOpen(false)}>
                 Discard
               </Button>
               <Button 

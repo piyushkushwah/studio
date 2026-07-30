@@ -101,7 +101,7 @@ export default function ExercisePage() {
       <header className="w-full flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div className="flex items-center gap-3">
           <Link href="/">
-            <Button variant="ghost" size="icon" className="rounded-xl text-primary hover:bg-primary/5 hover:text-primary transition-colors">
+            <Button variant="ghost" size="icon" className="rounded-xl text-primary hover:bg-muted/50 hover:text-primary transition-colors">
               <ArrowLeft className="w-6 h-6" />
             </Button>
           </Link>
@@ -146,7 +146,7 @@ export default function ExercisePage() {
                 {todayExercises.length}
               </CardTitle>
             </CardHeader>
-          </Card>
+          </div>
         </div>
 
         <Card className="shadow-2xl shadow-primary/5 border-border bg-card/80 backdrop-blur-xl rounded-[2rem] overflow-hidden">
@@ -178,7 +178,7 @@ export default function ExercisePage() {
                   {exercises.map((exercise) => (
                     <div 
                       key={exercise.id} 
-                      className="group flex items-center justify-between p-4 md:p-6 hover:bg-muted/50 transition-colors"
+                      className="group flex items-center justify-between p-4 md:p-6 hover:bg-muted/30 transition-colors"
                     >
                       <div className="flex items-center gap-4">
                         <div className={cn(
@@ -219,7 +219,7 @@ export default function ExercisePage() {
                         <Button 
                           variant="ghost" 
                           size="icon" 
-                          className="h-9 w-9 rounded-xl hover:bg-destructive/10 hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
+                          className="h-9 w-9 rounded-xl hover:bg-destructive/10 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-all"
                           onClick={() => deleteExercise(exercise.id)}
                         >
                           <Trash2 className="w-4 h-4" />

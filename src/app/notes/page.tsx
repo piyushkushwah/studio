@@ -117,7 +117,7 @@ export default function NotesPage() {
       <header className="w-full max-w-7xl flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div className="flex items-center gap-3">
           <Link href="/">
-            <Button variant="ghost" size="icon" className="rounded-xl text-primary hover:bg-primary/5 hover:text-primary transition-colors">
+            <Button variant="ghost" size="icon" className="rounded-xl text-primary hover:bg-muted/50 hover:text-primary transition-colors">
               <ArrowLeft className="w-6 h-6" />
             </Button>
           </Link>
@@ -145,7 +145,7 @@ export default function NotesPage() {
               variant="ghost" 
               size="icon" 
               onClick={() => setViewMode("grid")}
-              className={cn("h-9 w-9 rounded-lg", viewMode === "grid" ? "bg-primary/5 text-primary" : "text-muted-foreground")}
+              className={cn("h-9 w-9 rounded-lg transition-colors", viewMode === "grid" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted")}
             >
               <LayoutGrid className="w-4 h-4" />
             </Button>
@@ -153,7 +153,7 @@ export default function NotesPage() {
               variant="ghost" 
               size="icon" 
               onClick={() => setViewMode("list")}
-              className={cn("h-9 w-9 rounded-lg", viewMode === "list" ? "bg-primary/5 text-primary" : "text-muted-foreground")}
+              className={cn("h-9 w-9 rounded-lg transition-colors", viewMode === "list" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted")}
             >
               <LayoutList className="w-4 h-4" />
             </Button>
@@ -197,11 +197,11 @@ export default function NotesPage() {
                     <CardTitle className="text-base font-bold text-primary truncate pr-8">
                       {note.title || "Untitled Note"}
                     </CardTitle>
-                    <div className="absolute top-4 right-4 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-black/5" onClick={() => handleOpenDialog(note)}>
+                    <div className="absolute top-4 right-4 flex gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                      <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-black/5 text-muted-foreground hover:text-primary" onClick={() => handleOpenDialog(note)}>
                         <Pencil className="w-3.5 h-3.5" />
                       </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-destructive/10 hover:text-destructive" onClick={() => deleteNote(note.id)}>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive" onClick={() => deleteNote(note.id)}>
                         <Trash2 className="w-3.5 h-3.5" />
                       </Button>
                     </div>
@@ -271,7 +271,7 @@ export default function NotesPage() {
             </div>
 
             <DialogFooter className="mt-8 flex gap-3">
-              <Button variant="ghost" className="rounded-xl px-6 h-12 font-bold uppercase text-[10px] tracking-widest" onClick={() => setIsDialogOpen(false)}>
+              <Button variant="ghost" className="rounded-xl px-6 h-12 font-bold uppercase text-[10px] tracking-widest hover:bg-muted/50" onClick={() => setIsDialogOpen(false)}>
                 Cancel
               </Button>
               <Button onClick={handleSave} disabled={!formData.content.trim()} className="rounded-xl px-8 h-12 shadow-xl shadow-primary/20">

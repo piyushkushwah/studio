@@ -123,10 +123,10 @@ export function PomodoroTimer() {
         <Brain className={cn("w-5 h-5 transition-colors", isWorkTimerActive ? "text-primary" : "text-muted-foreground")} />
         <span className="text-sm font-black tabular-nums tracking-tighter w-14 text-center text-primary">{formatTime(workTimerLeft)}</span>
         <div className="flex items-center gap-1">
-          <Button variant="ghost" size="icon" onClick={() => setWorkTimerActive(!isWorkTimerActive)} className="h-9 w-9 rounded-xl hover:bg-primary/5">
+          <Button variant="ghost" size="icon" onClick={() => setWorkTimerActive(!isWorkTimerActive)} className="h-9 w-9 rounded-xl hover:bg-primary/5 transition-colors">
             {isWorkTimerActive ? <Pause className="w-4 h-4 fill-current text-primary" /> : <Play className="w-4 h-4 fill-current text-primary" />}
           </Button>
-          <Button variant="ghost" size="icon" onClick={resetWorkTimer} className="h-9 w-9 rounded-xl text-muted-foreground hover:text-red-500">
+          <Button variant="ghost" size="icon" onClick={resetWorkTimer} className="h-9 w-9 rounded-xl text-muted-foreground hover:text-red-500 hover:bg-red-50 transition-colors">
             <RotateCcw className="w-4 h-4" />
           </Button>
         </div>
@@ -137,10 +137,10 @@ export function PomodoroTimer() {
         <Coffee className={cn("w-5 h-5 transition-colors", isBreakTimerActive ? "text-emerald-500" : "text-muted-foreground")} />
         <span className="text-sm font-black tabular-nums tracking-tighter w-14 text-center text-emerald-500">{formatTime(breakTimerLeft)}</span>
         <div className="flex items-center gap-1">
-          <Button variant="ghost" size="icon" onClick={() => setBreakTimerActive(!isBreakTimerActive)} className="h-9 w-9 rounded-xl hover:bg-emerald-50">
+          <Button variant="ghost" size="icon" onClick={() => setBreakTimerActive(!isBreakTimerActive)} className="h-9 w-9 rounded-xl hover:bg-emerald-50 transition-colors">
             {isBreakTimerActive ? <Pause className="w-4 h-4 fill-current text-emerald-500" /> : <Play className="w-4 h-4 fill-current text-emerald-500" />}
           </Button>
-          <Button variant="ghost" size="icon" onClick={resetBreakTimer} className="h-9 w-9 rounded-xl text-muted-foreground hover:text-red-500">
+          <Button variant="ghost" size="icon" onClick={resetBreakTimer} className="h-9 w-9 rounded-xl text-muted-foreground hover:text-red-500 hover:bg-red-50 transition-colors">
             <RotateCcw className="w-4 h-4" />
           </Button>
         </div>
@@ -152,7 +152,7 @@ export function PomodoroTimer() {
           variant="outline"
           size="icon"
           onClick={togglePip}
-          className="h-12 w-12 bg-card border-border rounded-2xl shadow-sm text-muted-foreground hover:text-primary transition-all hover:bg-primary/5"
+          className="h-12 w-12 bg-card border-border rounded-2xl shadow-sm text-muted-foreground hover:text-primary transition-all hover:bg-muted/50"
           title="Pop out active timer"
         >
           <ExternalLink className="w-5 h-5" />
