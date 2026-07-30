@@ -112,7 +112,7 @@ export default function TimeTrackingPage() {
       <header className="w-full max-w-7xl flex items-center justify-between mb-8">
         <div className="flex items-center gap-3">
           <Link href="/">
-            <Button variant="ghost" size="icon" className="rounded-xl text-blue-600 hover:bg-muted/50 hover:text-blue-600 transition-colors">
+            <Button variant="ghost" size="icon" className="rounded-xl text-blue-600 hover:bg-blue-50/50 hover:text-blue-600 transition-colors">
               <ArrowLeft className="w-6 h-6" />
             </Button>
           </Link>
@@ -161,7 +161,7 @@ export default function TimeTrackingPage() {
                 {sessions.length}
               </CardTitle>
             </CardHeader>
-          </div>
+          </Card>
         </div>
 
         <Card className="shadow-xl shadow-blue-100/50 border-border bg-card/50 backdrop-blur-sm">
@@ -222,7 +222,7 @@ export default function TimeTrackingPage() {
                                   <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:bg-blue-50 hover:text-blue-600" onClick={() => handleOpenDialog(session)}>
                                     <Pencil className="w-3.5 h-3.5" />
                                   </Button>
-                                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:bg-destructive/10 hover:text-destructive" onClick={() => deleteSession(session.id)}>
+                                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:bg-red-50 hover:text-red-500" onClick={() => deleteSession(session.id)}>
                                     <Trash2 className="w-3.5 h-3.5" />
                                   </Button>
                                 </div>
@@ -311,7 +311,7 @@ export default function TimeTrackingPage() {
             </div>
           </div>
           <DialogFooter className="flex gap-3">
-            <Button variant="ghost" className="h-12 rounded-xl flex-1 hover:bg-muted/50" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
+            <Button variant="ghost" className="h-12 rounded-xl flex-1 hover:bg-muted/50 hover:text-primary" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
             <Button onClick={handleSave} disabled={!formData.duration || parseInt(formData.duration) <= 0} className="h-12 rounded-xl flex-1 bg-blue-600 hover:bg-blue-700">
               {editingSession ? "Update Log" : "Add Log"}
             </Button>

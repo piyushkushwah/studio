@@ -146,7 +146,7 @@ export default function AnalyticsPage() {
       <header className="w-full flex items-center justify-between mb-8">
         <div className="flex items-center gap-3">
           <Link href="/">
-            <Button variant="ghost" size="icon" className="rounded-xl text-primary hover:bg-muted/50 hover:text-primary transition-colors">
+            <Button variant="ghost" size="icon" className="rounded-xl text-indigo-600 hover:bg-indigo-50/50 hover:text-indigo-600 transition-colors">
               <ArrowLeft className="w-6 h-6" />
             </Button>
           </Link>
