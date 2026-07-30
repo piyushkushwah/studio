@@ -40,15 +40,15 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
-  { title: "Dashboard", url: "/", icon: LayoutDashboard, color: "text-primary" },
-  { title: "Routines", url: "/routines", icon: CalendarDays, color: "text-blue-500" },
-  { title: "Quick Notes", url: "/notes", icon: StickyNote, color: "text-amber-500" },
-  { title: "Mindfulness", url: "/mindfulness", icon: Sparkles, color: "text-purple-500" },
-  { title: "Health Tracker", url: "/health", icon: Apple, color: "text-sky-500" },
-  { title: "Workout Log", url: "/exercise", icon: Dumbbell, color: "text-orange-500" },
-  { title: "Travel Goals", url: "/travel", icon: Compass, color: "text-emerald-500" },
-  { title: "Expense Wallet", url: "/expenses", icon: Wallet, color: "text-emerald-600" },
-  { title: "Analytics", url: "/analytics", icon: BarChart2, color: "text-indigo-500" },
+  { title: "Dashboard", url: "/", icon: LayoutDashboard, color: "text-primary", hover: "hover:bg-primary/5" },
+  { title: "Routines", url: "/routines", icon: CalendarDays, color: "text-blue-500", hover: "hover:bg-blue-50 dark:hover:bg-blue-900/10" },
+  { title: "Quick Notes", url: "/notes", icon: StickyNote, color: "text-amber-500", hover: "hover:bg-amber-50 dark:hover:bg-amber-900/10" },
+  { title: "Mindfulness", url: "/mindfulness", icon: Sparkles, color: "text-purple-500", hover: "hover:bg-purple-50 dark:hover:bg-purple-900/10" },
+  { title: "Health Tracker", url: "/health", icon: Apple, color: "text-sky-500", hover: "hover:bg-sky-50 dark:hover:bg-sky-900/10" },
+  { title: "Workout Log", url: "/exercise", icon: Dumbbell, color: "text-orange-500", hover: "hover:bg-orange-50 dark:hover:bg-orange-900/10" },
+  { title: "Travel Goals", url: "/travel", icon: Compass, color: "text-emerald-500", hover: "hover:bg-emerald-50 dark:hover:bg-emerald-900/10" },
+  { title: "Expense Wallet", url: "/expenses", icon: Wallet, color: "text-emerald-600", hover: "hover:bg-emerald-50 dark:hover:bg-emerald-900/10" },
+  { title: "Analytics", url: "/analytics", icon: BarChart2, color: "text-indigo-500", hover: "hover:bg-indigo-50 dark:hover:bg-indigo-900/10" },
 ];
 
 export function AppSidebar() {
@@ -94,12 +94,12 @@ export function AppSidebar() {
                     tooltip={item.title}
                     className={cn(
                       "h-11 rounded-xl transition-all",
-                      pathname === item.url ? "bg-primary/5 text-primary" : "hover:bg-primary/5"
+                      pathname === item.url ? "bg-primary/5 text-primary font-bold" : item.hover
                     )}
                   >
                     <Link href={item.url} className="flex items-center gap-3">
                       <item.icon className={cn("w-5 h-5 shrink-0 transition-colors", item.color)} />
-                      <span className="font-bold text-sm">{item.title}</span>
+                      <span className={cn("text-sm transition-colors", pathname === item.url ? "text-primary" : "text-muted-foreground")}>{item.title}</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -128,7 +128,7 @@ export function AppSidebar() {
               <SidebarMenuButton
                 onClick={handleLogout}
                 tooltip="Sign Out"
-                className="h-11 rounded-xl hover:bg-destructive/5 hover:text-destructive text-muted-foreground"
+                className="h-11 rounded-xl hover:bg-destructive/5 hover:text-destructive text-muted-foreground transition-all"
               >
                 <LogOut className="w-5 h-5 shrink-0" />
                 <span className="font-bold text-sm">Logout</span>

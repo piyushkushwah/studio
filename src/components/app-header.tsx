@@ -131,7 +131,7 @@ export function AppHeader() {
                 </div>
               ) : (
                 <div className="flex items-center gap-2">
-                  <Quote className="w-3.5 h-3.5 text-accent shrink-0" />
+                  <Quote className="w-3.5 h-3.5 text-blue-400 shrink-0" />
                   {quote ? <p className="text-xs font-bold text-muted-foreground tracking-tight">{quote}</p> : <Skeleton className="h-3 w-[200px]" />}
                   <Button 
                     variant="ghost" 
@@ -153,14 +153,14 @@ export function AppHeader() {
           <div className="flex items-center gap-1 p-1 bg-white dark:bg-card border rounded-2xl shadow-sm h-14 w-fit">
             <LabelManager />
             <Link href="/time-tracking">
-              <Button variant="ghost" className="flex flex-col items-center justify-center gap-0.5 h-11 w-12 rounded-xl hover:bg-primary/5 group" title="Time Log">
-                <Clock className="w-4 h-4 text-primary transition-transform group-hover:scale-110" />
+              <Button variant="ghost" className="flex flex-col items-center justify-center gap-0.5 h-11 w-12 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/10 group" title="Time Log">
+                <Clock className="w-4 h-4 text-blue-600 transition-transform group-hover:scale-110" />
                 <span className="text-[8px] font-black uppercase tracking-tighter text-muted-foreground/60 leading-none">Logs</span>
               </Button>
             </Link>
             <Link href="/analytics">
-              <Button variant="ghost" className="flex flex-col items-center justify-center gap-0.5 h-11 w-12 rounded-xl hover:bg-primary/5 group" title="Analytics">
-                <BarChart2 className="w-4 h-4 text-primary transition-transform group-hover:scale-110" />
+              <Button variant="ghost" className="flex flex-col items-center justify-center gap-0.5 h-11 w-12 rounded-xl hover:bg-indigo-50 dark:hover:bg-indigo-900/10 group" title="Analytics">
+                <BarChart2 className="w-4 h-4 text-indigo-600 transition-transform group-hover:scale-110" />
                 <span className="text-[8px] font-black uppercase tracking-tighter text-muted-foreground/60 leading-none">Stats</span>
               </Button>
             </Link>
@@ -178,7 +178,7 @@ export function AppHeader() {
           <PomodoroTimer />
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="icon" onClick={toggleTheme} className="h-12 w-12 rounded-2xl bg-white dark:bg-card border shadow-sm transition-all hover:border-primary/20">
-              {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+              {isDarkMode ? <Sun className="w-5 h-5 text-amber-500" /> : <Moon className="w-5 h-5 text-indigo-600" />}
             </Button>
             <Avatar className="h-12 w-12 border-2 border-background shadow-md ring-2 ring-primary/5">
               <AvatarImage src={user.photoURL || undefined} />

@@ -112,16 +112,16 @@ export default function TimeTrackingPage() {
       <header className="w-full max-w-7xl flex items-center justify-between mb-8">
         <div className="flex items-center gap-3">
           <Link href="/">
-            <Button variant="ghost" size="icon" className="rounded-xl text-primary hover:bg-primary/5 hover:text-primary transition-colors">
+            <Button variant="ghost" size="icon" className="rounded-xl text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-colors">
               <ArrowLeft className="w-6 h-6" />
             </Button>
           </Link>
-          <div className="bg-primary text-primary-foreground p-2 rounded-lg shrink-0">
+          <div className="bg-blue-600 text-primary-foreground p-2 rounded-lg shrink-0">
             <Clock className="w-5 h-5" />
           </div>
           <h1 className="text-lg md:text-xl font-bold text-primary truncate">Manual & Automatic Time Logs</h1>
         </div>
-        <Button onClick={() => handleOpenDialog()} className="rounded-xl gap-2 shadow-lg shadow-primary/20">
+        <Button onClick={() => handleOpenDialog()} className="rounded-xl gap-2 shadow-lg bg-blue-600 hover:bg-blue-700 shadow-blue-200">
           <Plus className="w-4 h-4" />
           Log Manual Time
         </Button>
@@ -132,7 +132,7 @@ export default function TimeTrackingPage() {
           <Card className="shadow-sm border-border bg-card/50 backdrop-blur-sm">
             <CardHeader className="pb-2">
               <CardDescription className="font-bold uppercase tracking-widest text-[10px]">Total Deep Work</CardDescription>
-              <CardTitle className="text-2xl font-black text-primary flex items-baseline gap-1">
+              <CardTitle className="text-2xl font-black text-blue-600 flex items-baseline gap-1">
                 {Math.floor(totalFocusTime / 60)}h {totalFocusTime % 60}m
               </CardTitle>
             </CardHeader>
@@ -140,7 +140,7 @@ export default function TimeTrackingPage() {
           <Card className="shadow-sm border-border bg-card/50 backdrop-blur-sm">
             <CardHeader className="pb-2">
               <CardDescription className="font-bold uppercase tracking-widest text-[10px]">Total Break Time</CardDescription>
-              <CardTitle className="text-2xl font-black text-accent flex items-baseline gap-1">
+              <CardTitle className="text-2xl font-black text-emerald-600 flex items-baseline gap-1">
                 {Math.floor(totalBreakTime / 60)}h {totalBreakTime % 60}m
               </CardTitle>
             </CardHeader>
@@ -157,17 +157,17 @@ export default function TimeTrackingPage() {
           <Card className="shadow-sm border-border bg-card/50 backdrop-blur-sm">
             <CardHeader className="pb-2">
               <CardDescription className="font-bold uppercase tracking-widest text-[10px]">Logged Sessions</CardDescription>
-              <CardTitle className="text-2xl font-black">
+              <CardTitle className="text-2xl font-black text-blue-600">
                 {sessions.length}
               </CardTitle>
             </CardHeader>
           </Card>
         </div>
 
-        <Card className="shadow-xl shadow-primary/5 border-border bg-card/50 backdrop-blur-sm">
+        <Card className="shadow-xl shadow-blue-100/50 border-border bg-card/50 backdrop-blur-sm">
           <CardHeader>
             <div className="flex items-center gap-3">
-              <History className="w-5 h-5 text-primary" />
+              <History className="w-5 h-5 text-blue-600" />
               <CardTitle className="text-lg">Activity Log (Synced to Database)</CardTitle>
             </div>
             <CardDescription>A chronological record of your productivity and rest sessions</CardDescription>
@@ -185,20 +185,20 @@ export default function TimeTrackingPage() {
                 <div className="space-y-8">
                   {dailySessions.map(([date, daySessions]) => (
                     <div key={date} className="space-y-4">
-                      <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/40 border-b pb-2">
+                      <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-600/40 border-b pb-2">
                         {format(parseISO(date), 'EEEE, MMMM do')}
                       </h4>
                       <div className="grid gap-3">
                         {daySessions.map((session) => (
                           <div 
                             key={session.id} 
-                            className="group flex flex-col p-4 bg-card rounded-xl border border-border shadow-sm transition-all hover:border-primary/20"
+                            className="group flex flex-col p-4 bg-card rounded-xl border border-border shadow-sm transition-all hover:border-blue-200"
                           >
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-4">
                                 <div className={cn(
                                   "p-2 rounded-lg",
-                                  session.type === 'work' || session.type === 'manual' ? "bg-primary/10 text-primary" : "bg-accent/10 text-accent"
+                                  session.type === 'work' || session.type === 'manual' ? "bg-blue-100 text-blue-600" : "bg-emerald-100 text-emerald-600"
                                 )}>
                                   {session.type === 'work' || session.type === 'manual' ? <Zap className="w-4 h-4" /> : <Coffee className="w-4 h-4" />}
                                 </div>
@@ -214,12 +214,12 @@ export default function TimeTrackingPage() {
                               <div className="flex items-center gap-4">
                                 <span className={cn(
                                   "font-black text-sm",
-                                  session.type === 'short' ? "text-accent" : "text-primary"
+                                  session.type === 'short' ? "text-emerald-600" : "text-blue-600"
                                 )}>
                                   {session.durationMinutes}m
                                 </span>
                                 <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary" onClick={() => handleOpenDialog(session)}>
+                                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-blue-600" onClick={() => handleOpenDialog(session)}>
                                     <Pencil className="w-3.5 h-3.5" />
                                   </Button>
                                   <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={() => deleteSession(session.id)}>
@@ -312,7 +312,7 @@ export default function TimeTrackingPage() {
           </div>
           <DialogFooter>
             <Button variant="ghost" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
-            <Button onClick={handleSave} disabled={!formData.duration || parseInt(formData.duration) <= 0}>
+            <Button onClick={handleSave} disabled={!formData.duration || parseInt(formData.duration) <= 0} className="bg-blue-600 hover:bg-blue-700">
               {editingSession ? "Update Log" : "Add Log"}
             </Button>
           </DialogFooter>

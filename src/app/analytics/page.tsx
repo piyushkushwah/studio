@@ -146,11 +146,11 @@ export default function AnalyticsPage() {
       <header className="w-full flex items-center justify-between mb-8">
         <div className="flex items-center gap-3">
           <Link href="/">
-            <Button variant="ghost" size="icon" className="rounded-xl text-primary hover:bg-primary/5 hover:text-primary transition-colors">
+            <Button variant="ghost" size="icon" className="rounded-xl text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/10 transition-colors">
               <ArrowLeft className="w-6 h-6" />
             </Button>
           </Link>
-          <div className="bg-primary text-primary-foreground p-2 rounded-lg shrink-0">
+          <div className="bg-indigo-600 text-primary-foreground p-2 rounded-lg shrink-0">
             <PieChartIcon className="w-5 h-5" />
           </div>
           <h1 className="text-lg md:text-xl font-bold text-primary truncate">Productivity Analytics</h1>
@@ -159,7 +159,7 @@ export default function AnalyticsPage() {
           variant="outline" 
           onClick={exportToCSV} 
           disabled={tasks.length === 0}
-          className="rounded-xl shadow-sm gap-2"
+          className="rounded-xl shadow-sm gap-2 border-indigo-100 hover:bg-indigo-50 hover:text-indigo-600"
         >
           <FileSpreadsheet className="w-4 h-4" />
           Export Data
@@ -171,13 +171,13 @@ export default function AnalyticsPage() {
           <Card className="shadow-sm border-border bg-card/50 backdrop-blur-sm">
             <CardHeader className="pb-2">
               <CardDescription className="font-black text-[10px] uppercase tracking-widest">Total Tasks</CardDescription>
-              <CardTitle className="text-2xl font-black text-primary">{stats.total}</CardTitle>
+              <CardTitle className="text-2xl font-black text-indigo-600">{stats.total}</CardTitle>
             </CardHeader>
           </Card>
           <Card className="shadow-sm border-border bg-card/50 backdrop-blur-sm">
             <CardHeader className="pb-2">
               <CardDescription className="font-black text-[10px] uppercase tracking-widest">Efficiency</CardDescription>
-              <CardTitle className="text-2xl font-black">
+              <CardTitle className="text-2xl font-black text-indigo-600">
                 {stats.rate}%
               </CardTitle>
             </CardHeader>
@@ -196,17 +196,17 @@ export default function AnalyticsPage() {
           <Card className="shadow-sm border-border bg-card/50 backdrop-blur-sm">
             <CardHeader className="pb-2">
               <CardDescription className="font-black text-[10px] uppercase tracking-widest">Completed</CardDescription>
-              <CardTitle className="text-2xl font-black text-accent">
+              <CardTitle className="text-2xl font-black text-emerald-600">
                 {stats.completed}
               </CardTitle>
             </CardHeader>
-          </Card>
+          </div>
         </div>
 
-        <Card className="shadow-xl shadow-primary/5 border-border bg-card/50 backdrop-blur-sm">
+        <Card className="shadow-xl shadow-indigo-100/50 border-border bg-card/50 backdrop-blur-sm">
           <CardHeader>
             <div className="flex items-center gap-2">
-              <CalendarIcon className="w-4 h-4 text-primary" />
+              <CalendarIcon className="w-4 h-4 text-indigo-600" />
               <CardTitle className="text-lg">Productivity Heatmap</CardTitle>
             </div>
             <CardDescription>Daily task completion consistency (last 28 days)</CardDescription>
@@ -220,9 +220,9 @@ export default function AnalyticsPage() {
                   className={cn(
                     "w-6 h-6 rounded-sm transition-colors",
                     day.count === 0 ? "bg-muted/30" :
-                    day.count < 2 ? "bg-accent/20" :
-                    day.count < 4 ? "bg-accent/50" :
-                    "bg-accent"
+                    day.count < 2 ? "bg-indigo-100" :
+                    day.count < 4 ? "bg-indigo-300" :
+                    "bg-indigo-600"
                   )}
                 />
               ))}
@@ -231,7 +231,7 @@ export default function AnalyticsPage() {
         </Card>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card className="shadow-xl shadow-primary/5 border-border bg-card/50 backdrop-blur-sm">
+          <Card className="shadow-xl shadow-indigo-100/50 border-border bg-card/50 backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="text-lg">Time Allocation</CardTitle>
               <CardDescription>Work focus vs Break time distribution</CardDescription>
@@ -267,7 +267,7 @@ export default function AnalyticsPage() {
             </CardContent>
           </Card>
 
-          <Card className="shadow-xl shadow-primary/5 border-border bg-card/50 backdrop-blur-sm">
+          <Card className="shadow-xl shadow-indigo-100/50 border-border bg-card/50 backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="text-lg">Category Distribution</CardTitle>
               <CardDescription>Breakdown of all tasks by label</CardDescription>
