@@ -167,7 +167,7 @@ export function AppHeader() {
             <div className="w-px h-6 bg-border mx-1" />
             <Button 
               variant="ghost" 
-              className="flex flex-col items-center justify-center gap-0.5 h-11 w-12 rounded-xl hover:bg-destructive/5 text-muted-foreground hover:text-destructive group" 
+              className="flex flex-col items-center justify-center gap-0.5 h-11 w-12 rounded-xl hover:bg-red-50 text-slate-400 hover:text-red-500 group transition-colors" 
               onClick={handleLogout} 
               title="Sign Out"
             >

@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useRef, useEffect } from "react";
@@ -127,21 +126,21 @@ export function PomodoroTimer() {
           <Button variant="ghost" size="icon" onClick={() => setWorkTimerActive(!isWorkTimerActive)} className="h-9 w-9 rounded-xl hover:bg-primary/5">
             {isWorkTimerActive ? <Pause className="w-4 h-4 fill-current text-primary" /> : <Play className="w-4 h-4 fill-current text-primary" />}
           </Button>
-          <Button variant="ghost" size="icon" onClick={resetWorkTimer} className="h-9 w-9 rounded-xl text-muted-foreground hover:text-destructive">
+          <Button variant="ghost" size="icon" onClick={resetWorkTimer} className="h-9 w-9 rounded-xl text-muted-foreground hover:text-red-500">
             <RotateCcw className="w-4 h-4" />
           </Button>
         </div>
       </div>
 
       {/* Break Timer */}
-      <div className="flex items-center gap-4 bg-card border border-border shadow-sm rounded-2xl px-4 h-12 hover:border-accent/30 transition-all group">
-        <Coffee className={cn("w-5 h-5 transition-colors", isBreakTimerActive ? "text-accent" : "text-muted-foreground")} />
-        <span className="text-sm font-black tabular-nums tracking-tighter w-14 text-center text-accent">{formatTime(breakTimerLeft)}</span>
+      <div className="flex items-center gap-4 bg-card border border-border shadow-sm rounded-2xl px-4 h-12 hover:border-emerald-500/30 transition-all group">
+        <Coffee className={cn("w-5 h-5 transition-colors", isBreakTimerActive ? "text-emerald-500" : "text-muted-foreground")} />
+        <span className="text-sm font-black tabular-nums tracking-tighter w-14 text-center text-emerald-500">{formatTime(breakTimerLeft)}</span>
         <div className="flex items-center gap-1">
-          <Button variant="ghost" size="icon" onClick={() => setBreakTimerActive(!isBreakTimerActive)} className="h-9 w-9 rounded-xl hover:bg-accent/5">
-            {isBreakTimerActive ? <Pause className="w-4 h-4 fill-current text-accent" /> : <Play className="w-4 h-4 fill-current text-accent" />}
+          <Button variant="ghost" size="icon" onClick={() => setBreakTimerActive(!isBreakTimerActive)} className="h-9 w-9 rounded-xl hover:bg-emerald-50">
+            {isBreakTimerActive ? <Pause className="w-4 h-4 fill-current text-emerald-500" /> : <Play className="w-4 h-4 fill-current text-emerald-500" />}
           </Button>
-          <Button variant="ghost" size="icon" onClick={resetBreakTimer} className="h-9 w-9 rounded-xl text-muted-foreground hover:text-destructive">
+          <Button variant="ghost" size="icon" onClick={resetBreakTimer} className="h-9 w-9 rounded-xl text-muted-foreground hover:text-red-500">
             <RotateCcw className="w-4 h-4" />
           </Button>
         </div>
@@ -153,7 +152,7 @@ export function PomodoroTimer() {
           variant="outline"
           size="icon"
           onClick={togglePip}
-          className="h-12 w-12 bg-card border-border rounded-2xl shadow-sm text-muted-foreground hover:text-primary transition-all"
+          className="h-12 w-12 bg-card border-border rounded-2xl shadow-sm text-muted-foreground hover:text-primary transition-all hover:bg-primary/5"
           title="Pop out active timer"
         >
           <ExternalLink className="w-5 h-5" />
