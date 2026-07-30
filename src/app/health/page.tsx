@@ -5,7 +5,7 @@ import { useTasks } from "@/hooks/use-tasks";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label as UILabel } from "@/components/ui/label";
+import { Label } from "@/components/ui/label";
 import { 
   Dialog, 
   DialogContent, 
@@ -49,13 +49,30 @@ import {
   Target,
   ChevronLeft,
   ChevronRight,
-  Calendar as CalendarIcon
+  TrendingDown,
+  Info,
+  Leaf
 } from "lucide-react";
 import Link from "next/link";
 import { format, parseISO, addDays, subDays, isSameDay } from "date-fns";
 import { cn } from "@/lib/utils";
 
 const MEAL_TYPES = ["breakfast", "lunch", "dinner", "snack"];
+
+const VEG_DIET_OPTIONS = [
+  { name: "Dal Tadka (1 bowl)", calories: 150 },
+  { name: "Paneer Tikka (100g)", calories: 250 },
+  { name: "Mixed Veg Curry (1 bowl)", calories: 120 },
+  { name: "Roti (1 piece)", calories: 85 },
+  { name: "Brown Rice (1 cup)", calories: 215 },
+  { name: "Greek Yogurt (1 cup)", calories: 100 },
+  { name: "Mixed Vegetable Salad", calories: 50 },
+  { name: "Chana Masala (1 bowl)", calories: 280 },
+  { name: "Oats with Milk (1 bowl)", calories: 200 },
+  { name: "Moong Dal Sprouts (1 bowl)", calories: 100 },
+  { name: "Soya Chunks Curry (1 bowl)", calories: 180 },
+  { name: "Tofu Stir Fry (100g)", calories: 160 },
+];
 
 export default function HealthPage() {
   const { 
@@ -114,6 +131,18 @@ export default function HealthPage() {
     const heightInMeters = height / 100;
     return parseFloat((weight / (heightInMeters * heightInMeters)).toFixed(1));
   }, [height, weight]);
+
+  const idealWeight = useMemo(() => {
+    if (!height) return 0;
+    const heightInMeters = height / 100;
+    // Using BMI 22 as a healthy reference for ideal weight
+    return Math.round(22 * (heightInMeters * heightInMeters));
+  }, [height]);
+
+  const weightDifference = useMemo(() => {
+    if (!weight || !idealWeight) return 0;
+    return weight - idealWeight;
+  }, [weight, idealWeight]);
 
   const bmiStatus = useMemo(() => {
     if (bmi < 18.5) return { label: "Underweight", color: "text-blue-500", bg: "bg-blue-500/10" };
@@ -195,7 +224,6 @@ export default function HealthPage() {
           </div>
         </div>
 
-        {/* Date Navigator */}
         <div className="flex items-center gap-2 bg-muted/30 p-1.5 rounded-2xl border">
           <Button 
             variant="ghost" 
@@ -203,7 +231,7 @@ export default function HealthPage() {
             onClick={() => setSelectedDate(prev => subDays(prev, 1))}
             className="h-9 w-9 rounded-xl hover:bg-background shadow-sm"
           >
-            <ChevronLeft className="w-4 h-4" />
+            <ChevronLeft className="w-4 h-4 text-blue-600" />
           </Button>
           <div className="flex flex-col items-center px-4 min-w-[120px]">
             <span className="text-[10px] font-black uppercase tracking-widest text-primary/40 leading-none">
@@ -219,7 +247,7 @@ export default function HealthPage() {
             onClick={() => setSelectedDate(prev => addDays(prev, 1))}
             className="h-9 w-9 rounded-xl hover:bg-background shadow-sm"
           >
-            <ChevronRight className="w-4 h-4" />
+            <ChevronRight className="w-4 h-4 text-blue-600" />
           </Button>
         </div>
 
@@ -227,7 +255,7 @@ export default function HealthPage() {
           <Button 
             variant="outline" 
             onClick={() => setIsProfileDialogOpen(true)}
-            className="h-12 rounded-xl px-4 gap-2 border-primary/20 hover:bg-sky-50 transition-colors"
+            className="h-12 rounded-xl px-4 gap-2 border-primary/20 hover:bg-sky-50 transition-colors hover:text-blue-600"
           >
             <User className="w-5 h-5 text-sky-500" />
             <span className="hidden sm:inline">Body Profile</span>
@@ -284,6 +312,23 @@ export default function HealthPage() {
                 )}>
                   {bmiStatus.label}
                 </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-3 p-4 bg-blue-50/50 rounded-2xl border border-blue-100">
+                <div className="flex items-center justify-between">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-blue-700 flex items-center gap-2">
+                    <Target className="w-3 h-3" /> Ideal Weight
+                  </p>
+                  <span className="text-sm font-black text-blue-800">{idealWeight} kg</span>
+                </div>
+                {weightDifference > 0 && (
+                  <div className="flex items-center justify-between border-t border-blue-100 pt-2">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-orange-700 flex items-center gap-2">
+                      <TrendingDown className="w-3 h-3" /> Weight to Reduce
+                    </p>
+                    <span className="text-sm font-black text-orange-800">{weightDifference.toFixed(1)} kg</span>
+                  </div>
+                )}
               </div>
 
               <div className="space-y-3">
@@ -398,7 +443,36 @@ export default function HealthPage() {
             </CardContent>
           </Card>
 
-          <Card className="lg:col-span-12 shadow-2xl border-border bg-card/80 backdrop-blur-sm rounded-[2rem] overflow-hidden">
+          <Card className="lg:col-span-4 shadow-2xl border-border bg-card/80 backdrop-blur-sm rounded-[2rem] overflow-hidden">
+            <CardHeader className="bg-sky-50/50 dark:bg-sky-900/10 border-b pb-6">
+              <div className="flex items-center gap-2">
+                <Leaf className="w-5 h-5 text-emerald-600" />
+                <CardTitle className="text-lg font-black text-primary">Veg Diet Options</CardTitle>
+              </div>
+              <CardDescription className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Healthy calorie references</CardDescription>
+            </CardHeader>
+            <CardContent className="p-0">
+              <ScrollArea className="h-[350px]">
+                <div className="p-4 space-y-2">
+                  {VEG_DIET_OPTIONS.map((option, idx) => (
+                    <div key={idx} className="flex items-center justify-between p-3 rounded-xl hover:bg-muted/50 transition-colors border border-transparent hover:border-border group">
+                      <span className="text-xs font-bold text-primary group-hover:text-emerald-700 transition-colors">{option.name}</span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs font-black text-emerald-600">{option.calories}</span>
+                        <span className="text-[9px] font-black uppercase text-muted-foreground">kcal</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
+              <div className="p-4 bg-muted/20 border-t flex items-center gap-3">
+                <Info className="w-4 h-4 text-sky-500 shrink-0" />
+                <p className="text-[9px] font-bold text-muted-foreground leading-tight">These are standard average values. Actual calories may vary based on portion size and preparation method.</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="lg:col-span-8 shadow-2xl border-border bg-card/80 backdrop-blur-sm rounded-[2rem] overflow-hidden">
             <CardHeader className="bg-sky-50/50 dark:bg-sky-900/10 border-b pb-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -462,7 +536,7 @@ export default function HealthPage() {
           </DialogHeader>
           <div className="space-y-6 py-4">
             <div className="space-y-2">
-              <UILabel className="text-[10px] font-black uppercase tracking-widest text-primary/60">Water Goal (ml)</UILabel>
+              <Label className="text-[10px] font-black uppercase tracking-widest text-primary/60">Water Goal (ml)</Label>
               <Input 
                 type="number"
                 value={goalForm.water}
@@ -471,7 +545,7 @@ export default function HealthPage() {
               />
             </div>
             <div className="space-y-2">
-              <UILabel className="text-[10px] font-black uppercase tracking-widest text-primary/60">Calorie Target (kcal)</UILabel>
+              <Label className="text-[10px] font-black uppercase tracking-widest text-primary/60">Calorie Target (kcal)</Label>
               <Input 
                 type="number"
                 value={goalForm.calorie}
@@ -496,7 +570,7 @@ export default function HealthPage() {
           </DialogHeader>
           <div className="space-y-6 py-4">
             <div className="space-y-2">
-              <UILabel className="text-[10px] font-black uppercase tracking-widest text-primary/60">Height (cm)</UILabel>
+              <Label className="text-[10px] font-black uppercase tracking-widest text-primary/60">Height (cm)</Label>
               <Input 
                 type="number"
                 value={profileForm.height}
@@ -505,7 +579,7 @@ export default function HealthPage() {
               />
             </div>
             <div className="space-y-2">
-              <UILabel className="text-[10px] font-black uppercase tracking-widest text-primary/60">Weight (kg)</UILabel>
+              <Label className="text-[10px] font-black uppercase tracking-widest text-primary/60">Weight (kg)</Label>
               <Input 
                 type="number"
                 value={profileForm.weight}
@@ -530,8 +604,9 @@ export default function HealthPage() {
           </DialogHeader>
           <div className="space-y-6 py-4">
             <div className="space-y-2">
-              <UILabel htmlFor="name" className="text-[10px] font-black uppercase tracking-widest text-primary/60">Food / Drink Name</UILabel>
+              <Label htmlFor="name" className="text-[10px] font-black uppercase tracking-widest text-primary/60">Food / Drink Name</Label>
               <Input 
+                id="name"
                 value={dietForm.name}
                 onChange={e => setDietForm(prev => ({ ...prev, name: e.target.value }))}
                 placeholder="e.g. Avocado Toast"
@@ -540,7 +615,7 @@ export default function HealthPage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <UILabel className="text-[10px] font-black uppercase tracking-widest text-primary/60">Energy (kcal)</UILabel>
+                <Label className="text-[10px] font-black uppercase tracking-widest text-primary/60">Energy (kcal)</Label>
                 <Input 
                   type="number"
                   value={dietForm.calories}
@@ -550,7 +625,7 @@ export default function HealthPage() {
                 />
               </div>
               <div className="space-y-2">
-                <UILabel className="text-[10px] font-black uppercase tracking-widest text-primary/60">Meal Type</UILabel>
+                <Label className="text-[10px] font-black uppercase tracking-widest text-primary/60">Meal Type</Label>
                 <Select value={dietForm.mealType} onValueChange={val => setDietForm(prev => ({ ...prev, mealType: val }))}>
                   <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-transparent capitalize font-bold">
                     <SelectValue />
@@ -564,7 +639,7 @@ export default function HealthPage() {
               </div>
             </div>
             <div className="space-y-2">
-              <UILabel htmlFor="diet-date" className="text-[10px] font-black uppercase tracking-widest text-primary/60">Date</UILabel>
+              <Label htmlFor="diet-date" className="text-[10px] font-black uppercase tracking-widest text-primary/60">Date</Label>
               <Input 
                 id="diet-date"
                 type="date"
