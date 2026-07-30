@@ -136,7 +136,7 @@ export function AppHeader() {
                   <Button 
                     variant="ghost" 
                     size="icon" 
-                    className="h-6 w-6 rounded-full hover:bg-primary/10" 
+                    className="h-6 w-6 rounded-full hover:bg-primary/10 hover:text-primary transition-colors" 
                     onClick={fetchDailyBriefing}
                     disabled={isGeneratingBriefing}
                   >
@@ -153,13 +153,13 @@ export function AppHeader() {
           <div className="flex items-center gap-1 p-1 bg-white dark:bg-card border rounded-2xl shadow-sm h-14 w-fit">
             <LabelManager />
             <Link href="/time-tracking">
-              <Button variant="ghost" className="flex flex-col items-center justify-center gap-0.5 h-11 w-12 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/10 group" title="Time Log">
+              <Button variant="ghost" className="flex flex-col items-center justify-center gap-0.5 h-11 w-12 rounded-xl hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/10 group" title="Time Log">
                 <Clock className="w-4 h-4 text-blue-600 transition-transform group-hover:scale-110" />
                 <span className="text-[8px] font-black uppercase tracking-tighter text-muted-foreground/60 leading-none">Logs</span>
               </Button>
             </Link>
             <Link href="/analytics">
-              <Button variant="ghost" className="flex flex-col items-center justify-center gap-0.5 h-11 w-12 rounded-xl hover:bg-indigo-50 dark:hover:bg-indigo-900/10 group" title="Analytics">
+              <Button variant="ghost" className="flex flex-col items-center justify-center gap-0.5 h-11 w-12 rounded-xl hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-indigo-900/10 group" title="Analytics">
                 <BarChart2 className="w-4 h-4 text-indigo-600 transition-transform group-hover:scale-110" />
                 <span className="text-[8px] font-black uppercase tracking-tighter text-muted-foreground/60 leading-none">Stats</span>
               </Button>
@@ -167,7 +167,7 @@ export function AppHeader() {
             <div className="w-px h-6 bg-border mx-1" />
             <Button 
               variant="ghost" 
-              className="flex flex-col items-center justify-center gap-0.5 h-11 w-12 rounded-xl hover:bg-red-50 text-slate-400 hover:text-red-500 group transition-colors" 
+              className="flex flex-col items-center justify-center gap-0.5 h-11 w-12 rounded-xl hover:bg-red-50 text-red-500 hover:text-red-500 group transition-colors" 
               onClick={handleLogout} 
               title="Sign Out"
             >

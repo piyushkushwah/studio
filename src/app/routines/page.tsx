@@ -143,7 +143,7 @@ export default function RoutinesPage() {
             <Button 
               variant="ghost" 
               size="icon" 
-              className="rounded-xl text-primary hover:bg-primary/5 transition-colors"
+              className="rounded-xl text-primary hover:bg-primary/5 hover:text-primary transition-colors"
             >
               <ArrowLeft className="w-6 h-6" />
             </Button>

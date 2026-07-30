@@ -112,7 +112,7 @@ export default function TimeTrackingPage() {
       <header className="w-full max-w-7xl flex items-center justify-between mb-8">
         <div className="flex items-center gap-3">
           <Link href="/">
-            <Button variant="ghost" size="icon" className="rounded-xl text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-colors">
+            <Button variant="ghost" size="icon" className="rounded-xl text-blue-600 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/10 transition-colors">
               <ArrowLeft className="w-6 h-6" />
             </Button>
           </Link>
