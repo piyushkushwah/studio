@@ -39,7 +39,7 @@ export function TaskItem({ task, onToggle, onDelete, onEdit }: TaskItemProps) {
   return (
     <div className={cn(
       "group flex flex-col p-3 md:p-4 rounded-xl border bg-card transition-all hover:shadow-md hover:border-primary/20",
-      task.completed && "bg-card/40 border-accent/20 opacity-80",
+      task.completed && "bg-card/40 border-emerald-500/20 opacity-80",
       !task.completed && task.priority === 'high' && "border-destructive/30 shadow-sm shadow-destructive/5",
       task.completed && "animate-completion"
     )}>
@@ -47,7 +47,7 @@ export function TaskItem({ task, onToggle, onDelete, onEdit }: TaskItemProps) {
         <Checkbox
           checked={task.completed}
           onCheckedChange={handleToggle}
-          className="h-5 w-5 md:h-6 md:w-6 border-2 data-[state=checked]:bg-accent data-[state=checked]:border-accent transition-colors shrink-0 mt-0.5 sm:mt-0"
+          className="h-5 w-5 md:h-6 md:w-6 border-2 data-[state=checked]:bg-emerald-500 data-[state=checked]:border-emerald-500 transition-colors shrink-0 mt-0.5 sm:mt-0"
         />
         
         <div className="flex-1 min-w-0">
@@ -68,7 +68,7 @@ export function TaskItem({ task, onToggle, onDelete, onEdit }: TaskItemProps) {
                   variant="ghost" 
                   size="icon" 
                   onClick={() => setIsExpanded(!isExpanded)}
-                  className="h-6 w-6 p-0 text-muted-foreground hover:text-primary"
+                  className="h-6 w-6 p-0 text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-full"
                 >
                   {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
                 </Button>

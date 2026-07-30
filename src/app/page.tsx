@@ -327,15 +327,15 @@ export default function DailyTaskTrack() {
         </div>
 
         <div className="lg:col-span-5 w-full lg:sticky lg:top-8">
-          <Card className={cn("p-8 md:p-10 shadow-2xl transition-all duration-500 flex flex-col bg-card border-border rounded-[2.5rem] overflow-hidden min-h-[700px]", goalMet ? "shadow-accent/10 border-accent/20 ring-1 ring-accent/10" : "shadow-primary/5")}>
+          <Card className={cn("p-8 md:p-10 shadow-2xl transition-all duration-500 flex flex-col bg-card border-border rounded-[2.5rem] overflow-hidden min-h-[700px]", goalMet ? "shadow-emerald-500/10 border-emerald-500/20 ring-1 ring-emerald-500/10" : "shadow-primary/5")}>
             <div className="flex items-center justify-between mb-8 shrink-0">
               <div className="flex items-center gap-5">
                 <div className="relative flex items-center justify-center shrink-0">
                   <svg className="w-16 h-16 transform -rotate-90">
                     <circle cx="32" cy="32" r="28" stroke="currentColor" strokeWidth="5" fill="transparent" className="text-muted/20" />
-                    <circle cx="32" cy="32" r="28" stroke="currentColor" strokeWidth="5" fill="transparent" strokeDasharray={176} strokeDashoffset={176 - (176 * completionRate) / 100} className={cn("transition-all duration-1000 ease-in-out", goalMet ? "text-accent" : "text-primary")} />
+                    <circle cx="32" cy="32" r="28" stroke="currentColor" strokeWidth="5" fill="transparent" strokeDasharray={176} strokeDashoffset={176 - (176 * completionRate) / 100} className={cn("transition-all duration-1000 ease-in-out", goalMet ? "text-emerald-500" : "text-primary")} />
                   </svg>
-                  <span className={cn("absolute text-xs font-black", goalMet ? "text-accent" : "text-primary")}>{goalMet ? <Star className="w-4 h-4 fill-current" /> : `${Math.round(completionRate)}%`}</span>
+                  <span className={cn("absolute text-xs font-black", goalMet ? "text-emerald-500" : "text-primary")}>{goalMet ? <Star className="w-4 h-4 fill-current" /> : `${Math.round(completionRate)}%`}</span>
                 </div>
                 <div className="flex flex-col text-primary">
                   <h3 className="text-2xl md:text-3xl font-black tracking-tight leading-none">{format(selectedDate, "EEEE")}</h3>
@@ -346,10 +346,10 @@ export default function DailyTaskTrack() {
             </div>
 
             <div className="space-y-6 mb-8 shrink-0">
-              <div className={cn("flex items-center gap-4 p-4 rounded-[1.5rem] border transition-colors", goalMet ? "bg-accent/5 border-accent/20" : "bg-primary/5 border-primary/10")}>
-                <div className={cn("p-3 rounded-xl shadow-sm transition-colors shrink-0", goalMet ? "bg-accent text-white" : "bg-background text-primary")}><Trophy className="w-5 h-5" /></div>
+              <div className={cn("flex items-center gap-4 p-4 rounded-[1.5rem] border transition-colors", goalMet ? "bg-emerald-500/5 border-emerald-500/20" : "bg-primary/5 border-primary/10")}>
+                <div className={cn("p-3 rounded-xl shadow-sm transition-colors shrink-0", goalMet ? "bg-emerald-500 text-white" : "bg-background text-primary")}><Trophy className="w-5 h-5" /></div>
                 <div className="flex-1">
-                  <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1", goalMet ? "text-accent" : "text-primary/60")}>Goal Progress</p>
+                  <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1", goalMet ? "text-emerald-500" : "text-primary/60")}>Goal Progress</p>
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-black">{completedCount} / {dailyGoalValue || 0}</span>
                     <input type="number" min="0" max="20" value={dailyGoalValue} onChange={(e) => setDailyGoal(selectedDateStr, parseInt(e.target.value) || 0)} className="w-14 h-8 text-xs font-black text-center border-none bg-background shadow-sm rounded-xl outline-none" />

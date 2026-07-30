@@ -143,12 +143,12 @@ export default function RoutinesPage() {
             <Button 
               variant="ghost" 
               size="icon" 
-              className="rounded-xl text-primary hover:bg-primary/5 hover:text-primary transition-colors"
+              className="rounded-xl text-primary hover:bg-primary/5 transition-colors"
             >
               <ArrowLeft className="w-6 h-6" />
             </Button>
           </Link>
-          <div className="bg-blue-600 text-white p-2.5 rounded-xl shadow-lg shadow-blue-200 dark:shadow-blue-900/20 shrink-0">
+          <div className="bg-blue-600 text-white p-2.5 rounded-xl shadow-lg shadow-blue-200 shrink-0">
             <CalendarDays className="w-6 h-6" />
           </div>
           <div>
@@ -157,7 +157,7 @@ export default function RoutinesPage() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button onClick={() => handleOpenDialog()} className="h-12 rounded-xl px-6 gap-2 bg-blue-600 hover:bg-blue-700 shadow-xl shadow-blue-200 dark:shadow-blue-900/20">
+          <Button onClick={() => handleOpenDialog()} className="h-12 rounded-xl px-6 gap-2 bg-blue-600 hover:bg-blue-700 shadow-xl shadow-blue-200">
             <Plus className="w-5 h-5" />
             Add Routine
           </Button>
@@ -169,7 +169,7 @@ export default function RoutinesPage() {
           <Card className="shadow-xl shadow-primary/5 border-border bg-card/80 backdrop-blur-sm rounded-[2rem]">
             <CardHeader className="pb-2">
               <CardDescription className="font-black text-[10px] uppercase tracking-widest">Active Routines</CardDescription>
-              <CardTitle className="text-3xl font-black text-primary">
+              <CardTitle className="text-3xl font-black text-emerald-600">
                 {routines.filter(r => r.active).length}
               </CardTitle>
             </CardHeader>
@@ -177,7 +177,7 @@ export default function RoutinesPage() {
           <Card className="shadow-xl shadow-primary/5 border-border bg-card/80 backdrop-blur-sm rounded-[2rem]">
             <CardHeader className="pb-2">
               <CardDescription className="font-black text-[10px] uppercase tracking-widest">Daily Sprints</CardDescription>
-              <CardTitle className="text-3xl font-black text-primary">
+              <CardTitle className="text-3xl font-black text-blue-600">
                 {routines.filter(r => r.frequency === 'daily').length}
               </CardTitle>
             </CardHeader>
@@ -229,7 +229,7 @@ export default function RoutinesPage() {
                       <div className="flex items-center gap-6">
                         <div className={cn(
                           "p-4 rounded-2xl shadow-sm border border-border transition-colors",
-                          routine.active ? "bg-blue-50 text-blue-600 border-blue-100" : "bg-muted text-muted-foreground"
+                          routine.active ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-muted text-muted-foreground"
                         )}>
                           <CheckCircle2 className="w-6 h-6" />
                         </div>
@@ -260,10 +260,10 @@ export default function RoutinesPage() {
                           />
                         </div>
                         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl" onClick={() => handleOpenDialog(routine)}>
+                          <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl hover:bg-primary/5" onClick={() => handleOpenDialog(routine)}>
                             <Pencil className="w-4 h-4 text-primary" />
                           </Button>
-                          <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl hover:text-destructive" onClick={() => deleteRoutine(routine.id)}>
+                          <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl hover:bg-destructive/5 hover:text-destructive" onClick={() => deleteRoutine(routine.id)}>
                             <Trash2 className="w-4 h-4" />
                           </Button>
                         </div>
@@ -277,7 +277,6 @@ export default function RoutinesPage() {
         </Card>
       </main>
 
-      {/* Routine Edit Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden rounded-[2.5rem] border-none shadow-2xl">
           <div className="p-8 space-y-8 bg-card">
@@ -356,7 +355,7 @@ export default function RoutinesPage() {
             </div>
 
             <DialogFooter className="flex gap-3 pt-4">
-              <Button variant="ghost" className="h-12 px-6 rounded-xl font-bold uppercase text-[10px] tracking-widest" onClick={() => setIsDialogOpen(false)}>
+              <Button variant="ghost" className="h-12 px-6 rounded-xl font-bold uppercase text-[10px] tracking-widest hover:bg-muted/50" onClick={() => setIsDialogOpen(false)}>
                 Discard
               </Button>
               <Button 

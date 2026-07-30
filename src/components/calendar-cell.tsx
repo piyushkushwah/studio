@@ -51,7 +51,7 @@ export function CalendarCell({
             key={task.id}
             className={cn(
               "w-1 h-1 md:w-1.5 md:h-1.5 rounded-full transition-all duration-300",
-              task.completed ? "bg-accent" : "bg-primary/40"
+              task.completed ? "bg-emerald-500" : "bg-primary/40"
             )}
           />
         ))}
@@ -63,7 +63,7 @@ export function CalendarCell({
       </div>
 
       {total > 0 && total === completed && (
-        <CheckCircle2 className="absolute top-1 right-1 md:top-2 md:right-2 w-2.5 h-2.5 md:w-3.5 md:h-3.5 text-accent opacity-80" />
+        <CheckCircle2 className="absolute top-1 right-1 md:top-2 md:right-2 w-2.5 h-2.5 md:w-3.5 md:h-3.5 text-emerald-500 opacity-90" />
       )}
     </button>
   );
