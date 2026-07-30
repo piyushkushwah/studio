@@ -5,7 +5,7 @@ import { useTasks } from "@/hooks/use-tasks";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label as UILabel } from "@/components/ui/label";
+import { UILabel } from "@/components/ui/label";
 import { 
   Dialog, 
   DialogContent, 
@@ -46,10 +46,13 @@ import {
   Scale,
   User,
   Activity,
-  Target
+  Target,
+  ChevronLeft,
+  ChevronRight,
+  Calendar as CalendarIcon
 } from "lucide-react";
 import Link from "next/link";
-import { format, parseISO } from "date-fns";
+import { format, parseISO, addDays, subDays, isSameDay } from "date-fns";
 import { cn } from "@/lib/utils";
 
 const MEAL_TYPES = ["breakfast", "lunch", "dinner", "snack"];
@@ -72,15 +75,19 @@ export default function HealthPage() {
     isInitialized 
   } = useTasks();
 
+  const [selectedDate, setSelectedDate] = useState(new Date());
   const [isDietDialogOpen, setIsDietDialogOpen] = useState(false);
   const [isGoalDialogOpen, setIsGoalDialogOpen] = useState(false);
   const [isProfileDialogOpen, setIsProfileDialogOpen] = useState(false);
   
+  const dateStr = useMemo(() => format(selectedDate, "yyyy-MM-dd"), [selectedDate]);
+  const isToday = useMemo(() => isSameDay(selectedDate, new Date()), [selectedDate]);
+
   const [dietForm, setDietForm] = useState({
     name: "",
     calories: "",
     mealType: "breakfast" as any,
-    date: format(new Date(), "yyyy-MM-dd")
+    date: dateStr
   });
 
   const [goalForm, setGoalForm] = useState({
@@ -93,13 +100,11 @@ export default function HealthPage() {
     weight: weight.toString()
   });
 
-  const todayStr = format(new Date(), "yyyy-MM-dd");
+  const selectedDiet = useMemo(() => diet.filter(d => d.date === dateStr), [diet, dateStr]);
+  const selectedWater = useMemo(() => water.filter(w => w.date === dateStr), [water, dateStr]);
 
-  const todayDiet = useMemo(() => diet.filter(d => d.date === todayStr), [diet, todayStr]);
-  const todayWater = useMemo(() => water.filter(w => w.date === todayStr), [water, todayStr]);
-
-  const totalCalories = useMemo(() => todayDiet.reduce((sum, d) => sum + d.calories, 0), [todayDiet]);
-  const totalWater = useMemo(() => todayWater.reduce((sum, w) => sum + w.amount, 0), [todayWater]);
+  const totalCalories = useMemo(() => selectedDiet.reduce((sum, d) => sum + d.calories, 0), [selectedDiet]);
+  const totalWater = useMemo(() => selectedWater.reduce((sum, w) => sum + w.amount, 0), [selectedWater]);
 
   const waterProgress = Math.min((totalWater / waterGoal) * 100, 100);
   const calorieProgress = Math.min((totalCalories / calorieGoal) * 100, 100);
@@ -146,7 +151,7 @@ export default function HealthPage() {
       mealType: dietForm.mealType,
       date: dietForm.date
     });
-    setDietForm({ name: "", calories: "", mealType: "breakfast", date: todayStr });
+    setDietForm({ name: "", calories: "", mealType: "breakfast", date: dateStr });
     setIsDietDialogOpen(false);
   };
 
@@ -189,6 +194,35 @@ export default function HealthPage() {
             <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest">Wellness & Body Metrics</p>
           </div>
         </div>
+
+        {/* Date Navigator */}
+        <div className="flex items-center gap-2 bg-muted/30 p-1.5 rounded-2xl border">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={() => setSelectedDate(prev => subDays(prev, 1))}
+            className="h-9 w-9 rounded-xl hover:bg-background shadow-sm"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </Button>
+          <div className="flex flex-col items-center px-4 min-w-[120px]">
+            <span className="text-[10px] font-black uppercase tracking-widest text-primary/40 leading-none">
+              {isToday ? "Today" : format(selectedDate, "EEEE")}
+            </span>
+            <span className="text-sm font-black text-primary">
+              {format(selectedDate, "MMM d, yyyy")}
+            </span>
+          </div>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={() => setSelectedDate(prev => addDays(prev, 1))}
+            className="h-9 w-9 rounded-xl hover:bg-background shadow-sm"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </Button>
+        </div>
+
         <div className="flex items-center gap-2">
           <Button 
             variant="outline" 
@@ -317,16 +351,16 @@ export default function HealthPage() {
               <div className="flex flex-col">
                 <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-4">Meal Breakdown</p>
                 <ScrollArea className="flex-1 pr-4">
-                  {todayDiet.length === 0 ? (
+                  {selectedDiet.length === 0 ? (
                     <div className="h-full flex flex-col items-center justify-center text-center gap-4 py-8">
                       <div className="w-12 h-12 rounded-2xl bg-muted/50 flex items-center justify-center text-muted-foreground/30">
                         <Apple className="w-6 h-6" />
                       </div>
-                      <p className="text-muted-foreground text-sm font-medium">Log your meals to visualize intake breakdown.</p>
+                      <p className="text-muted-foreground text-sm font-medium">No meals logged for this date.</p>
                     </div>
                   ) : (
                     <div className="space-y-3">
-                      {todayDiet.sort((a,b) => b.createdAt - a.createdAt).map(entry => (
+                      {selectedDiet.sort((a,b) => b.createdAt - a.createdAt).map(entry => (
                         <div key={entry.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-xl group border border-transparent hover:border-emerald-200 dark:hover:border-emerald-800 transition-colors">
                           <div className="flex items-center gap-3">
                             <div className={cn(
@@ -383,7 +417,7 @@ export default function HealthPage() {
                   <Button 
                     key={amount}
                     variant="outline"
-                    onClick={() => addWaterEntry(amount)}
+                    onClick={() => addWaterEntry(amount, dateStr)}
                     className="h-20 flex flex-col gap-1 rounded-2xl border-sky-100 hover:bg-sky-50 dark:border-sky-800 dark:hover:bg-sky-900/20 shadow-sm transition-all active:scale-95"
                   >
                     <span className="text-lg font-black text-sky-600">{amount}</span>
@@ -392,11 +426,11 @@ export default function HealthPage() {
                 ))}
               </div>
               
-              {todayWater.length > 0 && (
+              {selectedWater.length > 0 && (
                 <div className="mt-8">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-4">Recent Logs</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-4">Recent Logs for {format(selectedDate, "MMM d")}</p>
                   <div className="flex flex-wrap gap-3">
-                    {todayWater.sort((a,b) => b.createdAt - a.createdAt).slice(0, 8).map(log => (
+                    {selectedWater.sort((a,b) => b.createdAt - a.createdAt).slice(0, 12).map(log => (
                       <div key={log.id} className="flex items-center gap-3 p-3 bg-muted/30 rounded-2xl border border-transparent hover:border-sky-200 transition-all group">
                         <div className="w-8 h-8 rounded-lg bg-sky-100 dark:bg-sky-900/30 flex items-center justify-center text-sky-600">
                           <Droplets className="w-4 h-4" />
@@ -492,7 +526,7 @@ export default function HealthPage() {
         <DialogContent className="sm:max-w-[425px] rounded-[2.5rem] p-8">
           <DialogHeader>
             <DialogTitle className="text-2xl font-black text-primary tracking-tight">Record Nutrition</DialogTitle>
-            <DialogDescription className="text-[10px] font-black uppercase tracking-widest">Track your fuel for the day</DialogDescription>
+            <DialogDescription className="text-[10px] font-black uppercase tracking-widest">Track your fuel for {format(selectedDate, "MMM d")}</DialogDescription>
           </DialogHeader>
           <div className="space-y-6 py-4">
             <div className="space-y-2">
@@ -528,6 +562,16 @@ export default function HealthPage() {
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+            <div className="space-y-2">
+              <UILabel htmlFor="diet-date" className="text-[10px] font-black uppercase tracking-widest text-primary/60">Date</UILabel>
+              <Input 
+                id="diet-date"
+                type="date"
+                value={dietForm.date}
+                onChange={e => setDietForm(prev => ({ ...prev, date: e.target.value }))}
+                className="h-12 rounded-xl bg-muted/20 border-transparent font-bold"
+              />
             </div>
           </div>
           <DialogFooter>
