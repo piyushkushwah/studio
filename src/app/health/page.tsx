@@ -81,6 +81,7 @@ const VEG_DIET_OPTIONS: VegOption[] = [
   // Meals (Lunch/Dinner)
   { name: "Dal Tadka (1 bowl)", calories: 150, category: "meals", protein: 7, carbs: 20, fat: 5 },
   { name: "Paneer Tikka (100g)", calories: 250, category: "meals", protein: 15, carbs: 6, fat: 18 },
+  { name: "Paneer Bhurji (1 bowl)", calories: 220, category: "meals", protein: 14, carbs: 6, fat: 16 },
   { name: "Mixed Veg Curry (1 bowl)", calories: 120, category: "meals", protein: 3, carbs: 15, fat: 6 },
   { name: "Roti (1 piece)", calories: 85, category: "meals", protein: 3, carbs: 18, fat: 0.5 },
   { name: "Brown Rice (1 cup)", calories: 215, category: "meals", protein: 5, carbs: 45, fat: 2 },
@@ -89,11 +90,13 @@ const VEG_DIET_OPTIONS: VegOption[] = [
   { name: "Rajma Masala (1 bowl)", calories: 220, category: "meals", protein: 12, carbs: 38, fat: 4 },
   { name: "Soya Chunks Curry (1 bowl)", calories: 180, category: "meals", protein: 25, carbs: 10, fat: 4 },
   { name: "Tofu Stir Fry (100g)", calories: 160, category: "meals", protein: 12, carbs: 4, fat: 8 },
+  { name: "Mushroom Masala (1 bowl)", calories: 140, category: "meals", protein: 5, carbs: 8, fat: 10 },
   { name: "Lentil Soup (1 bowl)", calories: 180, category: "meals", protein: 10, carbs: 30, fat: 2 },
   { name: "Quinoa (1 cup cooked)", calories: 220, category: "meals", protein: 8, carbs: 39, fat: 4 },
   { name: "Palak Paneer (1 bowl)", calories: 240, category: "meals", protein: 12, carbs: 8, fat: 18 },
   { name: "Whole Wheat Pasta (1 cup)", calories: 175, category: "meals", protein: 7, carbs: 35, fat: 1 },
   { name: "Vegetable Pulao (1 cup)", calories: 190, category: "meals", protein: 4, carbs: 35, fat: 4 },
+  { name: "Baingan Bharta (1 bowl)", calories: 150, category: "meals", protein: 3, carbs: 12, fat: 10 },
   
   // Snacks
   { name: "Moong Dal Sprouts (1 bowl)", calories: 100, category: "snacks", protein: 8, carbs: 15, fat: 0.5 },
@@ -109,6 +112,8 @@ const VEG_DIET_OPTIONS: VegOption[] = [
   { name: "Boiled Corn (1 cup)", calories: 90, category: "snacks", protein: 3, carbs: 19, fat: 1 },
   { name: "Cottage Cheese (100g)", calories: 100, category: "snacks", protein: 11, carbs: 3, fat: 4 },
   { name: "Edamame (1/2 cup)", calories: 100, category: "snacks", protein: 9, carbs: 8, fat: 4 },
+  { name: "Pumpkin Seeds (30g)", calories: 160, category: "snacks", protein: 9, carbs: 4, fat: 13 },
+  { name: "Roasted Chickpeas (1/2 cup)", calories: 130, category: "snacks", protein: 7, carbs: 18, fat: 3 },
   
   // Breakfast
   { name: "Oats with Milk (1 bowl)", calories: 200, category: "breakfast", protein: 8, carbs: 30, fat: 5 },
@@ -121,6 +126,8 @@ const VEG_DIET_OPTIONS: VegOption[] = [
   { name: "Scrambled Tofu (100g)", calories: 150, category: "breakfast", protein: 16, carbs: 5, fat: 8 },
   { name: "Avocado Toast (1 slice)", calories: 160, category: "breakfast", protein: 4, carbs: 15, fat: 10 },
   { name: "Besan Chilla (1 piece)", calories: 120, category: "breakfast", protein: 6, carbs: 18, fat: 3 },
+  { name: "Dhokla (3 pieces)", calories: 150, category: "breakfast", protein: 6, carbs: 25, fat: 4 },
+  { name: "Moong Dal Chilla (1 piece)", calories: 130, category: "breakfast", protein: 8, carbs: 20, fat: 2 },
 ];
 
 export default function HealthPage() {
