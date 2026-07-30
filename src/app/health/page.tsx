@@ -5,7 +5,7 @@ import { useTasks } from "@/hooks/use-tasks";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { UILabel } from "@/components/ui/label";
+import { Label as UILabel } from "@/components/ui/label";
 import { 
   Dialog, 
   DialogContent, 
@@ -182,7 +182,7 @@ export default function HealthPage() {
       <header className="w-full max-w-7xl flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div className="flex items-center gap-3">
           <Link href="/">
-            <Button variant="ghost" size="icon" className="rounded-xl text-primary hover:bg-muted/50 hover:text-primary transition-colors">
+            <Button variant="ghost" size="icon" className="rounded-xl text-blue-600 hover:bg-blue-50/50 hover:text-blue-600 transition-colors">
               <ArrowLeft className="w-6 h-6" />
             </Button>
           </Link>
@@ -252,7 +252,7 @@ export default function HealthPage() {
           <Card className="lg:col-span-4 shadow-2xl border-border bg-card/80 backdrop-blur-sm rounded-[2rem] overflow-hidden">
             <CardHeader className="bg-primary/5 border-b pb-6">
               <div className="flex items-center gap-2">
-                <Scale className="w-5 h-5 text-primary" />
+                <Scale className="w-5 h-5 text-blue-600" />
                 <CardTitle className="text-lg font-black text-primary">Body Composition</CardTitle>
               </div>
             </CardHeader>
