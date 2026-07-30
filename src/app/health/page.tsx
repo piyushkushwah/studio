@@ -65,6 +65,8 @@ const VEG_DIET_OPTIONS = [
   { name: "Mixed Veg Curry (1 bowl)", calories: 120 },
   { name: "Roti (1 piece)", calories: 85 },
   { name: "Brown Rice (1 cup)", calories: 215 },
+  { name: "Quinoa (1 cup cooked)", calories: 220 },
+  { name: "Lentil Soup (1 bowl)", calories: 180 },
   { name: "Greek Yogurt (1 cup)", calories: 100 },
   { name: "Mixed Vegetable Salad", calories: 50 },
   { name: "Chana Masala (1 bowl)", calories: 280 },
@@ -72,6 +74,13 @@ const VEG_DIET_OPTIONS = [
   { name: "Moong Dal Sprouts (1 bowl)", calories: 100 },
   { name: "Soya Chunks Curry (1 bowl)", calories: 180 },
   { name: "Tofu Stir Fry (100g)", calories: 160 },
+  { name: "Chickpea Salad (1 cup)", calories: 210 },
+  { name: "Almonds (10 pieces)", calories: 70 },
+  { name: "Walnuts (4 pieces)", calories: 100 },
+  { name: "Banana (Medium)", calories: 105 },
+  { name: "Apple (Medium)", calories: 95 },
+  { name: "Peanut Butter (1 tbsp)", calories: 90 },
+  { name: "Sweet Potato (100g)", calories: 90 },
 ];
 
 export default function HealthPage() {
@@ -135,7 +144,6 @@ export default function HealthPage() {
   const idealWeight = useMemo(() => {
     if (!height) return 0;
     const heightInMeters = height / 100;
-    // Using BMI 22 as a healthy reference for ideal weight
     return Math.round(22 * (heightInMeters * heightInMeters));
   }, [height]);
 
@@ -447,7 +455,7 @@ export default function HealthPage() {
             <CardHeader className="bg-sky-50/50 dark:bg-sky-900/10 border-b pb-6">
               <div className="flex items-center gap-2">
                 <Leaf className="w-5 h-5 text-emerald-600" />
-                <CardTitle className="text-lg font-black text-primary">Veg Diet Options</CardTitle>
+                <CardTitle className="text-lg font-black text-primary">Veg Nutrition Guide</CardTitle>
               </div>
               <CardDescription className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Healthy calorie references</CardDescription>
             </CardHeader>
