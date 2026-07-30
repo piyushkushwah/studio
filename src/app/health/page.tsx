@@ -169,7 +169,7 @@ export default function HealthPage() {
 
   const weightDifference = useMemo(() => {
     if (!weight || !idealWeight) return 0;
-    return weight - idealWeight;
+    return Math.max(0, weight - idealWeight);
   }, [weight, idealWeight]);
 
   const bmiStatus = useMemo(() => {
@@ -227,7 +227,7 @@ export default function HealthPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-2">
-          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-4 border-sky-500 border-t-transparent rounded-full animate-spin" />
           <p className="text-muted-foreground font-black text-[10px] uppercase tracking-widest">Syncing Health Data...</p>
         </div>
       </div>
@@ -257,7 +257,7 @@ export default function HealthPage() {
             variant="ghost" 
             size="icon" 
             onClick={() => setSelectedDate(prev => subDays(prev, 1))}
-            className="h-9 w-9 rounded-xl hover:bg-background shadow-sm"
+            className="h-9 w-9 rounded-xl hover:bg-background shadow-sm hover:text-sky-600"
           >
             <ChevronLeft className="w-4 h-4 text-sky-600" />
           </Button>
@@ -273,7 +273,7 @@ export default function HealthPage() {
             variant="ghost" 
             size="icon" 
             onClick={() => setSelectedDate(prev => addDays(prev, 1))}
-            className="h-9 w-9 rounded-xl hover:bg-background shadow-sm"
+            className="h-9 w-9 rounded-xl hover:bg-background shadow-sm hover:text-sky-600"
           >
             <ChevronRight className="w-4 h-4 text-sky-600" />
           </Button>
@@ -286,15 +286,15 @@ export default function HealthPage() {
             className="h-12 rounded-xl px-4 gap-2 border-primary/20 hover:bg-sky-50 transition-colors hover:text-sky-600"
           >
             <User className="w-5 h-5 text-sky-500" />
-            <span className="hidden sm:inline">Body Profile</span>
+            <span className="hidden sm:inline font-bold">Body Profile</span>
           </Button>
           <Button 
             variant="outline" 
             onClick={() => setIsGoalDialogOpen(true)}
-            className="h-12 rounded-xl px-4 gap-2 border-primary/20 hover:bg-muted/50 transition-colors"
+            className="h-12 rounded-xl px-4 gap-2 border-primary/20 hover:bg-muted/50 transition-colors hover:text-primary"
           >
             <Settings className="w-5 h-5 text-slate-500" />
-            <span className="hidden sm:inline">Set Targets</span>
+            <span className="hidden sm:inline font-bold">Targets</span>
           </Button>
           <Button onClick={() => setIsDietDialogOpen(true)} className="h-12 rounded-xl px-6 gap-2 bg-sky-600 hover:bg-sky-700 shadow-xl shadow-sky-200 dark:shadow-sky-900/20">
             <Plus className="w-5 h-5" />
@@ -361,7 +361,7 @@ export default function HealthPage() {
 
               <div className="space-y-3">
                 <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                  <Target className="w-3 h-3" /> Recommended Daily Calorie
+                  <Target className="w-3 h-3" /> Daily Energy Budget
                 </p>
                 <div className="space-y-2">
                   {recommendedGoals.map(g => (
@@ -387,7 +387,7 @@ export default function HealthPage() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Flame className="w-5 h-5 text-orange-600" />
-                  <CardTitle className="text-lg font-black text-emerald-900 dark:text-emerald-100">Daily Calorie Consumption</CardTitle>
+                  <CardTitle className="text-lg font-black text-emerald-900 dark:text-emerald-100">Calorie Consumption</CardTitle>
                 </div>
                 <div className="text-right">
                   <span className="text-2xl font-black text-emerald-700 dark:text-emerald-400">{totalCalories}</span>
@@ -397,7 +397,7 @@ export default function HealthPage() {
               <div className="mt-4 space-y-2">
                 <Progress value={calorieProgress} className="h-3 bg-emerald-100 dark:bg-emerald-900/30" />
                 <p className="text-[10px] font-black uppercase tracking-widest text-emerald-600 text-center">
-                  {Math.round(calorieProgress)}% OF ENERGY BUDGET
+                  {Math.round(calorieProgress)}% OF DAILY QUOTA
                 </p>
               </div>
             </CardHeader>
@@ -422,7 +422,7 @@ export default function HealthPage() {
               </div>
 
               <div className="flex flex-col">
-                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-4">Meal Breakdown</p>
+                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-4">Meal Log</p>
                 <ScrollArea className="flex-1 pr-4">
                   {selectedDiet.length === 0 ? (
                     <div className="h-full flex flex-col items-center justify-center text-center gap-4 py-8">
@@ -482,9 +482,9 @@ export default function HealthPage() {
             <CardContent className="p-0">
               <Tabs defaultValue="meals" className="w-full">
                 <TabsList className="w-full grid grid-cols-3 h-12 bg-muted/50 rounded-none border-b border-border/50">
-                  <TabsTrigger value="meals" className="text-[10px] font-black uppercase tracking-widest data-[state=active]:text-emerald-600">Meals</TabsTrigger>
-                  <TabsTrigger value="snacks" className="text-[10px] font-black uppercase tracking-widest data-[state=active]:text-emerald-600">Snacks</TabsTrigger>
-                  <TabsTrigger value="breakfast" className="text-[10px] font-black uppercase tracking-widest data-[state=active]:text-emerald-600">Breakfast</TabsTrigger>
+                  <TabsTrigger value="meals" className="text-[10px] font-black uppercase tracking-widest data-[state=active]:text-emerald-600 font-bold">Meals</TabsTrigger>
+                  <TabsTrigger value="snacks" className="text-[10px] font-black uppercase tracking-widest data-[state=active]:text-emerald-600 font-bold">Snacks</TabsTrigger>
+                  <TabsTrigger value="breakfast" className="text-[10px] font-black uppercase tracking-widest data-[state=active]:text-emerald-600 font-bold">Breakfast</TabsTrigger>
                 </TabsList>
                 
                 {["meals", "snacks", "breakfast"].map((tab) => (
@@ -507,7 +507,7 @@ export default function HealthPage() {
               </Tabs>
               <div className="p-4 bg-muted/20 border-t flex items-center gap-3">
                 <Info className="w-4 h-4 text-emerald-500 shrink-0" />
-                <p className="text-[9px] font-bold text-muted-foreground leading-tight">These are standard average values. Actual calories may vary based on portion size and preparation method.</p>
+                <p className="text-[9px] font-bold text-muted-foreground leading-tight">These are standard average values. Actual calories vary by portion.</p>
               </div>
             </CardContent>
           </Card>
@@ -517,7 +517,7 @@ export default function HealthPage() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Droplets className="w-5 h-5 text-sky-600" />
-                  <CardTitle className="text-lg font-black text-sky-900 dark:text-sky-100">Daily Hydration Log</CardTitle>
+                  <CardTitle className="text-lg font-black text-sky-900 dark:text-sky-100">Hydration Log</CardTitle>
                 </div>
                 <div className="text-right">
                   <span className="text-2xl font-black text-sky-700 dark:text-sky-400">{totalWater}</span>
@@ -532,7 +532,7 @@ export default function HealthPage() {
                     key={amount}
                     variant="outline"
                     onClick={() => addWaterEntry(amount, dateStr)}
-                    className="h-20 flex flex-col gap-1 rounded-2xl border-sky-100 hover:bg-sky-50 dark:border-sky-800 dark:hover:bg-sky-900/20 shadow-sm transition-all active:scale-95"
+                    className="h-20 flex flex-col gap-1 rounded-2xl border-sky-100 hover:bg-sky-50 dark:border-sky-800 dark:hover:bg-sky-900/20 shadow-sm transition-all active:scale-95 hover:text-sky-600"
                   >
                     <span className="text-lg font-black text-sky-600">{amount}</span>
                     <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">ML</span>

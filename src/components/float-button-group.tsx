@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -24,49 +23,49 @@ const FLOAT_ITEMS = [
     title: "Routines", 
     url: "/routines", 
     icon: CalendarDays, 
-    color: "text-blue-500", 
+    color: "text-blue-600", 
     hoverClass: "hover:text-blue-600 hover:bg-blue-50/80" 
   },
   { 
     title: "Notes", 
     url: "/notes", 
     icon: StickyNote, 
-    color: "text-amber-500", 
+    color: "text-amber-600", 
     hoverClass: "hover:text-amber-600 hover:bg-amber-50/80" 
   },
   { 
     title: "Growth", 
     url: "/mindfulness", 
     icon: Sparkles, 
-    color: "text-purple-500", 
+    color: "text-purple-600", 
     hoverClass: "hover:text-purple-600 hover:bg-purple-50/80" 
   },
   { 
     title: "Health", 
     url: "/health", 
     icon: Apple, 
-    color: "text-sky-500", 
+    color: "text-sky-600", 
     hoverClass: "hover:text-sky-600 hover:bg-sky-50/80" 
   },
   { 
     title: "Workout", 
     url: "/exercise", 
     icon: Dumbbell, 
-    color: "text-orange-500", 
+    color: "text-orange-600", 
     hoverClass: "hover:text-orange-600 hover:bg-orange-50/80" 
   },
   { 
     title: "Travel", 
     url: "/travel", 
     icon: Compass, 
-    color: "text-emerald-500", 
+    color: "text-emerald-600", 
     hoverClass: "hover:text-emerald-600 hover:bg-emerald-50/80" 
   },
   { 
     title: "Wallet", 
     url: "/expenses", 
     icon: Wallet, 
-    color: "text-emerald-600", 
+    color: "text-emerald-700", 
     hoverClass: "hover:text-emerald-700 hover:bg-emerald-50/80" 
   },
 ];
@@ -99,7 +98,7 @@ export function FloatButtonGroup() {
                     )}
                   >
                     <item.icon className={cn("w-5 h-5 transition-colors", item.color)} />
-                    <span>{item.title}</span>
+                    <span className="font-bold">{item.title}</span>
                   </Button>
                 </Link>
               </motion.div>
@@ -113,7 +112,7 @@ export function FloatButtonGroup() {
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
           "w-16 h-16 rounded-[2rem] shadow-2xl transition-all duration-300 active:scale-90 ring-4 ring-background text-white",
-          "bg-blue-600 hover:bg-blue-700",
+          "bg-primary hover:bg-primary/90",
           isOpen && "rotate-90"
         )}
       >

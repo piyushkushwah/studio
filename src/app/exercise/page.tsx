@@ -115,7 +115,7 @@ export default function ExercisePage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-2">
-          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin" />
           <p className="text-muted-foreground font-black text-[10px] uppercase tracking-widest">Loading Workout Log...</p>
         </div>
       </div>
@@ -197,7 +197,7 @@ export default function ExercisePage() {
                         <h3 className="text-lg font-black text-primary">No Activities Logged</h3>
                         <p className="text-muted-foreground text-sm font-medium max-w-[280px]">Start tracking your workouts to see your progress and stay motivated.</p>
                       </div>
-                      <Button onClick={() => setIsDialogOpen(true)} variant="outline" className="rounded-xl border-dashed">
+                      <Button onClick={() => setIsDialogOpen(true)} variant="outline" className="rounded-xl border-dashed hover:bg-muted/50 transition-colors">
                         Log First Session
                       </Button>
                     </div>
@@ -331,7 +331,7 @@ export default function ExercisePage() {
                   </SelectTrigger>
                   <SelectContent>
                     {EXERCISE_TYPES.map(type => (
-                      <SelectItem key={type} value={type} className="capitalize">{type}</SelectItem>
+                      <SelectItem key={type} value={type} className="capitalize font-bold">{type}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -343,7 +343,7 @@ export default function ExercisePage() {
                   type="date"
                   value={formData.date}
                   onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
-                  className="h-12 rounded-xl bg-muted/30 border-transparent"
+                  className="h-12 rounded-xl bg-muted/30 border-transparent font-bold"
                 />
               </div>
             </div>

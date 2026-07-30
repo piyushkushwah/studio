@@ -29,8 +29,8 @@ export default function AnalyticsPage() {
       };
     });
     config["work"] = { label: "Work", color: "hsl(var(--primary))" };
-    config["break"] = { label: "Break", color: "hsl(var(--accent))" };
-    config["completed"] = { label: "Completed", color: "hsl(var(--accent))" };
+    config["break"] = { label: "Break", color: "hsl(var(--emerald-500))" };
+    config["completed"] = { label: "Completed", color: "hsl(var(--emerald-500))" };
     return config;
   }, [labels]);
 
@@ -63,7 +63,7 @@ export default function AnalyticsPage() {
 
     return [
       { name: 'Work', value: workTime, fill: 'hsl(var(--primary))' },
-      { name: 'Break', value: breakTime, fill: 'hsl(var(--accent))' }
+      { name: 'Break', value: breakTime, fill: '#10b981' }
     ].filter(d => d.value > 0);
   }, [sessions]);
 
@@ -134,7 +134,7 @@ export default function AnalyticsPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-2">
-          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
           <p className="text-muted-foreground font-medium text-xs uppercase tracking-widest">Loading stats...</p>
         </div>
       </div>

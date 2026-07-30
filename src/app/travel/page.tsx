@@ -134,7 +134,7 @@ export default function TravelPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-2">
-          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
           <p className="text-muted-foreground font-black text-[10px] uppercase tracking-widest">Loading Travel Map...</p>
         </div>
       </div>
@@ -155,7 +155,7 @@ export default function TravelPage() {
           </div>
           <div>
             <h1 className="text-xl md:text-2xl font-black text-primary tracking-tight">Travel Tracker</h1>
-            <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest">Bucket List & Trip Planner</p>
+            <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest">Bucket List & Planner</p>
           </div>
         </div>
         <Button onClick={() => handleOpenDialog()} className="h-12 rounded-xl px-6 gap-2 bg-emerald-600 hover:bg-emerald-700 shadow-xl shadow-emerald-200 dark:shadow-emerald-900/20 transition-all active:scale-[0.98]">
@@ -204,7 +204,7 @@ export default function TravelPage() {
                 </div>
                 <h3 className="text-xl font-black text-primary mb-2">Adventure Awaits</h3>
                 <p className="text-muted-foreground text-sm font-medium max-w-sm mb-8">Start your travel journal by adding destinations you dream of visiting or trips you're currently planning.</p>
-                <Button onClick={() => handleOpenDialog()} variant="outline" className="rounded-xl border-dashed hover:bg-muted/50 transition-colors">
+                <Button onClick={() => handleOpenDialog()} variant="outline" className="rounded-xl border-dashed hover:bg-muted/50 transition-colors hover:text-emerald-600">
                   Add First Destination
                 </Button>
               </Card>
@@ -230,7 +230,7 @@ export default function TravelPage() {
                           </Badge>
                         </div>
                         <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-all">
-                          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hover:bg-emerald-50 text-emerald-600 hover:text-emerald-600" onClick={() => handleOpenDialog(goal)}>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hover:bg-emerald-50 text-emerald-600 hover:text-emerald-700" onClick={() => handleOpenDialog(goal)}>
                             <Pencil className="w-3.5 h-3.5" />
                           </Button>
                           <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-muted-foreground hover:bg-red-50 hover:text-red-500" onClick={() => deleteTravelGoal(goal.id)}>
@@ -243,7 +243,7 @@ export default function TravelPage() {
                       <div className="flex flex-wrap gap-4 text-[10px] font-bold text-muted-foreground">
                         {goal.plannedDate && (
                           <div className="flex items-center gap-1.5">
-                            <CalendarIcon className="w-3 h-3 text-primary" />
+                            <CalendarIcon className="w-3 h-3 text-emerald-600" />
                             {format(parseISO(goal.plannedDate), "MMM yyyy")}
                           </div>
                         )}
@@ -255,7 +255,7 @@ export default function TravelPage() {
                         )}
                         {goal.packingList && goal.packingList.length > 0 && (
                           <div className="flex items-center gap-1.5">
-                            <ListTodo className="w-3 h-3 text-primary" />
+                            <ListTodo className="w-3 h-3 text-emerald-600" />
                             {goal.packingList.length} Items
                           </div>
                         )}
@@ -274,8 +274,8 @@ export default function TravelPage() {
 
           <div className="xl:col-span-4 space-y-8">
              <Card className="shadow-2xl border-border bg-card rounded-[2rem] overflow-hidden">
-               <CardHeader className="bg-primary/5 border-b">
-                 <CardTitle className="text-lg font-black text-primary flex items-center gap-2">
+               <CardHeader className="bg-emerald-50/50 dark:bg-emerald-950/20 border-b">
+                 <CardTitle className="text-lg font-black text-emerald-700 flex items-center gap-2">
                    <Palmtree className="w-5 h-5 text-emerald-600" />
                    Dream Destinations
                  </CardTitle>
@@ -286,9 +286,9 @@ export default function TravelPage() {
                       <p className="text-xs text-muted-foreground text-center py-4">No bucket list items yet.</p>
                     ) : (
                       travelGoals.filter(g => g.status === 'bucket-list').slice(0, 5).map(g => (
-                        <div key={g.id} className="flex items-center justify-between p-3 rounded-xl bg-muted/20 border border-transparent hover:border-border transition-colors">
+                        <div key={g.id} className="flex items-center justify-between p-3 rounded-xl bg-muted/20 border border-transparent hover:border-emerald-100 transition-colors">
                           <span className="text-sm font-bold text-primary">{g.destination}</span>
-                          <Button variant="ghost" size="sm" className="h-7 px-2 text-[10px] font-black uppercase hover:bg-primary/10 hover:text-primary" onClick={() => updateTravelGoal(g.id, { status: 'planned' })}>
+                          <Button variant="ghost" size="sm" className="h-7 px-2 text-[10px] font-black uppercase hover:bg-emerald-50 hover:text-emerald-600" onClick={() => updateTravelGoal(g.id, { status: 'planned' })}>
                             Plan Now
                           </Button>
                         </div>
@@ -362,7 +362,7 @@ export default function TravelPage() {
                       </SelectTrigger>
                       <SelectContent>
                         {TRAVEL_STATUSES.map(status => (
-                          <SelectItem key={status} value={status} className="capitalize">{status.replace('-', ' ')}</SelectItem>
+                          <SelectItem key={status} value={status} className="capitalize font-bold">{status.replace('-', ' ')}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -387,7 +387,7 @@ export default function TravelPage() {
                     type="date"
                     value={formData.plannedDate}
                     onChange={(e) => setFormData(prev => ({ ...prev, plannedDate: e.target.value }))}
-                    className="h-12 rounded-xl bg-muted/30 border-transparent"
+                    className="h-12 rounded-xl bg-muted/30 border-transparent font-bold"
                   />
                 </div>
 
@@ -398,7 +398,7 @@ export default function TravelPage() {
                     value={formData.notes}
                     onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
                     placeholder="Bucket list reasons, sightseeing, food to try..."
-                    className="resize-none h-24 rounded-xl bg-muted/30 border-transparent focus:bg-card p-4 text-sm"
+                    className="resize-none h-24 rounded-xl bg-muted/30 border-transparent focus:bg-card p-4 text-sm font-bold"
                   />
                 </div>
 
@@ -412,15 +412,15 @@ export default function TravelPage() {
                       className="h-10 rounded-xl bg-muted/30 border-transparent"
                       onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addPackingItem())}
                     />
-                    <Button type="button" size="icon" className="rounded-xl h-10 w-10 shrink-0" onClick={addPackingItem}>
+                    <Button type="button" size="icon" className="rounded-xl h-10 w-10 shrink-0 bg-emerald-600 hover:bg-emerald-700" onClick={addPackingItem}>
                       <Plus className="w-4 h-4" />
                     </Button>
                   </div>
                   <div className="flex flex-wrap gap-2 pt-2">
                     {packingItems.map((item, index) => (
-                      <Badge key={index} variant="secondary" className="pl-3 pr-1 py-1 rounded-lg flex items-center gap-1 group/badge bg-primary/5 hover:bg-primary/10 transition-colors">
-                        <span className="text-[10px] font-bold">{item}</span>
-                        <button onClick={() => removePackingItem(index)} className="text-muted-foreground hover:text-red-500 opacity-40 group-hover/badge:opacity-100 transition-opacity">
+                      <Badge key={index} variant="secondary" className="pl-3 pr-1 py-1 rounded-lg flex items-center gap-1 group/badge bg-emerald-50 hover:bg-emerald-100 transition-colors border-emerald-100">
+                        <span className="text-[10px] font-bold text-emerald-700">{item}</span>
+                        <button onClick={() => removePackingItem(index)} className="text-emerald-400 hover:text-red-500 opacity-40 group-hover/badge:opacity-100 transition-opacity">
                           <X className="w-3 h-3" />
                         </button>
                       </Badge>
