@@ -21,6 +21,12 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
+import { 
+  Tabs, 
+  TabsContent, 
+  TabsList, 
+  TabsTrigger 
+} from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Progress } from "@/components/ui/progress";
 import { 
@@ -60,27 +66,41 @@ import { cn } from "@/lib/utils";
 const MEAL_TYPES = ["breakfast", "lunch", "dinner", "snack"];
 
 const VEG_DIET_OPTIONS = [
-  { name: "Dal Tadka (1 bowl)", calories: 150 },
-  { name: "Paneer Tikka (100g)", calories: 250 },
-  { name: "Mixed Veg Curry (1 bowl)", calories: 120 },
-  { name: "Roti (1 piece)", calories: 85 },
-  { name: "Brown Rice (1 cup)", calories: 215 },
-  { name: "Quinoa (1 cup cooked)", calories: 220 },
-  { name: "Lentil Soup (1 bowl)", calories: 180 },
-  { name: "Greek Yogurt (1 cup)", calories: 100 },
-  { name: "Mixed Vegetable Salad", calories: 50 },
-  { name: "Chana Masala (1 bowl)", calories: 280 },
-  { name: "Oats with Milk (1 bowl)", calories: 200 },
-  { name: "Moong Dal Sprouts (1 bowl)", calories: 100 },
-  { name: "Soya Chunks Curry (1 bowl)", calories: 180 },
-  { name: "Tofu Stir Fry (100g)", calories: 160 },
-  { name: "Chickpea Salad (1 cup)", calories: 210 },
-  { name: "Almonds (10 pieces)", calories: 70 },
-  { name: "Walnuts (4 pieces)", calories: 100 },
-  { name: "Banana (Medium)", calories: 105 },
-  { name: "Apple (Medium)", calories: 95 },
-  { name: "Peanut Butter (1 tbsp)", calories: 90 },
-  { name: "Sweet Potato (100g)", calories: 90 },
+  // Meals (Lunch/Dinner)
+  { name: "Dal Tadka (1 bowl)", calories: 150, category: "meals" },
+  { name: "Paneer Tikka (100g)", calories: 250, category: "meals" },
+  { name: "Mixed Veg Curry (1 bowl)", calories: 120, category: "meals" },
+  { name: "Roti (1 piece)", calories: 85, category: "meals" },
+  { name: "Brown Rice (1 cup)", calories: 215, category: "meals" },
+  { name: "Chana Masala (1 bowl)", calories: 280, category: "meals" },
+  { name: "Soya Chunks Curry (1 bowl)", calories: 180, category: "meals" },
+  { name: "Tofu Stir Fry (100g)", calories: 160, category: "meals" },
+  { name: "Lentil Soup (1 bowl)", calories: 180, category: "meals" },
+  { name: "Quinoa (1 cup cooked)", calories: 220, category: "meals" },
+  { name: "Palak Paneer (1 bowl)", calories: 240, category: "meals" },
+  { name: "Vegetable Pulao (1 cup)", calories: 190, category: "meals" },
+  
+  // Snacks
+  { name: "Moong Dal Sprouts (1 bowl)", calories: 100, category: "snacks" },
+  { name: "Greek Yogurt (1 cup)", calories: 100, category: "snacks" },
+  { name: "Mixed Vegetable Salad", calories: 50, category: "snacks" },
+  { name: "Chickpea Salad (1 cup)", calories: 210, category: "snacks" },
+  { name: "Almonds (10 pieces)", calories: 70, category: "snacks" },
+  { name: "Walnuts (4 pieces)", calories: 100, category: "snacks" },
+  { name: "Banana (Medium)", calories: 105, category: "snacks" },
+  { name: "Apple (Medium)", calories: 95, category: "snacks" },
+  { name: "Peanut Butter (1 tbsp)", calories: 90, category: "snacks" },
+  { name: "Sweet Potato (100g)", calories: 90, category: "snacks" },
+  { name: "Roasted Makhana (1 cup)", calories: 110, category: "snacks" },
+  { name: "Hummus with Carrot", calories: 120, category: "snacks" },
+  
+  // Breakfast
+  { name: "Oats with Milk (1 bowl)", calories: 200, category: "breakfast" },
+  { name: "Vegetable Poha (1 bowl)", calories: 180, category: "breakfast" },
+  { name: "Upma (1 bowl)", calories: 190, category: "breakfast" },
+  { name: "Idli (2 pieces)", calories: 120, category: "breakfast" },
+  { name: "Whole Grain Toast (2)", calories: 140, category: "breakfast" },
+  { name: "Chia Seed Pudding", calories: 150, category: "breakfast" },
 ];
 
 export default function HealthPage() {
@@ -176,7 +196,7 @@ export default function HealthPage() {
   const calorieChartData = useMemo(() => {
     return [
       { name: 'Target', value: calorieGoal, fill: 'hsl(var(--primary))' },
-      { name: 'Current', value: totalCalories, fill: totalCalories > calorieGoal ? 'hsl(var(--destructive))' : 'hsl(var(--accent))' }
+      { name: 'Current', value: totalCalories, fill: totalCalories > calorieGoal ? 'hsl(var(--destructive))' : 'hsl(var(--emerald-500))' }
     ];
   }, [totalCalories, calorieGoal]);
 
@@ -219,7 +239,7 @@ export default function HealthPage() {
       <header className="w-full max-w-7xl flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div className="flex items-center gap-3">
           <Link href="/">
-            <Button variant="ghost" size="icon" className="rounded-xl text-blue-600 hover:bg-blue-50/50 hover:text-blue-600 transition-colors">
+            <Button variant="ghost" size="icon" className="rounded-xl text-sky-600 hover:bg-sky-50/50 hover:text-sky-600 transition-colors">
               <ArrowLeft className="w-6 h-6" />
             </Button>
           </Link>
@@ -239,7 +259,7 @@ export default function HealthPage() {
             onClick={() => setSelectedDate(prev => subDays(prev, 1))}
             className="h-9 w-9 rounded-xl hover:bg-background shadow-sm"
           >
-            <ChevronLeft className="w-4 h-4 text-blue-600" />
+            <ChevronLeft className="w-4 h-4 text-sky-600" />
           </Button>
           <div className="flex flex-col items-center px-4 min-w-[120px]">
             <span className="text-[10px] font-black uppercase tracking-widest text-primary/40 leading-none">
@@ -255,7 +275,7 @@ export default function HealthPage() {
             onClick={() => setSelectedDate(prev => addDays(prev, 1))}
             className="h-9 w-9 rounded-xl hover:bg-background shadow-sm"
           >
-            <ChevronRight className="w-4 h-4 text-blue-600" />
+            <ChevronRight className="w-4 h-4 text-sky-600" />
           </Button>
         </div>
 
@@ -263,7 +283,7 @@ export default function HealthPage() {
           <Button 
             variant="outline" 
             onClick={() => setIsProfileDialogOpen(true)}
-            className="h-12 rounded-xl px-4 gap-2 border-primary/20 hover:bg-sky-50 transition-colors hover:text-blue-600"
+            className="h-12 rounded-xl px-4 gap-2 border-primary/20 hover:bg-sky-50 transition-colors hover:text-sky-600"
           >
             <User className="w-5 h-5 text-sky-500" />
             <span className="hidden sm:inline">Body Profile</span>
@@ -288,7 +308,7 @@ export default function HealthPage() {
           <Card className="lg:col-span-4 shadow-2xl border-border bg-card/80 backdrop-blur-sm rounded-[2rem] overflow-hidden">
             <CardHeader className="bg-primary/5 border-b pb-6">
               <div className="flex items-center gap-2">
-                <Scale className="w-5 h-5 text-blue-600" />
+                <Scale className="w-5 h-5 text-sky-600" />
                 <CardTitle className="text-lg font-black text-primary">Body Composition</CardTitle>
               </div>
             </CardHeader>
@@ -322,15 +342,15 @@ export default function HealthPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 gap-3 p-4 bg-blue-50/50 rounded-2xl border border-blue-100">
+              <div className="grid grid-cols-1 gap-3 p-4 bg-sky-50/50 rounded-2xl border border-sky-100">
                 <div className="flex items-center justify-between">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-blue-700 flex items-center gap-2">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-sky-700 flex items-center gap-2">
                     <Target className="w-3 h-3" /> Ideal Weight
                   </p>
-                  <span className="text-sm font-black text-blue-800">{idealWeight} kg</span>
+                  <span className="text-sm font-black text-sky-800">{idealWeight} kg</span>
                 </div>
                 {weightDifference > 0 && (
-                  <div className="flex items-center justify-between border-t border-blue-100 pt-2">
+                  <div className="flex items-center justify-between border-t border-sky-100 pt-2">
                     <p className="text-[10px] font-black uppercase tracking-widest text-orange-700 flex items-center gap-2">
                       <TrendingDown className="w-3 h-3" /> Weight to Reduce
                     </p>
@@ -437,7 +457,7 @@ export default function HealthPage() {
                               variant="ghost" 
                               size="icon" 
                               onClick={() => deleteDietEntry(entry.id)}
-                              className="h-8 w-8 text-muted-foreground opacity-0 group-hover:opacity-100 transition-all hover:bg-destructive/10 hover:text-destructive"
+                              className="h-8 w-8 text-muted-foreground opacity-0 group-hover:opacity-100 transition-all hover:bg-red-50 hover:text-red-500"
                             >
                               <Trash2 className="w-4 h-4" />
                             </Button>
@@ -452,7 +472,7 @@ export default function HealthPage() {
           </Card>
 
           <Card className="lg:col-span-4 shadow-2xl border-border bg-card/80 backdrop-blur-sm rounded-[2rem] overflow-hidden">
-            <CardHeader className="bg-sky-50/50 dark:bg-sky-900/10 border-b pb-6">
+            <CardHeader className="bg-emerald-50/50 dark:bg-emerald-900/10 border-b pb-4">
               <div className="flex items-center gap-2">
                 <Leaf className="w-5 h-5 text-emerald-600" />
                 <CardTitle className="text-lg font-black text-primary">Veg Nutrition Guide</CardTitle>
@@ -460,21 +480,33 @@ export default function HealthPage() {
               <CardDescription className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Healthy calorie references</CardDescription>
             </CardHeader>
             <CardContent className="p-0">
-              <ScrollArea className="h-[350px]">
-                <div className="p-4 space-y-2">
-                  {VEG_DIET_OPTIONS.map((option, idx) => (
-                    <div key={idx} className="flex items-center justify-between p-3 rounded-xl hover:bg-muted/50 transition-colors border border-transparent hover:border-border group">
-                      <span className="text-xs font-bold text-primary group-hover:text-emerald-700 transition-colors">{option.name}</span>
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-xs font-black text-emerald-600">{option.calories}</span>
-                        <span className="text-[9px] font-black uppercase text-muted-foreground">kcal</span>
+              <Tabs defaultValue="meals" className="w-full">
+                <TabsList className="w-full grid grid-cols-3 h-12 bg-muted/50 rounded-none border-b border-border/50">
+                  <TabsTrigger value="meals" className="text-[10px] font-black uppercase tracking-widest data-[state=active]:text-emerald-600">Meals</TabsTrigger>
+                  <TabsTrigger value="snacks" className="text-[10px] font-black uppercase tracking-widest data-[state=active]:text-emerald-600">Snacks</TabsTrigger>
+                  <TabsTrigger value="breakfast" className="text-[10px] font-black uppercase tracking-widest data-[state=active]:text-emerald-600">Breakfast</TabsTrigger>
+                </TabsList>
+                
+                {["meals", "snacks", "breakfast"].map((tab) => (
+                  <TabsContent key={tab} value={tab} className="m-0">
+                    <ScrollArea className="h-[350px]">
+                      <div className="p-4 space-y-2">
+                        {VEG_DIET_OPTIONS.filter(o => o.category === tab).map((option, idx) => (
+                          <div key={idx} className="flex items-center justify-between p-3 rounded-xl hover:bg-muted/50 transition-colors border border-transparent hover:border-emerald-100 group">
+                            <span className="text-xs font-bold text-primary group-hover:text-emerald-700 transition-colors">{option.name}</span>
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-xs font-black text-emerald-600">{option.calories}</span>
+                              <span className="text-[9px] font-black uppercase text-muted-foreground">kcal</span>
+                            </div>
+                          </div>
+                        ))}
                       </div>
-                    </div>
-                  ))}
-                </div>
-              </ScrollArea>
+                    </ScrollArea>
+                  </TabsContent>
+                ))}
+              </Tabs>
               <div className="p-4 bg-muted/20 border-t flex items-center gap-3">
-                <Info className="w-4 h-4 text-sky-500 shrink-0" />
+                <Info className="w-4 h-4 text-emerald-500 shrink-0" />
                 <p className="text-[9px] font-bold text-muted-foreground leading-tight">These are standard average values. Actual calories may vary based on portion size and preparation method.</p>
               </div>
             </CardContent>
@@ -522,7 +554,7 @@ export default function HealthPage() {
                           variant="ghost" 
                           size="icon" 
                           onClick={() => deleteWaterEntry(log.id)}
-                          className="h-6 w-6 text-muted-foreground opacity-0 group-hover:opacity-100 transition-all hover:bg-destructive/10 hover:text-destructive"
+                          className="h-6 w-6 text-muted-foreground opacity-0 group-hover:opacity-100 transition-all hover:bg-red-50 hover:text-red-500"
                         >
                           <Trash2 className="w-3 h-3" />
                         </Button>
