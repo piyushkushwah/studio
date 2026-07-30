@@ -57,7 +57,10 @@ import {
   ChevronRight,
   TrendingDown,
   Info,
-  Leaf
+  Leaf,
+  Beef,
+  Wheat,
+  Droplet
 } from "lucide-react";
 import Link from "next/link";
 import { format, parseISO, addDays, subDays, isSameDay } from "date-fns";
@@ -65,42 +68,51 @@ import { cn } from "@/lib/utils";
 
 const MEAL_TYPES = ["breakfast", "lunch", "dinner", "snack"];
 
-const VEG_DIET_OPTIONS = [
+interface VegOption {
+  name: string;
+  calories: number;
+  category: string;
+  protein: number;
+  carbs: number;
+  fat: number;
+}
+
+const VEG_DIET_OPTIONS: VegOption[] = [
   // Meals (Lunch/Dinner)
-  { name: "Dal Tadka (1 bowl)", calories: 150, category: "meals" },
-  { name: "Paneer Tikka (100g)", calories: 250, category: "meals" },
-  { name: "Mixed Veg Curry (1 bowl)", calories: 120, category: "meals" },
-  { name: "Roti (1 piece)", calories: 85, category: "meals" },
-  { name: "Brown Rice (1 cup)", calories: 215, category: "meals" },
-  { name: "Chana Masala (1 bowl)", calories: 280, category: "meals" },
-  { name: "Soya Chunks Curry (1 bowl)", calories: 180, category: "meals" },
-  { name: "Tofu Stir Fry (100g)", calories: 160, category: "meals" },
-  { name: "Lentil Soup (1 bowl)", calories: 180, category: "meals" },
-  { name: "Quinoa (1 cup cooked)", calories: 220, category: "meals" },
-  { name: "Palak Paneer (1 bowl)", calories: 240, category: "meals" },
-  { name: "Vegetable Pulao (1 cup)", calories: 190, category: "meals" },
+  { name: "Dal Tadka (1 bowl)", calories: 150, category: "meals", protein: 7, carbs: 20, fat: 5 },
+  { name: "Paneer Tikka (100g)", calories: 250, category: "meals", protein: 15, carbs: 6, fat: 18 },
+  { name: "Mixed Veg Curry (1 bowl)", calories: 120, category: "meals", protein: 3, carbs: 15, fat: 6 },
+  { name: "Roti (1 piece)", calories: 85, category: "meals", protein: 3, carbs: 18, fat: 0.5 },
+  { name: "Brown Rice (1 cup)", calories: 215, category: "meals", protein: 5, carbs: 45, fat: 2 },
+  { name: "Chana Masala (1 bowl)", calories: 280, category: "meals", protein: 10, carbs: 40, fat: 8 },
+  { name: "Soya Chunks Curry (1 bowl)", calories: 180, category: "meals", protein: 25, carbs: 10, fat: 4 },
+  { name: "Tofu Stir Fry (100g)", calories: 160, category: "meals", protein: 12, carbs: 4, fat: 8 },
+  { name: "Lentil Soup (1 bowl)", calories: 180, category: "meals", protein: 10, carbs: 30, fat: 2 },
+  { name: "Quinoa (1 cup cooked)", calories: 220, category: "meals", protein: 8, carbs: 39, fat: 4 },
+  { name: "Palak Paneer (1 bowl)", calories: 240, category: "meals", protein: 12, carbs: 8, fat: 18 },
+  { name: "Vegetable Pulao (1 cup)", calories: 190, category: "meals", protein: 4, carbs: 35, fat: 4 },
   
   // Snacks
-  { name: "Moong Dal Sprouts (1 bowl)", calories: 100, category: "snacks" },
-  { name: "Greek Yogurt (1 cup)", calories: 100, category: "snacks" },
-  { name: "Mixed Vegetable Salad", calories: 50, category: "snacks" },
-  { name: "Chickpea Salad (1 cup)", calories: 210, category: "snacks" },
-  { name: "Almonds (10 pieces)", calories: 70, category: "snacks" },
-  { name: "Walnuts (4 pieces)", calories: 100, category: "snacks" },
-  { name: "Banana (Medium)", calories: 105, category: "snacks" },
-  { name: "Apple (Medium)", calories: 95, category: "snacks" },
-  { name: "Peanut Butter (1 tbsp)", calories: 90, category: "snacks" },
-  { name: "Sweet Potato (100g)", calories: 90, category: "snacks" },
-  { name: "Roasted Makhana (1 cup)", calories: 110, category: "snacks" },
-  { name: "Hummus with Carrot", calories: 120, category: "snacks" },
+  { name: "Moong Dal Sprouts (1 bowl)", calories: 100, category: "snacks", protein: 8, carbs: 15, fat: 0.5 },
+  { name: "Greek Yogurt (1 cup)", calories: 100, category: "snacks", protein: 10, carbs: 6, fat: 2 },
+  { name: "Mixed Vegetable Salad", calories: 50, category: "snacks", protein: 1, carbs: 8, fat: 0.1 },
+  { name: "Chickpea Salad (1 cup)", calories: 210, category: "snacks", protein: 10, carbs: 30, fat: 5 },
+  { name: "Almonds (10 pieces)", calories: 70, category: "snacks", protein: 2.5, carbs: 2.5, fat: 6 },
+  { name: "Walnuts (4 pieces)", calories: 100, category: "snacks", protein: 2.5, carbs: 2, fat: 10 },
+  { name: "Banana (Medium)", calories: 105, category: "snacks", protein: 1.3, carbs: 27, fat: 0.4 },
+  { name: "Apple (Medium)", calories: 95, category: "snacks", protein: 0.5, carbs: 25, fat: 0.3 },
+  { name: "Peanut Butter (1 tbsp)", calories: 90, category: "snacks", protein: 4, carbs: 3, fat: 8 },
+  { name: "Sweet Potato (100g)", calories: 90, category: "snacks", protein: 2, carbs: 20, fat: 0.1 },
+  { name: "Roasted Makhana (1 cup)", calories: 110, category: "snacks", protein: 2, carbs: 15, fat: 4 },
+  { name: "Hummus with Carrot", calories: 120, category: "snacks", protein: 4, carbs: 12, fat: 6 },
   
   // Breakfast
-  { name: "Oats with Milk (1 bowl)", calories: 200, category: "breakfast" },
-  { name: "Vegetable Poha (1 bowl)", calories: 180, category: "breakfast" },
-  { name: "Upma (1 bowl)", calories: 190, category: "breakfast" },
-  { name: "Idli (2 pieces)", calories: 120, category: "breakfast" },
-  { name: "Whole Grain Toast (2)", calories: 140, category: "breakfast" },
-  { name: "Chia Seed Pudding", calories: 150, category: "breakfast" },
+  { name: "Oats with Milk (1 bowl)", calories: 200, category: "breakfast", protein: 8, carbs: 30, fat: 5 },
+  { name: "Vegetable Poha (1 bowl)", calories: 180, category: "breakfast", protein: 3, carbs: 35, fat: 4 },
+  { name: "Upma (1 bowl)", calories: 190, category: "breakfast", protein: 4, carbs: 32, fat: 4 },
+  { name: "Idli (2 pieces)", calories: 120, category: "breakfast", protein: 4, carbs: 24, fat: 0.5 },
+  { name: "Whole Grain Toast (2)", calories: 140, category: "breakfast", protein: 5, carbs: 28, fat: 1.5 },
+  { name: "Chia Seed Pudding", calories: 150, category: "breakfast", protein: 4, carbs: 12, fat: 7 },
 ];
 
 export default function HealthPage() {
@@ -125,6 +137,8 @@ export default function HealthPage() {
   const [isDietDialogOpen, setIsDietDialogOpen] = useState(false);
   const [isGoalDialogOpen, setIsGoalDialogOpen] = useState(false);
   const [isProfileDialogOpen, setIsProfileDialogOpen] = useState(false);
+  const [selectedMacroItem, setSelectedMacroItem] = useState<VegOption | null>(null);
+  const [isMacroDialogOpen, setIsMacroDialogOpen] = useState(false);
   
   const dateStr = useMemo(() => format(selectedDate, "yyyy-MM-dd"), [selectedDate]);
   const isToday = useMemo(() => isSameDay(selectedDate, new Date()), [selectedDate]);
@@ -221,6 +235,11 @@ export default function HealthPage() {
   const handleSaveProfile = () => {
     setPhysicalProfile(parseFloat(profileForm.height) || 170, parseFloat(profileForm.weight) || 70);
     setIsProfileDialogOpen(false);
+  };
+
+  const openMacroDetails = (item: VegOption) => {
+    setSelectedMacroItem(item);
+    setIsMacroDialogOpen(true);
   };
 
   if (!isInitialized) {
@@ -492,7 +511,11 @@ export default function HealthPage() {
                     <ScrollArea className="h-[350px]">
                       <div className="p-4 space-y-2">
                         {VEG_DIET_OPTIONS.filter(o => o.category === tab).map((option, idx) => (
-                          <div key={idx} className="flex items-center justify-between p-3 rounded-xl hover:bg-muted/50 transition-colors border border-transparent hover:border-emerald-100 group">
+                          <div 
+                            key={idx} 
+                            className="flex items-center justify-between p-3 rounded-xl hover:bg-muted/50 transition-colors border border-transparent hover:border-emerald-100 group cursor-pointer"
+                            onClick={() => openMacroDetails(option)}
+                          >
                             <span className="text-xs font-bold text-primary group-hover:text-emerald-700 transition-colors">{option.name}</span>
                             <div className="flex items-center gap-1.5">
                               <span className="text-xs font-black text-emerald-600">{option.calories}</span>
@@ -507,7 +530,7 @@ export default function HealthPage() {
               </Tabs>
               <div className="p-4 bg-muted/20 border-t flex items-center gap-3">
                 <Info className="w-4 h-4 text-emerald-500 shrink-0" />
-                <p className="text-[9px] font-bold text-muted-foreground leading-tight">These are standard average values. Actual calories vary by portion.</p>
+                <p className="text-[9px] font-bold text-muted-foreground leading-tight">Click an item to see macro details. Portions are standard estimates.</p>
               </div>
             </CardContent>
           </Card>
@@ -694,6 +717,74 @@ export default function HealthPage() {
               Confirm Entry
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isMacroDialogOpen} onOpenChange={setIsMacroDialogOpen}>
+        <DialogContent className="sm:max-w-[400px] rounded-[2.5rem] p-8 overflow-hidden">
+          {selectedMacroItem && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="text-2xl font-black text-primary tracking-tight">Nutrition Profile</DialogTitle>
+                <DialogDescription className="text-[10px] font-black uppercase tracking-widest">{selectedMacroItem.name}</DialogDescription>
+              </DialogHeader>
+              <div className="py-8 space-y-8">
+                <div className="flex flex-col items-center justify-center p-6 bg-emerald-50/50 rounded-3xl border border-emerald-100">
+                  <Flame className="w-8 h-8 text-orange-500 mb-2" />
+                  <span className="text-4xl font-black text-emerald-700">{selectedMacroItem.calories}</span>
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-600/60">TOTAL KCAL</span>
+                </div>
+
+                <div className="space-y-6">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-blue-600">
+                      <div className="flex items-center gap-2">
+                        <Beef className="w-3 h-3" /> Protein
+                      </div>
+                      <span>{selectedMacroItem.protein}g</span>
+                    </div>
+                    <Progress value={(selectedMacroItem.protein / (selectedMacroItem.protein + selectedMacroItem.carbs + selectedMacroItem.fat)) * 100} className="h-2 bg-blue-100" />
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-amber-600">
+                      <div className="flex items-center gap-2">
+                        <Wheat className="w-3 h-3" /> Carbs
+                      </div>
+                      <span>{selectedMacroItem.carbs}g</span>
+                    </div>
+                    <Progress value={(selectedMacroItem.carbs / (selectedMacroItem.protein + selectedMacroItem.carbs + selectedMacroItem.fat)) * 100} className="h-2 bg-amber-100" />
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-orange-600">
+                      <div className="flex items-center gap-2">
+                        <Droplet className="w-3 h-3" /> Fats
+                      </div>
+                      <span>{selectedMacroItem.fat}g</span>
+                    </div>
+                    <Progress value={(selectedMacroItem.fat / (selectedMacroItem.protein + selectedMacroItem.carbs + selectedMacroItem.fat)) * 100} className="h-2 bg-orange-100" />
+                  </div>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button 
+                  onClick={() => {
+                    setDietForm(prev => ({ 
+                      ...prev, 
+                      name: selectedMacroItem.name, 
+                      calories: selectedMacroItem.calories.toString() 
+                    }));
+                    setIsMacroDialogOpen(false);
+                    setIsDietDialogOpen(true);
+                  }}
+                  className="w-full h-12 rounded-xl font-bold bg-sky-600 hover:bg-sky-700 shadow-xl shadow-sky-200"
+                >
+                  Quick Log Meal
+                </Button>
+              </DialogFooter>
+            </>
+          )}
         </DialogContent>
       </Dialog>
     </div>
